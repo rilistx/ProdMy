@@ -77,7 +77,7 @@ def scheduler_tasks():
 
 PostgresURL = f"postgresql+asyncpg://{postgres['db_user']}:{postgres['db_pass']}@{postgres['db_host']}/{postgres['db_name']}"
 async_engine = create_async_engine(PostgresURL, echo=True)
-async_session = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
+session_maker = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
 bot = Bot(token=token, parse_mode='HTML')
 

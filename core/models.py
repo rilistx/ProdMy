@@ -1,4 +1,4 @@
-from sqlalchemy import String, BigInteger, Float, Boolean, DateTime, func
+from sqlalchemy import String, BigInteger, Numeric, Boolean, DateTime, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -14,5 +14,6 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
     first_name: Mapped[str] = mapped_column(String(30), nullable=True, unique=False)
     phone_number: Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
-    stars: Mapped[float] = mapped_column(Float, unique=False, default=0)  # Потом поменять !!!
+    is_admin: Mapped[bool] = mapped_column(Boolean, unique=False, default=False)
+    stars: Mapped[float] = mapped_column(Numeric(3, 2), unique=False, default=0)
     blocked: Mapped[bool] = mapped_column(Boolean, unique=False, default=False)

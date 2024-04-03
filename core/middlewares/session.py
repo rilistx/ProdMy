@@ -5,11 +5,6 @@ from aiogram.types import TelegramObject
 
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from .handlers import routers
-from .settings import session_maker
-
-
-# ########################################   SESSION  ############################################### #
 
 class SessionMiddleware(BaseMiddleware):
     def __init__(self, session_pool: async_sessionmaker):
@@ -24,7 +19,3 @@ class SessionMiddleware(BaseMiddleware):
         async with self.session_pool() as session:
             data['session'] = session
             return await handler(event, data)
-
-
-def middlewares():
-    routers['user_router'].message.middleware(SessionMiddleware(session_pool=session_maker))

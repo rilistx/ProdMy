@@ -1,6 +1,7 @@
 from environs import Env
 
 from aiogram import Bot
+from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import RedisStorage
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
@@ -9,7 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler_di import ContextSchedulerDecorator
 
-from .schedulers import scheduler_add
+from core.schedulers.schedulers import scheduler_add
 
 
 def telegram_env(path: str):
@@ -79,7 +80,7 @@ PostgresURL = f"postgresql+asyncpg://{postgres['db_user']}:{postgres['db_pass']}
 async_engine = create_async_engine(PostgresURL, echo=True)
 session_maker = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
-bot = Bot(token=token, parse_mode='HTML')
+bot = Bot(token=token, parse_mode=ParseMode.HTML)
 
 storage = RedisStorage.from_url(f"{redis['db_name']}://{redis['db_host']}:{redis['db_port']}/0")
 

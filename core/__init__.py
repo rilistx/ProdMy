@@ -5,7 +5,7 @@ from aiogram import Dispatcher
 from aiogram.types import BotCommandScopeDefault
 
 from core.commands.commands import commands
-from core.handlers import main, registration, menu, vacancy, error  # noqa
+from core.handlers import main, registration, menu, vacancy, error
 from core.middlewares.session import SessionMiddleware
 from core.utils.settings import bot, storage, schedulers, session_maker
 
@@ -17,7 +17,7 @@ async def start_polling() -> None:
     dispatcher.update.middleware(SessionMiddleware(session_pool=session_maker))
     dispatcher.include_router(registration.registration_router)
     dispatcher.include_router(menu.menu_router)
-    # dispatcher.include_router(vacancy.vacancy_router)
+    dispatcher.include_router(vacancy.vacancy_router)
     dispatcher.include_router(error.error_router)
 
     schedulers.start()

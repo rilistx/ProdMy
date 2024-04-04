@@ -92,7 +92,7 @@ def get_create_button(lang: str):
     keyboard = InlineKeyboardBuilder()
     keyboard.add(InlineKeyboardButton(
         text=json[lang]['button']['create'],
-        callback_data='vacancy')
+        callback_data=f'vacancy_{lang}')
     )
     keyboard.add(InlineKeyboardButton(
         text=json[lang]['button']['exit'],

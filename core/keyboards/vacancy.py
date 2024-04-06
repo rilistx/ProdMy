@@ -1,7 +1,7 @@
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 
-from core.commands.languages import json
+from core.utils.connector import connector
 from core.keyboards.menu import MenuCallBack
 
 
@@ -15,13 +15,13 @@ def vacancy_profession_button(lang, data_name, data_list, catalog_name=None):
     if data_name == 'catalog':
         for item in data_list:
             keyboard.add(InlineKeyboardButton(
-                text=json[lang][data_name][item.name]['name'],
+                text=connector[lang][data_name][item.name]['name'],
                 callback_data=f'catalog_{item.name}_{item.id}',
             ))
     else:
         for item in data_list:
             keyboard.add(InlineKeyboardButton(
-                text=json[lang]['catalog'][catalog_name]['sub_name'][item.name],
+                text=connector[lang]['catalog'][catalog_name]['sub_name'][item.name],
                 callback_data=f'subcatalog_{item.id}',
             ))
 
@@ -57,7 +57,7 @@ def vacancy_keyboard_button(lang):
 def vacancy_selection_button(lang, process, dict_data):
     keyboard = InlineKeyboardBuilder()
 
-    for name, description in json[lang][process].items():
+    for name, description in connector[lang][process].items():
         for key, value in dict_data.items():
             if name == key and value:
                 keyboard.add(InlineKeyboardButton(

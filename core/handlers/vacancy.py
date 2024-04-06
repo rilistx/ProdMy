@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.commands.languages import json
+from core.utils.connector import connector
 # from core.commands.languages import json
 from core.keyboards.vacancy import vacancy_profession_button, vacancy_keyboard_button, vacancy_selection_button, \
     ChoiceCallBack, vacancy_choice_button
@@ -105,7 +105,7 @@ async def schedule_vacancy(message: Message, state: FSMContext):
     new_schedule_data = {}
 
     for key, value in schedule_data.items():
-        if key in json[lang['language']]['schedule']:
+        if key in connector[lang['language']]['schedule']:
             new_schedule_data[key] = value
 
     reply_markup = vacancy_selection_button(lang['language'], 'schedule', new_schedule_data)
@@ -126,7 +126,7 @@ async def verification_schedule_vacancy(callback: CallbackQuery, callback_data: 
     new_schedule_data = {}
 
     for key, value in schedule_data.items():
-        if key in json[lang['language']]['schedule']:
+        if key in connector[lang['language']]['schedule']:
             new_schedule_data[key] = value
 
     reply_markup = vacancy_selection_button(lang['language'], 'schedule', new_schedule_data)
@@ -142,7 +142,7 @@ async def employment_vacancy(callback: CallbackQuery, state: FSMContext):
     new_employment_data = {}
 
     for key, value in employment_data.items():
-        if key in json[lang['language']]['employment']:
+        if key in connector[lang['language']]['employment']:
             new_employment_data[key] = value
 
     reply_markup = vacancy_selection_button(lang['language'], 'employment', new_employment_data)
@@ -164,7 +164,7 @@ async def verification_employment_vacancy(callback: CallbackQuery, callback_data
     new_employment_data = {}
 
     for key, value in employment_data.items():
-        if key in json[lang['language']]['employment']:
+        if key in connector[lang['language']]['employment']:
             new_employment_data[key] = value
 
     reply_markup = vacancy_selection_button(lang['language'], 'employment', new_employment_data)
@@ -180,7 +180,7 @@ async def expertise_vacancy(callback: CallbackQuery, state: FSMContext):
     new_expertise_data = {}
 
     for key, value in expertise_data.items():
-        if key in json[lang['language']]['expertise']:
+        if key in connector[lang['language']]['expertise']:
             new_expertise_data[key] = value
 
     reply_markup = vacancy_selection_button(lang['language'], 'expertise', new_expertise_data)
@@ -202,7 +202,7 @@ async def verification_expertise_vacancy(callback: CallbackQuery, callback_data:
     new_expertise_data = {}
 
     for key, value in expertise_data.items():
-        if key in json[lang['language']]['expertise']:
+        if key in connector[lang['language']]['expertise']:
             new_expertise_data[key] = value
 
     reply_markup = vacancy_selection_button(lang['language'], 'expertise', new_expertise_data)

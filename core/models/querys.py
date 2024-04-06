@@ -3,10 +3,10 @@ import random
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from core.models.models import (Language, Informer, Region, City, Catalog, Subcatalog, User, Vacancy, Country)
+from core.models.models import Language, Informer, Region, City, Catalog, Subcatalog, User, Vacancy, Country
 
 
-# ########################################   REGISTRATION   ############################################### #
+# ########################################   USER   ############################################### #
 
 async def search_user(session: AsyncSession, user_id):
     result = await session.execute(select(User).where(User.id == user_id))
@@ -39,17 +39,21 @@ async def create_user(session: AsyncSession, user_id, uuid, first_name, phone_nu
 
 # ########################################   GET DATA   ############################################### #
 
-async def get_language_name(session: AsyncSession, user_id):
-    query_user = await session.execute(select(User).where(User.id == user_id))
-    user = query_user.scalar()
-    query_lang = await session.execute(select(Language).where(Language.id == user.language_id))
-    language = query_lang.scalar()
+async def get_language_all(session: AsyncSession):
+    query = await session.execute(select(Language))
 
-    return language.name
+    return query.scalars().all()
 
 
-async def get_language_id(session: AsyncSession, name):
-    query = await session.execute(select(Language).where(Language.name == name))
+async def get_language_one(session: AsyncSession, language_id):
+    query = await session.execute(select(Language).where(Language.id == language_id))
+    language = query.scalar()
+
+    return language
+
+
+async def get_language_id(session: AsyncSession, abbreviation):
+    query = await session.execute(select(Language).where(Language.abbreviation == abbreviation))
     language = query.scalar()
 
     return language.id
@@ -62,8 +66,8 @@ async def get_country_id(session: AsyncSession, name):
     return country.id
 
 
-async def get_informer(session: AsyncSession, name: str):
-    query = await session.execute(select(Informer).where(Informer.name == name))
+async def get_informer(session: AsyncSession, key: str):
+    query = await session.execute(select(Informer).where(Informer.key == key))
     return query.scalar()
 
 
@@ -95,3 +99,10 @@ async def get_region_all(session: AsyncSession):
 async def get_city_all(session: AsyncSession, region_id):
     query = await session.execute(select(City).where(City.region_id == region_id))
     return query.scalars().all()
+
+
+async def get_user_one(session: AsyncSession, user_id):
+    query = await session.execute(select(User).where(User.id == user_id))
+    user = query.scalar()
+
+    return user

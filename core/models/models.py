@@ -11,28 +11,38 @@ class Language(Base):
     __tablename__ = 'language'
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, unique=True)
-    name: Mapped[str] = mapped_column(String(50), unique=True)
+    abbreviation: Mapped[str] = mapped_column(String(10), unique=True)
+    title: Mapped[str] = mapped_column(Text, unique=True)
+    flag: Mapped[str] = mapped_column(String(10), unique=True)
+
+
+class Currency(Base):
+    __tablename__ = 'currency'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    abbreviation: Mapped[str] = mapped_column(String(50), nullable=False)
+    rate: Mapped[str] = mapped_column(Numeric(10, 2), default=0)
 
 
 class Informer(Base):
     __tablename__ = 'informer'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(50), unique=True)
+    key: Mapped[str] = mapped_column(String(50), unique=True)
 
 
 class Catalog(Base):
     __tablename__ = 'catalog'
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(50), nullable=False, unique=False)
 
 
 class Subcatalog(Base):
     __tablename__ = 'subcatalog'
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(50), nullable=False)
     catalog_id: Mapped[int] = mapped_column(ForeignKey('catalog.id', ondelete='CASCADE'), nullable=False)
 
     catalog: Mapped['Catalog'] = relationship(backref='subcatalog')
@@ -43,6 +53,7 @@ class Country(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    flag: Mapped[str] = mapped_column(String(10), nullable=False)
     have: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
@@ -68,14 +79,6 @@ class City(Base):
     region: Mapped['Region'] = relationship(backref='city')
 
 
-class Currency(Base):
-    __tablename__ = 'currency'
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False)
-    rate: Mapped[str] = mapped_column(Numeric(10, 2), default=0)
-
-
 class User(Base):
     __tablename__ = 'user'
 
@@ -83,8 +86,9 @@ class User(Base):
     uuid: Mapped[str] = mapped_column(String(25), nullable=False, unique=True)
     username: Mapped[str] = mapped_column(String(50), nullable=True, unique=True)
     first_name: Mapped[str] = mapped_column(String(50), nullable=True)
-    phone_number: Mapped[str] = mapped_column(String(20), unique=True)
+    phone_number: Mapped[str] = mapped_column(String(50), unique=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    warning: Mapped[bool] = mapped_column(Integer, default=0)
     blocked: Mapped[bool] = mapped_column(Boolean, default=False)
     language_id: Mapped[int] = mapped_column(ForeignKey('language.id', ondelete='CASCADE'), nullable=False)
     country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=False)
@@ -97,13 +101,9 @@ class Vacancy(Base):
     __tablename__ = 'vacancy'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    disability: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    language: Mapped[bool] = mapped_column(Boolean, nullable=False)
     price: Mapped[str] = mapped_column(BigInteger, nullable=False)
-    phone_number: Mapped[str] = mapped_column(String(15), nullable=False)
-    username: Mapped[str] = mapped_column(String(50), nullable=True)
     view: Mapped[int] = mapped_column(Integer, default=0)
     complaint: Mapped[int] = mapped_column(Integer, default=0)
     subcatalog_id: Mapped[int] = mapped_column(ForeignKey('subcatalog.id', ondelete='CASCADE'), nullable=False)
@@ -119,49 +119,6 @@ class Vacancy(Base):
     region: Mapped['Region'] = relationship(backref='vacancy')
     city: Mapped['City'] = relationship(backref='vacancy')
     user: Mapped['User'] = relationship(backref='vacancy')
-
-
-class Schedule(Base):
-    __tablename__ = 'schedule'
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    complete: Mapped[bool] = mapped_column(Boolean, default=False)
-    incomplete: Mapped[bool] = mapped_column(Boolean, default=False)
-    shift: Mapped[bool] = mapped_column(Boolean, default=False)
-    rotating: Mapped[bool] = mapped_column(Boolean, default=False)
-    flexible: Mapped[bool] = mapped_column(Boolean, default=False)
-    remote: Mapped[bool] = mapped_column(Boolean, default=False)
-    vacancy_id: Mapped[int] = mapped_column(ForeignKey('vacancy.id', ondelete='CASCADE'), nullable=False)
-
-    vacancy: Mapped['Vacancy'] = relationship(backref='schedule')
-
-
-class Employment(Base):
-    __tablename__ = 'employment'
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    full: Mapped[bool] = mapped_column(Boolean, default=False)
-    seasonal: Mapped[bool] = mapped_column(Boolean, default=False)
-    partial: Mapped[bool] = mapped_column(Boolean, default=False)
-    internship: Mapped[bool] = mapped_column(Boolean, default=False)
-    part_time: Mapped[bool] = mapped_column(Boolean, default=False)
-    vacancy_id: Mapped[int] = mapped_column(ForeignKey('vacancy.id', ondelete='CASCADE'), nullable=False)
-
-    vacancy: Mapped['Vacancy'] = relationship(backref='employment')
-
-
-class Expertise(Base):
-    __tablename__ = 'expertise'
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    inexperienced: Mapped[bool] = mapped_column(Boolean, default=False)
-    from_one: Mapped[bool] = mapped_column(Boolean, default=False)
-    one_to_three: Mapped[bool] = mapped_column(Boolean, default=False)
-    three_to_six: Mapped[bool] = mapped_column(Boolean, default=False)
-    from_six: Mapped[bool] = mapped_column(Boolean, default=False)
-    vacancy_id: Mapped[int] = mapped_column(ForeignKey('vacancy.id', ondelete='CASCADE'), nullable=False)
-
-    vacancy: Mapped['Vacancy'] = relationship(backref='expertise')
 
 
 class Liked(Base):

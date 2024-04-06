@@ -1,7 +1,7 @@
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 
-from core.commands.languages import json
+from core.utils.connector import connector
 
 
 class MenuCallBack(CallbackData, prefix="main"):
@@ -18,7 +18,7 @@ def get_menu_button(*, lang: str, level: int):
     keyboard = InlineKeyboardBuilder()
     button = {}
 
-    for key, info in json[lang]['button']['menu'].items():
+    for key, info in connector[lang]['button']['menu'].items():
         button[info] = key
 
     for text, name in button.items():
@@ -43,12 +43,12 @@ def get_catalog_button(*, lang: str, level: int, catalog: list):
 
     for item in catalog:
         keyboard.add(InlineKeyboardButton(
-            text=json[lang]['catalog'][item.name]['name'],
+            text=connector[lang]['catalog'][item.name]['name'],
             callback_data=MenuCallBack(lang=lang, level=level + 1, name='subcatalog', catalog_id=item.id).pack()
         ))
 
     keyboard.add(InlineKeyboardButton(
-        text=json[lang]['button']['back'],
+        text=connector[lang]['button']['back'],
         callback_data=MenuCallBack(lang=lang, level=level - 1, name='menu').pack()
     ))
 
@@ -63,7 +63,7 @@ def get_subcatalog_button(*, lang: str, level: int, catalog, subcatalog: list):
 
     for item in subcatalog:
         keyboard.add(InlineKeyboardButton(
-            text=json[lang]['catalog'][catalog.name]['sub_name'][item.name],
+            text=connector[lang]['catalog'][catalog.name]['sub_name'][item.name],
             callback_data=MenuCallBack(
                 lang=lang,
                 level=level + 1,
@@ -74,11 +74,11 @@ def get_subcatalog_button(*, lang: str, level: int, catalog, subcatalog: list):
         ))
 
     keyboard.add(InlineKeyboardButton(
-        text=json[lang]['button']['back'],
+        text=connector[lang]['button']['back'],
         callback_data=MenuCallBack(lang=lang, level=level - 1, name='catalog').pack()
     ))
     keyboard.add(InlineKeyboardButton(
-        text=json[lang]['button']['exit'],
+        text=connector[lang]['button']['exit'],
         callback_data=MenuCallBack(lang=lang, level=0, name='menu').pack()
     ))
 
@@ -91,11 +91,11 @@ def get_subcatalog_button(*, lang: str, level: int, catalog, subcatalog: list):
 def get_create_button(lang: str):
     keyboard = InlineKeyboardBuilder()
     keyboard.add(InlineKeyboardButton(
-        text=json[lang]['button']['create'],
+        text=connector[lang]['button']['create'],
         callback_data=f'vacancy_{lang}')
     )
     keyboard.add(InlineKeyboardButton(
-        text=json[lang]['button']['exit'],
+        text=connector[lang]['button']['exit'],
         callback_data=MenuCallBack(lang=lang, level=0, name='menu').pack()
     ))
 

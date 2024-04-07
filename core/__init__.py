@@ -17,8 +17,8 @@ async def start_polling() -> None:
     dispatcher.include_router(main.main_router)
     dispatcher.update.middleware(SessionMiddleware(session_pool=session_maker))
     dispatcher.include_router(registration.registration_router)
-    dispatcher.message.middleware(LanguageMiddleware(session_pool=session_maker))
     dispatcher.include_router(menu.menu_router)
+    dispatcher.message.outer_middleware(LanguageMiddleware(session_pool=session_maker))
     dispatcher.include_router(vacancy.vacancy_router)
     dispatcher.include_router(error.error_router)
 

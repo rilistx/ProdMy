@@ -55,7 +55,7 @@ connector = {
                 },
             },
             'finances': {
-                'name': 'Банкінг',
+                'name': 'Фінанси',
                 'logo': '💰',
                 'subcatalog': {
                     'lawyer': 'Юрист',

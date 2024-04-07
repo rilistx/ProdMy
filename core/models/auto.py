@@ -29,8 +29,6 @@ async def drop_db():
         await conn.run_sync(Base.metadata.drop_all)
 
 
-# ########################################   AUTO CREATE   ############################################### #
-
 async def create_language(session: AsyncSession, data: dict):
     session.add_all([Language(abbreviation=key, title=info['title'], flag=info['flag']) for key, info in data.items()])
 
@@ -45,12 +43,13 @@ async def create_currency(session: AsyncSession, data: list):
 
 async def create_informer(session: AsyncSession, data: list):
     session.add_all([Informer(key=key) for key in data])
+
     await session.commit()
 
 
 async def create_catalog(session: AsyncSession, data: dict):
     session.add_all(
-        [Catalog(title=title) for title, _ in data.items()]
+        [Catalog(title=title, logo=info['logo']) for title, info in data.items()]
     )
 
     await session.commit()
@@ -60,7 +59,7 @@ async def create_subcatalog(session: AsyncSession, data: dict):
     for title, sub_title in data.items():
         query = await session.execute(select(Catalog).where(Catalog.title == title))
         catalog_id = query.scalar()
-        session.add_all([Subcatalog(title=title, catalog_id=catalog_id.id) for title in sub_title])
+        session.add_all([Subcatalog(title=title, catalog_id=catalog_id.id) for title in sub_title['sub']])
 
     await session.commit()
 

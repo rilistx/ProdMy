@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.filters.registration import IsContactFilter
+from core.filters.contact import IsContactFilter
 from core.handlers.menu import menu
 from core.keyboards.registration import get_contact_button
 from core.models.querys import search_user, create_username, create_user, get_language_one, get_language_id, \
@@ -37,7 +37,6 @@ async def start(message: Message, state: FSMContext, session: AsyncSession) -> N
 
 @registration_router.message(StateRegistration.PHONE, IsContactFilter())
 async def contact(message: Message, state: FSMContext, session: AsyncSession) -> None:
-
     language_id = await get_language_id(session, 'uk')
     country_id = await get_country_id(session, 'ukraine')
 

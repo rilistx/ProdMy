@@ -35,7 +35,8 @@ class Catalog(Base):
     __tablename__ = 'catalog'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    title: Mapped[str] = mapped_column(String(50), nullable=False, unique=False)
+    title: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    logo: Mapped[str] = mapped_column(String(10), nullable=False, unique=True)
 
 
 class Subcatalog(Base):
@@ -91,7 +92,7 @@ class User(Base):
     warning: Mapped[bool] = mapped_column(Integer, default=0)
     blocked: Mapped[bool] = mapped_column(Boolean, default=False)
     language_id: Mapped[int] = mapped_column(ForeignKey('language.id', ondelete='CASCADE'), nullable=False)
-    country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=False)
+    country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=True)
 
     language: Mapped['Language'] = relationship(backref='user')
     country: Mapped['Country'] = relationship(backref='user')
@@ -103,6 +104,8 @@ class Vacancy(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
+    remote: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    disability: Mapped[bool] = mapped_column(Boolean, nullable=False)
     price: Mapped[str] = mapped_column(BigInteger, nullable=False)
     view: Mapped[int] = mapped_column(Integer, default=0)
     complaint: Mapped[int] = mapped_column(Integer, default=0)

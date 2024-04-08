@@ -14,10 +14,12 @@ menu_router = Router()
 
 
 @menu_router.message(Command(commands='menu'), IsUserFilter())
-async def menu(message: Message, session: AsyncSession):
+async def menu(message: Message, session: AsyncSession, level=None, key=None):
     user = await get_user_one(session, message.from_user.id)
     lang = await get_language_one(session, user.language_id)
-    text, reply_markup = await menu_processing(session, lang=lang.abbreviation, level=0, key="menu")
+    text, reply_markup = await menu_processing(
+        session=session, lang=lang.abbreviation, level=level if level else 0, key=key if key else "menu"
+    )
 
     await message.answer(text=text, reply_markup=reply_markup)
 
@@ -28,7 +30,7 @@ async def redirector(callback: CallbackQuery, callback_data: MenuCallBack, sessi
     lang = await get_language_one(session, user.language_id)
 
     text, reply_markup = await menu_processing(
-        session,
+        session=session,
         lang=lang.abbreviation,
         level=callback_data.level,
         key=callback_data.key,

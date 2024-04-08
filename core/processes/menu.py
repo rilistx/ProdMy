@@ -50,6 +50,7 @@ async def shaping_create(session, lang, key):
 
 
 async def menu_processing(
+        *,
         session: AsyncSession,
         lang: str,
         level: int | None = None,

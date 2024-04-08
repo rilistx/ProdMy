@@ -6,18 +6,23 @@ from core.utils.connector import connector
 def vacancy_profession_button(lang, data_name, data_list, catalog_title=None):
     keyboard = ReplyKeyboardBuilder()
 
-    for item in data_list:
-        if data_name == 'catalog':
+    if data_name == 'catalog':
+        for item in data_list:
             keyboard.add(KeyboardButton(
                 text=connector[lang][data_name][item.title]['logo'] + ' ' + connector[lang][data_name][item.title]['name']))
-        else:
+
+        sizes = [2 for _ in range(len(data_list) // 2)] + [1] + [1] \
+            if len(data_list) % 2 else [2 for _ in range(len(data_list) // 2)] + [1]
+    else:
+        for item in data_list:
             keyboard.add(KeyboardButton(text=connector[lang]['catalog'][catalog_title][data_name][item.title]))
 
-    keyboard.add(KeyboardButton(text=connector[lang]['button']['back']))
-    keyboard.add(KeyboardButton(text=connector[lang]['button']['exit']))
+        keyboard.add(KeyboardButton(text=connector[lang]['button']['back']))
 
-    sizes = [2 for _ in range(len(data_list) // 2)] + [1] + [2] \
-        if len(data_list) % 2 else [2 for _ in range(len(data_list) // 2)] + [2]
+        sizes = [2 for _ in range(len(data_list) // 2)] + [1] + [2] \
+            if len(data_list) % 2 else [2 for _ in range(len(data_list) // 2)] + [2]
+
+    keyboard.add(KeyboardButton(text=connector[lang]['button']['exit']))
 
     return keyboard.adjust(*sizes).as_markup(resize_keyboard=True, one_time_keyboard=True)
 

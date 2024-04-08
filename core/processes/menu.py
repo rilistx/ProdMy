@@ -28,7 +28,7 @@ async def shaping_subcatalog(session, lang, level, key, catalog_id):
     informer = await get_informer(session, key)
     text = connector[lang]['informer'][informer.key]
 
-    catalog = await get_catalog_one(session=session, catalog_id=catalog_id)
+    catalog = await get_catalog_one(session, catalog_id=catalog_id)
     subcatalog = await get_subcatalog_all(session, catalog_id)
     button = get_subcatalog_button(lang=lang, level=level, catalog=catalog, subcatalog=subcatalog)
 

@@ -35,7 +35,7 @@ creator = {
     },
 
     'country': {
-        'ukraine': {
+        'uk': {
             'flag': '🇺🇦',
             'region': {
                 'kiev': ['kiev'],

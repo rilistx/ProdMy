@@ -21,6 +21,6 @@ class LanguageMiddleware(BaseMiddleware):
         async with self.session_pool() as session:
             user = await search_user(session, event.from_user.id)
             if user:
-                lang = await get_language_one(session, user.language_id)
+                lang = await get_language_one(session, language_id=user.language_id)
                 data['lang'] = lang.abbreviation
                 return await handler(event, data)

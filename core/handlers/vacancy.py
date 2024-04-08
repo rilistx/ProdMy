@@ -101,7 +101,7 @@ async def subcatalog_vacancy(message: Message, state: FSMContext, session: Async
     state_data = await state.get_data()
     if not state_data['catalog_id'] and not state_data['catalog_title'] and not state_data['currency_id']:
         catalog_logo = message.text.split(' ')[0]
-        catalog = await get_catalog_one(session=session, catalog_logo=catalog_logo)
+        catalog = await get_catalog_one(session, catalog_logo=catalog_logo)
         currency = await get_currency_first(session)
 
         await state.update_data({'catalog_id': catalog.id, 'catalog_title': catalog.title, 'currency_id': currency.id})
@@ -130,7 +130,7 @@ async def name_vacancy(message: Message, state: FSMContext, session: AsyncSessio
                 subcatalog_name = key
                 break
 
-        subcatalog = await get_subcatalog_one(session, state_data['catalog_id'], subcatalog_name)
+        subcatalog = await get_subcatalog_one(session, subcatalog_name, state_data['catalog_id'])
         await state.update_data({'subcatalog_id': subcatalog.id})
 
     reply_markup = vacancy_keyboard_button(lang)
@@ -239,7 +239,7 @@ async def city_vacancy(message: Message, state: FSMContext, session: AsyncSessio
                 region_name = key
                 break
 
-        region = await get_region_one(session=session, region_name=region_name)
+        region = await get_region_one(session, region_name=region_name)
 
         await state.update_data({'country_id': country.id, 'country_name': country.name,
                                  'region_id': region.id, 'region_name': region.name})
@@ -271,7 +271,7 @@ async def finish_vacancy(message: Message, state: FSMContext, session: AsyncSess
                 city_name = key
                 break
 
-        city = await get_city_one(session, region.id, city_name)
+        city = await get_city_one(session, city_name, region.id)
 
         await state.update_data({'city_id': city.id})
 

@@ -11,7 +11,7 @@ from core.models.models import Language, Informer, Currency, Catalog, Subcatalog
 async def search_user(session: AsyncSession, user_id):
     result = await session.execute(select(User).where(User.id == user_id))
 
-    return result.scalars().one_or_none()
+    return result.scalar()
 
 
 async def create_username(session: AsyncSession):
@@ -45,25 +45,13 @@ async def get_language_all(session: AsyncSession):
     return query.scalars().all()
 
 
-async def get_language_one(session: AsyncSession, language_id):
-    query = await session.execute(select(Language).where(Language.id == language_id))
-    language = query.scalar()
+async def get_language_one(session: AsyncSession, language_id=None, language_abbreviation=None):
+    if language_id:
+        query = await session.execute(select(Language).where(Language.id == language_id))
+    else:
+        query = await session.execute(select(Language).where(Language.abbreviation == language_abbreviation))
 
-    return language
-
-
-async def get_language_id(session: AsyncSession, abbreviation):
-    query = await session.execute(select(Language).where(Language.abbreviation == abbreviation))
-    language = query.scalar()
-
-    return language.id
-
-
-async def get_country_id(session: AsyncSession, name):
-    query = await session.execute(select(Country).where(Country.name == name))
-    country = query.scalar()
-
-    return country.id
+    return query.scalar()
 
 
 async def get_informer(session: AsyncSession, key: str):
@@ -77,7 +65,7 @@ async def get_catalog_all(session: AsyncSession):
     return query.scalars().all()
 
 
-async def get_catalog_one(*, session: AsyncSession, catalog_id=None, catalog_title=None, catalog_logo=None):
+async def get_catalog_one(session: AsyncSession, catalog_id=None, catalog_title=None, catalog_logo=None):
     if catalog_id:
         query = await session.execute(select(Catalog).where(Catalog.id == catalog_id))
     elif catalog_title:
@@ -93,7 +81,7 @@ async def get_subcatalog_all(session: AsyncSession, catalog_id):
     return query.scalars().all()
 
 
-async def get_subcatalog_one(session: AsyncSession, catalog_id, title):
+async def get_subcatalog_one(session: AsyncSession, title, catalog_id):
     query = await session.execute(
         select(Subcatalog).where(Subcatalog.title == title, Subcatalog.catalog_id == catalog_id)
     )
@@ -103,7 +91,24 @@ async def get_subcatalog_one(session: AsyncSession, catalog_id, title):
 
 async def get_vacancy_all(session: AsyncSession, subcatalog_id):
     query = await session.execute(select(Vacancy).where(Vacancy.subcatalog_id == subcatalog_id))
+
     return query.scalars().all()
+
+
+async def get_country_id(session: AsyncSession, name):
+    query = await session.execute(select(Country).where(Country.name == name))
+    country = query.scalar()
+
+    return country.id
+
+
+async def get_country_one(session: AsyncSession, country_id=None, country_name=None):
+    if country_id:
+        query = await session.execute(select(Country).where(Country.id == country_id))
+    else:
+        query = await session.execute(select(Country).where(Country.name == country_name))
+
+    return query.scalar()
 
 
 async def get_country_first(session: AsyncSession):
@@ -117,7 +122,7 @@ async def get_region_all(session: AsyncSession):
     return query.scalars().all()
 
 
-async def get_region_one(*, session: AsyncSession, region_id=None, region_name=None):
+async def get_region_one(session: AsyncSession, region_id=None, region_name=None):
     if region_id:
         query = await session.execute(select(Region).where(Region.id == region_id))
     else:
@@ -132,8 +137,14 @@ async def get_city_all(session: AsyncSession, region_id):
     return query.scalars().all()
 
 
-async def get_city_one(session: AsyncSession, region_id, city_name):
+async def get_city_one(session: AsyncSession, city_name, region_id):
     query = await session.execute(select(City).where(City.name == city_name, City.region_id == region_id))
+
+    return query.scalar()
+
+
+async def get_currency_one(session: AsyncSession, currency_abbreviation):
+    query = await session.execute(select(Currency).where(Currency.abbreviation == currency_abbreviation))
 
     return query.scalar()
 

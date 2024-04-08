@@ -98,7 +98,7 @@ connector = {
         },
 
         'country': {
-            'ukraine': {
+            'uk': {
                 'name': 'Україна',
                 'region': {
                     'kiev': {

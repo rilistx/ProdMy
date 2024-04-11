@@ -8,8 +8,6 @@ creator = {
 
     'currency': ['UAH'],
 
-    'informer': ['menu', 'catalog', 'subcatalog', 'read', 'create', 'favorite', 'profile', 'about', 'support'],
-
     'catalog': {
         'construction': {
             'logo': '🧱',
@@ -35,7 +33,7 @@ creator = {
     },
 
     'country': {
-        'ukraine': {
+        'uk': {
             'flag': '🇺🇦',
             'region': {
                 'kiev': ['kiev'],

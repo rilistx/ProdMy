@@ -81,7 +81,5 @@ async_engine = create_async_engine(PostgresURL, echo=True)
 session_maker = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
 bot = Bot(token=token, parse_mode=ParseMode.HTML)
-
 storage = RedisStorage.from_url(f"{redis['db_name']}://{redis['db_host']}:{redis['db_port']}/0")
-
 schedulers = scheduler_add(scheduler_tasks())

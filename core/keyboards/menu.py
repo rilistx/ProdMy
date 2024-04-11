@@ -94,6 +94,43 @@ def get_subcatalog_button(lang: str, level: int, catalog, subcatalog: list):
     return keyboard.adjust(*sizes).as_markup()
 
 
+def get_vacancy_button(lang: str, level: int, key: str, catalog_id: int, subcatalog_id: int, page: int, pagination_button: dict):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(InlineKeyboardButton(
+        text='Назад',
+        callback_data=MenuCallBack(
+            lang=lang, level=level - 1, key='subcatalog', catalog_id=catalog_id, subcatalog_id=subcatalog_id).pack()))
+    keyboard.add(InlineKeyboardButton(text='Выход',
+                                      callback_data=MenuCallBack(lang=lang, level=0, key='menu').pack()))
+
+    keyboard.adjust(2)
+
+    row = []
+    for text, menu_name in pagination_button.items():
+        if menu_name == "next":
+            row.append(InlineKeyboardButton(text=text,
+                                            callback_data=MenuCallBack(
+                                                lang=lang,
+                                                level=level,
+                                                key=key,
+                                                catalog_id=catalog_id,
+                                                subcatalog_id=subcatalog_id,
+                                                page=page + 1).pack()))
+
+        elif menu_name == "previous":
+            row.append(InlineKeyboardButton(text=text,
+                                            callback_data=MenuCallBack(
+                                                lang=lang,
+                                                level=level,
+                                                key=key,
+                                                catalog_id=catalog_id,
+                                                subcatalog_id=subcatalog_id,
+                                                page=page - 1).pack()))
+
+    return keyboard.row(*row).as_markup()
+
+
 def get_create_button(lang: str, sizes: tuple[int] = (2,)):
     keyboard = InlineKeyboardBuilder()
     keyboard.add(InlineKeyboardButton(

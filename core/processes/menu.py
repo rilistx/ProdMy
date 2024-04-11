@@ -1,8 +1,21 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.keyboards.menu import get_menu_button, get_catalog_button, get_subcatalog_button, get_create_button, \
+    get_vacancy_button
+from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all
 from core.utils.connector import connector
-from core.keyboards.menu import get_menu_button, get_catalog_button, get_subcatalog_button, get_create_button
-from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all
+from core.utils.paginator import Paginator
+
+
+def pages(paginator: Paginator):
+    button = dict()
+    if paginator.has_previous():
+        button["◀ Пред."] = "previous"
+
+    if paginator.has_next():
+        button["След. ▶"] = "next"
+
+    return button
 
 
 async def shaping_menu(lang, level, key):
@@ -29,9 +42,27 @@ async def shaping_subcatalog(session, lang, level, key, catalog_id):
     return text, button
 
 
-async def shaping_vacancy(session, lang, level, key, subcatalog_id, page):
-    # vacancy = get_vacancy_all(session, subcatalog_id)
-    pass
+async def shaping_vacancy(session, lang, level, key, catalog_id, subcatalog_id, page):
+    vacancy = await get_vacancy_all(session, subcatalog_id)
+
+    paginator = Paginator(vacancy, page=page)
+    vacancy_page = paginator.get_page()[0]
+
+    text = f"{vacancy_page.name}"
+
+    pagination_button = pages(paginator)
+
+    button = get_vacancy_button(
+        lang=lang,
+        level=level,
+        key=key,
+        catalog_id=catalog_id,
+        subcatalog_id=subcatalog_id,
+        page=page,
+        pagination_button=pagination_button,
+    )
+
+    return text, button
 
 
 async def shaping_create(lang, key):
@@ -58,7 +89,7 @@ async def menu_processing(
     elif level == 2:
         return await shaping_subcatalog(session, lang, level, key, catalog_id)
     elif level == 3:
-        return await shaping_vacancy(session, lang, level, key, subcatalog_id, page)
+        return await shaping_vacancy(session, lang, level, key, catalog_id, subcatalog_id, page)
 
     elif level == 6:
         return await shaping_create(lang, key)

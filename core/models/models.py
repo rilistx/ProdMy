@@ -24,13 +24,6 @@ class Currency(Base):
     rate: Mapped[str] = mapped_column(Numeric(10, 2), default=0)
 
 
-class Informer(Base):
-    __tablename__ = 'informer'
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    key: Mapped[str] = mapped_column(String(50), unique=True)
-
-
 class Catalog(Base):
     __tablename__ = 'catalog'
 
@@ -84,10 +77,10 @@ class User(Base):
     __tablename__ = 'user'
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    uuid: Mapped[str] = mapped_column(String(25), nullable=False, unique=True)
-    username: Mapped[str] = mapped_column(String(50), nullable=True, unique=True)
+    username: Mapped[str] = mapped_column(String(25), nullable=False, unique=True)
     first_name: Mapped[str] = mapped_column(String(50), nullable=True)
     phone_number: Mapped[str] = mapped_column(String(50), unique=True)
+    money: Mapped[bool] = mapped_column(Integer, default=0)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     warning: Mapped[bool] = mapped_column(Integer, default=0)
     blocked: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -104,11 +97,13 @@ class Vacancy(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    remote: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    experience: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    language: Mapped[bool] = mapped_column(Boolean, nullable=False)
     disability: Mapped[bool] = mapped_column(Boolean, nullable=False)
     price: Mapped[str] = mapped_column(BigInteger, nullable=False)
     view: Mapped[int] = mapped_column(Integer, default=0)
     complaint: Mapped[int] = mapped_column(Integer, default=0)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
     subcatalog_id: Mapped[int] = mapped_column(ForeignKey('subcatalog.id', ondelete='CASCADE'), nullable=False)
     currency_id: Mapped[int] = mapped_column(ForeignKey('currency.id', ondelete='CASCADE'), nullable=False)
     country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=False)
@@ -128,7 +123,7 @@ class Liked(Base):
     __tablename__ = 'liked'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.uuid', ondelete='CASCADE'), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     vacancy_id: Mapped[int] = mapped_column(ForeignKey('vacancy.id', ondelete='CASCADE'), nullable=False)
 
     user: Mapped['User'] = relationship(backref='liked')

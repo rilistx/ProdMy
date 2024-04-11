@@ -2,22 +2,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.utils.connector import connector
 from core.keyboards.menu import get_menu_button, get_catalog_button, get_subcatalog_button, get_create_button
-from core.models.querys import get_informer, get_catalog_all, get_catalog_one, get_subcatalog_all
+from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all
 
 
-async def shaping_menu(session, lang, level, key):
-    informer = await get_informer(session, key)
-    text = connector[lang]['informer'][informer.key]
-
+async def shaping_menu(lang, level, key):
+    text = connector[lang]['message']['menu'][key]
     button = get_menu_button(lang=lang, level=level)
 
     return text, button
 
 
 async def shaping_catalog(session, lang, level, key):
-    informer = await get_informer(session, key)
-    text = connector[lang]['informer'][informer.key]
-
+    text = connector[lang]['message']['menu'][key]
     catalog = await get_catalog_all(session)
     button = get_catalog_button(lang=lang, level=level, catalog=catalog)
 
@@ -25,9 +21,7 @@ async def shaping_catalog(session, lang, level, key):
 
 
 async def shaping_subcatalog(session, lang, level, key, catalog_id):
-    informer = await get_informer(session, key)
-    text = connector[lang]['informer'][informer.key]
-
+    text = connector[lang]['message']['menu'][key]
     catalog = await get_catalog_one(session, catalog_id=catalog_id)
     subcatalog = await get_subcatalog_all(session, catalog_id)
     button = get_subcatalog_button(lang=lang, level=level, catalog=catalog, subcatalog=subcatalog)
@@ -40,17 +34,14 @@ async def shaping_vacancy(session, lang, level, key, subcatalog_id, page):
     pass
 
 
-async def shaping_create(session, lang, key):
-    informer = await get_informer(session, key)
-    text = connector[lang]['informer'][informer.key]
-
+async def shaping_create(lang, key):
+    text = connector[lang]['message']['menu'][key]
     button = get_create_button(lang)
 
     return text, button
 
 
 async def menu_processing(
-        *,
         session: AsyncSession,
         lang: str,
         level: int | None = None,
@@ -61,7 +52,7 @@ async def menu_processing(
         vacancy: int | None = None
 ):
     if level == 0:
-        return await shaping_menu(session, lang, level, key)
+        return await shaping_menu(lang, level, key)
     elif level == 1:
         return await shaping_catalog(session, lang, level, key)
     elif level == 2:
@@ -70,4 +61,4 @@ async def menu_processing(
         return await shaping_vacancy(session, lang, level, key, subcatalog_id, page)
 
     elif level == 6:
-        return await shaping_create(session, lang, key)
+        return await shaping_create(lang, key)

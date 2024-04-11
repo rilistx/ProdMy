@@ -14,8 +14,9 @@ class MenuCallBack(CallbackData, prefix="main"):
     vacancy: int | None = None
 
 
-def get_menu_button(*, lang: str, level: int):
+def get_menu_button(lang: str, level: int):
     keyboard = InlineKeyboardBuilder()
+
     button = {}
 
     for key, info in connector[lang]['button']['menu'].items():
@@ -38,10 +39,12 @@ def get_menu_button(*, lang: str, level: int):
                 text=text, callback_data=MenuCallBack(lang=lang, level=level, key=callback).pack()
             ))
 
-    return keyboard.adjust(1, 1, 1, 2, 2).as_markup()
+    sizes = [1, 1, 1, 2, 2]
+
+    return keyboard.adjust(*sizes).as_markup()
 
 
-def get_catalog_button(*, lang: str, level: int, catalog: list):
+def get_catalog_button(lang: str, level: int, catalog: list):
     keyboard = InlineKeyboardBuilder()
 
     for item in catalog:
@@ -61,7 +64,7 @@ def get_catalog_button(*, lang: str, level: int, catalog: list):
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_subcatalog_button(*, lang: str, level: int, catalog, subcatalog: list):
+def get_subcatalog_button(lang: str, level: int, catalog, subcatalog: list):
     keyboard = InlineKeyboardBuilder()
 
     for item in subcatalog:
@@ -91,7 +94,7 @@ def get_subcatalog_button(*, lang: str, level: int, catalog, subcatalog: list):
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_create_button(lang: str):
+def get_create_button(lang: str, sizes: tuple[int] = (2,)):
     keyboard = InlineKeyboardBuilder()
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['create'],
@@ -102,4 +105,4 @@ def get_create_button(lang: str):
         callback_data=MenuCallBack(lang=lang, level=0, key='menu').pack()
     ))
 
-    return keyboard.adjust(2, ).as_markup()
+    return keyboard.adjust(*sizes).as_markup()

@@ -4,6 +4,24 @@ from aiogram.filters import BaseFilter
 from core.utils.connector import connector
 
 
+class ExitFilter(BaseFilter):
+    async def __call__(self, message: Message, lang) -> bool:
+        button_exit_list = [value['button']['exit'] for _, value in connector.items()]
+
+        if message.text in button_exit_list:
+            return True
+        return False
+
+
+class BackFilter(BaseFilter):
+    async def __call__(self, message: Message, lang) -> bool:
+        button_back_list = [value['button']['back'] for _, value in connector.items()]
+
+        if message.text in button_back_list:
+            return True
+        return False
+
+
 class CatalogFilter(BaseFilter):
     async def __call__(self, message: Message, lang) -> bool:
         if message.text == 'Вихід':
@@ -33,6 +51,16 @@ class NameFilter(BaseFilter):
             return True
 
         if len(message.text) <= 60:
+            return True
+        return False
+
+
+class DescriptionFilter(BaseFilter):
+    async def __call__(self, message: Message, lang) -> bool:
+        if message.text == 'Назад' or message.text == 'Вихід':
+            return True
+
+        if 50 < len(message.text) < 1000:
             return True
         return False
 

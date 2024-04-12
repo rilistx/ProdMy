@@ -85,12 +85,6 @@ async def get_subcatalog_one(session: AsyncSession, subcatalog_title: str, catal
     return query.scalar()
 
 
-async def get_vacancy_all(session: AsyncSession, subcatalog_id: int):
-    query = await session.execute(select(Vacancy).where(Vacancy.subcatalog_id == subcatalog_id))
-
-    return query.scalars().all()
-
-
 async def get_country_one(session: AsyncSession, country_id=None, country_name=None):
     if country_id:
         query = await session.execute(select(Country).where(Country.id == country_id))
@@ -143,6 +137,18 @@ async def get_currency_first(session: AsyncSession):
     query = await session.execute(select(Currency))
 
     return query.scalars().first()
+
+
+async def get_vacancy_all(session: AsyncSession, subcatalog_id: int):
+    query = await session.execute(select(Vacancy).where(Vacancy.subcatalog_id == subcatalog_id))
+
+    return query.scalars().all()
+
+
+async def get_vacancy_one(session: AsyncSession, vacancy_id: int):
+    query = await session.execute(select(Vacancy).where(Vacancy.id == vacancy_id))
+
+    return query.scalar()
 
 
 async def get_user_one(session: AsyncSession, user_id: int):

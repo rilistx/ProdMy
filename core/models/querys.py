@@ -3,7 +3,7 @@ import random
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from core.models.models import Language, Currency, Catalog, Subcatalog, Vacancy, Country, Region, City, User
+from core.models.models import Language, User, Separator, Currency, Catalog, Subcatalog, Country, Region, City, Vacancy
 
 
 # ########################################   USER   ############################################### #
@@ -24,13 +24,23 @@ async def create_username(session: AsyncSession):
             return username
 
 
-async def create_user(session: AsyncSession, user_id, username, first_name, phone_number, language_id, currency_id, country_id) -> None:
+async def create_user(session: AsyncSession, user_id, username, first_name, phone_number, language_id) -> None:
     session.add(User(
         id=user_id,
         username=username,
         first_name=first_name,
         phone_number=phone_number,
         language_id=language_id,
+    ))
+
+    await session.commit()
+
+
+# ########################################   FILTER   ############################################### #
+
+async def create_filter(session: AsyncSession, user_id, currency_id, country_id) -> None:
+    session.add(Separator(
+        id=user_id,
         currency_id=currency_id,
         country_id=country_id,
     ))
@@ -182,7 +192,7 @@ async def create_vacancy(
         language,
         disability,
         currency_id,
-        price,
+        salary,
         country_id,
         region_id,
         city_id,
@@ -196,7 +206,7 @@ async def create_vacancy(
         language=language,
         disability=disability,
         currency_id=currency_id,
-        price=price,
+        salary=salary,
         country_id=country_id,
         region_id=region_id,
         city_id=city_id,

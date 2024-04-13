@@ -85,12 +85,8 @@ class User(Base):
     warning: Mapped[bool] = mapped_column(Integer, default=0)
     blocked: Mapped[bool] = mapped_column(Boolean, default=False)
     language_id: Mapped[int] = mapped_column(ForeignKey('language.id', ondelete='CASCADE'), nullable=False)
-    currency_id: Mapped[int] = mapped_column(ForeignKey('currency.id', ondelete='CASCADE'), nullable=False)
-    country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=False)
 
     language: Mapped['Language'] = relationship(backref='user')
-    currency: Mapped['Currency'] = relationship(backref='filter')
-    country: Mapped['Country'] = relationship(backref='filter')
 
 
 class Vacancy(Base):
@@ -119,6 +115,29 @@ class Vacancy(Base):
     region: Mapped['Region'] = relationship(backref='vacancy')
     city: Mapped['City'] = relationship(backref='vacancy')
     user: Mapped['User'] = relationship(backref='vacancy')
+
+
+class Separator(Base):
+    __tablename__ = 'separator'
+
+    id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), primary_key=True, unique=True, nullable=False)
+    experience: Mapped[bool] = mapped_column(Boolean, nullable=True)
+    language: Mapped[bool] = mapped_column(Boolean, nullable=True)
+    disability: Mapped[bool] = mapped_column(Boolean, nullable=True)
+    salary_from: Mapped[str] = mapped_column(BigInteger, nullable=True)
+    salary_to: Mapped[str] = mapped_column(BigInteger, nullable=True)
+    subcatalog_id: Mapped[int] = mapped_column(ForeignKey('subcatalog.id', ondelete='CASCADE'), nullable=True)
+    currency_id: Mapped[int] = mapped_column(ForeignKey('currency.id', ondelete='CASCADE'), nullable=False)
+    country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=False)
+    region_id: Mapped[int] = mapped_column(ForeignKey('region.id', ondelete='CASCADE'), nullable=True)
+    city_id: Mapped[int] = mapped_column(ForeignKey('city.id', ondelete='CASCADE'), nullable=True)
+
+    user: Mapped['User'] = relationship(backref='separator')
+    subcatalog: Mapped['Subcatalog'] = relationship(backref='separator')
+    currency: Mapped['Currency'] = relationship(backref='filter')
+    country: Mapped['Country'] = relationship(backref='separator')
+    region: Mapped['Region'] = relationship(backref='separator')
+    city: Mapped['City'] = relationship(backref='separator')
 
 
 class Liked(Base):

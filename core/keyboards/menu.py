@@ -6,6 +6,7 @@ from core.utils.connector import connector
 
 class MenuCallBack(CallbackData, prefix="main"):
     lang: str | None = None
+    user_id: int | None = None
     method: str | None = None
     level: int | None = None
     key: str | None = None
@@ -23,14 +24,14 @@ def get_menu_button(lang, level, sizes: tuple[int] = (1, 1, 1, 2, 2, )):
             keyboard.add(InlineKeyboardButton(
                 text=text,
                 callback_data=MenuCallBack(
-                    lang=lang, level=level + 1, key=callback
+                    lang=lang, level=level + 1, key=callback,
                 ).pack(),
             ))
         elif callback == 'create':
             keyboard.add(InlineKeyboardButton(
                 text=text,
                 callback_data=MenuCallBack(
-                    lang=lang, level=6, key=callback
+                    lang=lang, level=6, method='create', key=callback,
                 ).pack(),
             ))
         # elif callback == 'browse':
@@ -166,13 +167,13 @@ def get_description_button(lang, level, key, catalog_id, subcatalog_id, page, si
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_create_button(lang: str, sizes: tuple[int] = (2,)):
+def get_create_button(lang: str, method: str, sizes: tuple[int] = (2,)):
     keyboard = InlineKeyboardBuilder()
 
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['create'],
         callback_data=MenuCallBack(
-            lang=lang, method='create', key='vacancy'
+            lang=lang, method=method, key='vacancy'
         ).pack(),
     ))
     keyboard.add(InlineKeyboardButton(

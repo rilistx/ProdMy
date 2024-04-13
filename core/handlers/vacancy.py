@@ -19,12 +19,13 @@ from core.utils.connector import connector
 vacancy_router = Router()
 
 
-@vacancy_router.callback_query(MenuCallBack.filter(F.method == 'create'))
+@vacancy_router.callback_query(MenuCallBack.filter(F.key == 'vacancy' and F.method == 'create'))
 async def catalog_vacancy_callback(callback: CallbackQuery, callback_data: MenuCallBack, state: FSMContext, session: AsyncSession) -> None:
     await callback.message.delete()
 
-    state_list = ['catalog_id', 'catalog_title', 'currency_id', 'subcatalog_id', 'name', 'description', 'language',
-                  'experience', 'disability', 'price', 'country_id', 'country_name', 'region_id', 'region_name', 'city_id']
+    state_list = ['catalog_id', 'catalog_title', 'currency_id', 'subcatalog_id', 'name',
+                  'description', 'language', 'experience', 'disability', 'salary',
+                  'country_id', 'country_name', 'region_id', 'region_name', 'city_id']
 
     await state.update_data({key: None for key in state_list})
 
@@ -43,7 +44,7 @@ async def exit_vacancy(message: Message, state: FSMContext, session: AsyncSessio
     await state.clear()
     await message.answer(text=connector[lang]['message']['vacancy']['exit'])
 
-    return await menu(message=message, session=session, level=6, key='create')
+    return await menu(message=message, session=session, level=6, method='create', key='create')
 
 
 @vacancy_router.message(StateFilter("*"), BackFilter())
@@ -53,47 +54,38 @@ async def back_vacancy(message: Message, state: FSMContext, session: AsyncSessio
     if current_state == StateVacancy.SUBCATALOG:
         await state.update_data({'catalog_id': None, 'catalog_title': None, 'currency_id': None})
         await state.set_state(StateVacancy.CATALOG)
-
         return await catalog_vacancy_message(message=message, state=state, session=session, lang=lang)
     elif current_state == StateVacancy.NAME:
         await state.update_data({'subcatalog_id': None})
         await state.set_state(StateVacancy.SUBCATALOG)
-
         return await subcatalog_vacancy(message=message, state=state, session=session, lang=lang)
     elif current_state == StateVacancy.DESCRIPTION:
         await state.update_data({'name': None})
         await state.set_state(StateVacancy.NAME)
-
         return await name_vacancy(message=message, state=state, session=session, lang=lang)
     elif current_state == StateVacancy.EXPERIENCE:
         await state.update_data({'description': None})
         await state.set_state(StateVacancy.DESCRIPTION)
-
         return await description_vacancy(message=message, state=state, lang=lang)
     elif current_state == StateVacancy.LANGUAGE:
         await state.update_data({'experience': None})
         await state.set_state(StateVacancy.EXPERIENCE)
-
         return await experience_vacancy(message=message, state=state, lang=lang)
     elif current_state == StateVacancy.DISABILITY:
         await state.update_data({'language': None})
         await state.set_state(StateVacancy.LANGUAGE)
-
         return await language_vacancy(message=message, state=state, lang=lang)
     elif current_state == StateVacancy.SALARY:
         await state.update_data({'disability': None})
         await state.set_state(StateVacancy.DISABILITY)
-
         return await disability_vacancy(message=message, state=state, lang=lang)
     elif current_state == StateVacancy.REGION:
-        await state.update_data({'price': None})
+        await state.update_data({'salary': None})
         await state.set_state(StateVacancy.SALARY)
-
         return await salary_vacancy(message=message, state=state, lang=lang)
     elif current_state == StateVacancy.CITY:
         await state.update_data({'country_id': None, 'country_name': None, 'region_id': None, 'region_name': None})
         await state.set_state(StateVacancy.REGION)
-
         return await region_vacancy(message=message, state=state, session=session, lang=lang)
 
 
@@ -105,9 +97,7 @@ async def subcatalog_vacancy(message: Message, state: FSMContext, session: Async
         catalog_logo = message.text.split(' ')[0]
         catalog = await get_catalog_one(session, catalog_logo=catalog_logo)
         currency = await get_currency_one(session, currency_abbreviation='UAH')
-
         await state.update_data({'catalog_id': catalog.id, 'catalog_title': catalog.title, 'currency_id': currency.id})
-
         state_data = await state.get_data()
 
     subcatalog = await get_subcatalog_all(session, state_data['catalog_id'])
@@ -116,11 +106,6 @@ async def subcatalog_vacancy(message: Message, state: FSMContext, session: Async
 
     await message.answer(text=connector[lang]['message']['vacancy']['subcatalog'], reply_markup=reply_markup)
     await state.set_state(StateVacancy.SUBCATALOG)
-
-
-@vacancy_router.message(StateVacancy.CATALOG)
-async def error_catalog(message: Message) -> None:
-    await message.delete()
 
 
 @vacancy_router.message(StateVacancy.SUBCATALOG, SubcatalogFilter())
@@ -136,18 +121,12 @@ async def name_vacancy(message: Message, state: FSMContext, session: AsyncSessio
                 break
 
         subcatalog = await get_subcatalog_one(session, subcatalog_name, state_data['catalog_id'])
-
         await state.update_data({'subcatalog_id': subcatalog.id})
 
     reply_markup = vacancy_keyboard_button(lang)
 
     await message.answer(text=connector[lang]['message']['vacancy']['name'], reply_markup=reply_markup)
     await state.set_state(StateVacancy.NAME)
-
-
-@vacancy_router.message(StateVacancy.SUBCATALOG)
-async def error_subcatalog(message: Message) -> None:
-    await message.delete()
 
 
 @vacancy_router.message(StateVacancy.NAME, NameFilter())
@@ -163,11 +142,6 @@ async def description_vacancy(message: Message, state: FSMContext, lang: str) ->
     await state.set_state(StateVacancy.DESCRIPTION)
 
 
-@vacancy_router.message(StateVacancy.NAME)
-async def error_name(message: Message) -> None:
-    await message.delete()
-
-
 @vacancy_router.message(StateVacancy.DESCRIPTION, DescriptionFilter())
 async def experience_vacancy(message: Message, state: FSMContext, lang: str) -> None:
     state_data = await state.get_data()
@@ -179,11 +153,6 @@ async def experience_vacancy(message: Message, state: FSMContext, lang: str) -> 
 
     await message.answer(text=connector[lang]['message']['vacancy']['experience'], reply_markup=reply_markup)
     await state.set_state(StateVacancy.EXPERIENCE)
-
-
-@vacancy_router.message(StateVacancy.DESCRIPTION)
-async def error_description(message: Message) -> None:
-    await message.delete()
 
 
 @vacancy_router.message(StateVacancy.EXPERIENCE, ChoiceFilter())
@@ -199,11 +168,6 @@ async def language_vacancy(message: Message, state: FSMContext, lang: str) -> No
     await state.set_state(StateVacancy.LANGUAGE)
 
 
-@vacancy_router.message(StateVacancy.EXPERIENCE)
-async def error_experience(message: Message) -> None:
-    await message.delete()
-
-
 @vacancy_router.message(StateVacancy.LANGUAGE, ChoiceFilter())
 async def disability_vacancy(message: Message, state: FSMContext, lang: str) -> None:
     state_data = await state.get_data()
@@ -215,11 +179,6 @@ async def disability_vacancy(message: Message, state: FSMContext, lang: str) -> 
 
     await message.answer(text=connector[lang]['message']['vacancy']['disability'], reply_markup=reply_markup)
     await state.set_state(StateVacancy.DISABILITY)
-
-
-@vacancy_router.message(StateVacancy.LANGUAGE)
-async def error_language(message: Message) -> None:
-    await message.delete()
 
 
 @vacancy_router.message(StateVacancy.DISABILITY, ChoiceFilter())
@@ -235,17 +194,12 @@ async def salary_vacancy(message: Message, state: FSMContext, lang: str) -> None
     await state.set_state(StateVacancy.SALARY)
 
 
-@vacancy_router.message(StateVacancy.DISABILITY)
-async def error_disability(message: Message) -> None:
-    await message.delete()
-
-
 @vacancy_router.message(StateVacancy.SALARY, PriceFilter())
 async def region_vacancy(message: Message, state: FSMContext, session: AsyncSession, lang: str) -> None:
     state_data = await state.get_data()
 
-    if not state_data['price']:
-        await state.update_data({'price': int(message.text)})
+    if not state_data['salary']:
+        await state.update_data({'salary': int(message.text)})
 
     country = await get_country_first(session)
     region = await get_region_all(session)
@@ -254,11 +208,6 @@ async def region_vacancy(message: Message, state: FSMContext, session: AsyncSess
 
     await message.answer(text=connector[lang]['message']['vacancy']['region'], reply_markup=reply_markup)
     await state.set_state(StateVacancy.REGION)
-
-
-@vacancy_router.message(StateVacancy.SALARY)
-async def error_price(message: Message) -> None:
-    await message.delete()
 
 
 @vacancy_router.message(StateVacancy.REGION, RegionFilter())
@@ -275,9 +224,7 @@ async def city_vacancy(message: Message, state: FSMContext, session: AsyncSessio
                 break
 
         region = await get_region_one(session, region_name=region_name)
-
         await state.update_data({'country_id': country.id, 'country_name': country.name, 'region_id': region.id, 'region_name': region.name})
-
         state_data = await state.get_data()
 
     city = await get_city_all(session, state_data['region_id'])
@@ -286,11 +233,6 @@ async def city_vacancy(message: Message, state: FSMContext, session: AsyncSessio
 
     await message.answer(text=connector[lang]['message']['vacancy']['city'], reply_markup=reply_markup)
     await state.set_state(StateVacancy.CITY)
-
-
-@vacancy_router.message(StateVacancy.REGION)
-async def error_region(message: Message) -> None:
-    await message.delete()
 
 
 @vacancy_router.message(StateVacancy.CITY, CityFilter())
@@ -307,7 +249,6 @@ async def finish_vacancy(message: Message, state: FSMContext, session: AsyncSess
                 break
 
         city = await get_city_one(session, city_name, region.id)
-
         await state.update_data({'city_id': city.id})
 
     vacancy = await state.get_data()
@@ -319,7 +260,7 @@ async def finish_vacancy(message: Message, state: FSMContext, session: AsyncSess
         experience=vacancy['experience'],
         language=vacancy['language'],
         disability=vacancy['disability'],
-        price=vacancy['price'],
+        salary=vacancy['salary'],
         currency_id=vacancy['currency_id'],
         subcatalog_id=vacancy['subcatalog_id'],
         country_id=vacancy['country_id'],
@@ -334,8 +275,8 @@ async def finish_vacancy(message: Message, state: FSMContext, session: AsyncSess
     return await menu(message=message, session=session)
 
 
-@vacancy_router.message(StateVacancy.CITY)
-async def error_city(message: Message) -> None:
+@vacancy_router.message(StateFilter("*"))
+async def error_vacancy(message: Message) -> None:
     await message.delete()
 
 

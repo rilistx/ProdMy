@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.commands.creator import creator
-from core.models.models import Base, Language, Currency, Country, Region, City, Catalog, Subcatalog, User
+from core.models.models import Base, Language, Currency, Country, Region, City, Catalog, Subcatalog, User, Separator
 from core.models.querys import create_username, get_language_one, get_currency_one, get_catalog_one, \
     get_subcatalog_one, get_country_one, get_region_one, get_city_one, search_user
 from core.utils.settings import async_engine, session_maker
@@ -112,6 +112,10 @@ async def create_admin(session: AsyncSession) -> None:
             phone_number='380730797933',
             is_admin=True,
             language_id=language.id,
+        ))
+
+        session.add(Separator(
+            id=406105379,
             country_id=country.id,
             currency_id=currency.id,
         ))

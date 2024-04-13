@@ -88,22 +88,25 @@ async def shaping_description(session, lang, level, key, catalog_id, subcatalog_
     return text, button
 
 
-async def shaping_create(lang, key):
+async def shaping_create(lang, key, method):
     text = connector[lang]['message']['menu'][key]
-    button = get_create_button(lang)
+    button = get_create_button(lang, method)
 
     return text, button
 
 
 async def menu_processing(
         session: AsyncSession,
+        user_id: int | None = None,
+        method: str | None = None,
         lang: str | None = None,
         level: int | None = None,
         key: str | None = None,
         catalog_id: int | None = None,
         subcatalog_id: int | None = None,
         page: int | None = None,
-        vacancy_id: int | None = None
+        vacancy_id: int | None = None,
+
 ):
     if level == 0:
         return await shaping_menu(lang, level, key)
@@ -117,4 +120,4 @@ async def menu_processing(
         return await shaping_description(session, lang, level, key, catalog_id, subcatalog_id, page, vacancy_id)
 
     elif level == 6:
-        return await shaping_create(lang, key)
+        return await shaping_create(lang, key, method)

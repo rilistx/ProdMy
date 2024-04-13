@@ -24,13 +24,14 @@ async def create_username(session: AsyncSession):
             return username
 
 
-async def create_user(session: AsyncSession, user_id, username, first_name, phone_number, language_id, country_id) -> None:
+async def create_user(session: AsyncSession, user_id, username, first_name, phone_number, language_id, currency_id, country_id) -> None:
     session.add(User(
         id=user_id,
         username=username,
         first_name=first_name,
         phone_number=phone_number,
         language_id=language_id,
+        currency_id=currency_id,
         country_id=country_id,
     ))
 
@@ -145,8 +146,20 @@ async def get_vacancy_all(session: AsyncSession, subcatalog_id: int):
     return query.scalars().all()
 
 
+async def get_vacancy_all_active(session: AsyncSession, subcatalog_id: int):
+    query = await session.execute(select(Vacancy).where(Vacancy.subcatalog_id == subcatalog_id, Vacancy.active is True))
+
+    return query.scalars().all()
+
+
 async def get_vacancy_one(session: AsyncSession, vacancy_id: int):
     query = await session.execute(select(Vacancy).where(Vacancy.id == vacancy_id))
+
+    return query.scalar()
+
+
+async def get_vacancy_one_active(session: AsyncSession, vacancy_id: int):
+    query = await session.execute(select(Vacancy).where(Vacancy.id == vacancy_id, Vacancy.active is True))
 
     return query.scalar()
 

@@ -85,10 +85,12 @@ class User(Base):
     warning: Mapped[bool] = mapped_column(Integer, default=0)
     blocked: Mapped[bool] = mapped_column(Boolean, default=False)
     language_id: Mapped[int] = mapped_column(ForeignKey('language.id', ondelete='CASCADE'), nullable=False)
-    country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=True)
+    currency_id: Mapped[int] = mapped_column(ForeignKey('currency.id', ondelete='CASCADE'), nullable=False)
+    country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=False)
 
     language: Mapped['Language'] = relationship(backref='user')
-    country: Mapped['Country'] = relationship(backref='user')
+    currency: Mapped['Currency'] = relationship(backref='filter')
+    country: Mapped['Country'] = relationship(backref='filter')
 
 
 class Vacancy(Base):
@@ -100,7 +102,7 @@ class Vacancy(Base):
     experience: Mapped[bool] = mapped_column(Boolean, nullable=False)
     language: Mapped[bool] = mapped_column(Boolean, nullable=False)
     disability: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    price: Mapped[str] = mapped_column(BigInteger, nullable=False)
+    salary: Mapped[str] = mapped_column(BigInteger, nullable=False)
     view: Mapped[int] = mapped_column(Integer, default=0)
     complaint: Mapped[int] = mapped_column(Integer, default=0)
     active: Mapped[bool] = mapped_column(Boolean, default=True)

@@ -5,9 +5,10 @@ from core.utils.connector import connector
 
 
 class MenuCallBack(CallbackData, prefix="main"):
-    lang: str
-    level: int
-    key: str
+    lang: str | None = None
+    method: str | None = None
+    level: int | None = None
+    key: str | None = None
     catalog_id: int | None = None
     subcatalog_id: int | None = None
     page: int = 1
@@ -23,14 +24,14 @@ def get_menu_button(lang, level, sizes: tuple[int] = (1, 1, 1, 2, 2, )):
                 text=text,
                 callback_data=MenuCallBack(
                     lang=lang, level=level + 1, key=callback
-                ).pack()
+                ).pack(),
             ))
         elif callback == 'create':
             keyboard.add(InlineKeyboardButton(
                 text=text,
                 callback_data=MenuCallBack(
                     lang=lang, level=6, key=callback
-                ).pack()
+                ).pack(),
             ))
         # elif callback == 'browse':
         #     keyboard.add(InlineKeyboardButton(text=text,
@@ -40,7 +41,7 @@ def get_menu_button(lang, level, sizes: tuple[int] = (1, 1, 1, 2, 2, )):
                 text=text,
                 callback_data=MenuCallBack(
                     lang=lang, level=level, key=callback
-                ).pack()
+                ).pack(),
             ))
 
     return keyboard.adjust(*sizes).as_markup()
@@ -54,14 +55,14 @@ def get_catalog_button(lang, level, catalog):
             text=connector[lang]['catalog'][item.title]['logo'] + ' ' + connector[lang]['catalog'][item.title]['name'],
             callback_data=MenuCallBack(
                 lang=lang, level=level + 1, key='subcatalog', catalog_id=item.id
-            ).pack()
+            ).pack(),
         ))
 
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['back'],
         callback_data=MenuCallBack(
             lang=lang, level=level - 1, key='menu'
-        ).pack()
+        ).pack(),
     ))
 
     sizes = [2 for _ in range(len(catalog) // 2)] + [1, 1] if len(catalog) % 2 else [1]
@@ -77,20 +78,21 @@ def get_subcatalog_button(lang, level, catalog, subcatalog):
             text=connector[lang]['catalog'][catalog.title]['subcatalog'][item.title],
             callback_data=MenuCallBack(
                 lang=lang, level=level + 1, key=item.title, catalog_id=item.catalog_id, subcatalog_id=item.id
-            ).pack()
+            ).pack(),
+            # callback_data=f'view_all_{lang}_{item.catalog_id}_{item.id}',
         ))
 
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['back'],
         callback_data=MenuCallBack(
             lang=lang, level=level - 1, key='catalog'
-        ).pack()
+        ).pack(),
     ))
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['exit'],
         callback_data=MenuCallBack(
             lang=lang, level=0, key='menu'
-        ).pack()
+        ).pack(),
     ))
 
     sizes = [2 for _ in range(len(subcatalog) // 2)] + [1, 2] if len(subcatalog) % 2 else [2]
@@ -107,7 +109,7 @@ def get_vacancy_button(lang, level, key, catalog_id, subcatalog_id, page, pagina
                 text=text,
                 callback_data=MenuCallBack(
                     lang=lang, level=level, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page + 1
-                ).pack()
+                ).pack(),
             ))
             counter += 1
         elif menu_name == "previous":
@@ -115,7 +117,7 @@ def get_vacancy_button(lang, level, key, catalog_id, subcatalog_id, page, pagina
                 text=text,
                 callback_data=MenuCallBack(
                     lang=lang, level=level, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page - 1
-                ).pack()
+                ).pack(),
             ))
             counter += 1
 
@@ -124,20 +126,20 @@ def get_vacancy_button(lang, level, key, catalog_id, subcatalog_id, page, pagina
             text='LOOK',
             callback_data=MenuCallBack(
                 lang=lang, level=level + 1, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page, vacancy_id=vacancy_id
-            ).pack()
+            ).pack(),
         ))
 
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['back'],
         callback_data=MenuCallBack(
             lang=lang, level=level - 1, key='subcatalog', catalog_id=catalog_id, subcatalog_id=subcatalog_id
-        ).pack()
+        ).pack(),
     ))
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['exit'],
         callback_data=MenuCallBack(
             lang=lang, level=0, key='menu'
-        ).pack()
+        ).pack(),
     ))
 
     sizes = [counter, 1, 2] if counter else [2]
@@ -152,13 +154,13 @@ def get_description_button(lang, level, key, catalog_id, subcatalog_id, page, si
         text=connector[lang]['button']['back'],
         callback_data=MenuCallBack(
             lang=lang, level=level - 1, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page
-        ).pack()
+        ).pack(),
     ))
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['exit'],
         callback_data=MenuCallBack(
             lang=lang, level=0, key='menu'
-        ).pack()
+        ).pack(),
     ))
 
     return keyboard.adjust(*sizes).as_markup()
@@ -169,13 +171,15 @@ def get_create_button(lang: str, sizes: tuple[int] = (2,)):
 
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['create'],
-        callback_data=f'vacancy_create_{lang}')
-    )
+        callback_data=MenuCallBack(
+            lang=lang, method='create', key='vacancy'
+        ).pack(),
+    ))
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['exit'],
         callback_data=MenuCallBack(
             lang=lang, level=0, key='menu'
-        ).pack()
+        ).pack(),
     ))
 
     return keyboard.adjust(*sizes).as_markup()

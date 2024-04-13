@@ -1,6 +1,13 @@
+from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton
 
 from core.utils.connector import connector
+
+
+class VacancyCallBack(CallbackData, prefix="vacancy"):
+    lang: str | None = None
+    key: str | None = None
+    method: str | None = None
 
 
 def vacancy_profession_button(lang: str, data_name: str, data_list: list, catalog_title=None):

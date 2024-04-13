@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 
@@ -25,7 +25,7 @@ async def menu(message: Message, session: AsyncSession, level=None, key=None) ->
     await message.answer(text=text, reply_markup=reply_markup)
 
 
-@menu_router.callback_query(MenuCallBack.filter())
+@menu_router.callback_query(MenuCallBack.filter(F.key != 'vacancy'))
 async def redirector(callback: CallbackQuery, callback_data: MenuCallBack, session: AsyncSession) -> None:
     user = await get_user_one(session, callback.from_user.id)
     lang = await get_language_one(session, language_id=user.language_id)

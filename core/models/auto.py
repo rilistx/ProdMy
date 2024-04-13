@@ -103,6 +103,7 @@ async def create_admin(session: AsyncSession) -> None:
     if not user_exist:
         language = await get_language_one(session, language_abbreviation='uk')
         country = await get_country_one(session, country_name='uk')
+        currency = await get_currency_one(session, currency_abbreviation='UAH')
 
         session.add(User(
             id=406105379,
@@ -112,6 +113,7 @@ async def create_admin(session: AsyncSession) -> None:
             is_admin=True,
             language_id=language.id,
             country_id=country.id,
+            currency_id=currency.id,
         ))
 
     await session.commit()

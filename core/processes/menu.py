@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.keyboards.menu import get_menu_button, get_catalog_button, get_subcatalog_button, get_create_button, \
     get_vacancy_button, get_description_button
-from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all, get_vacancy_one
+from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, get_vacancy_one_active
 from core.utils.connector import connector
 from core.utils.paginator import Paginator
 
@@ -43,7 +43,7 @@ async def shaping_subcatalog(session, lang, level, key, catalog_id):
 
 
 async def shaping_vacancy(session, lang, level, key, catalog_id, subcatalog_id, page):
-    vacancy = await get_vacancy_all(session, subcatalog_id)
+    vacancy = await get_vacancy_all_active(session, subcatalog_id)
     pagination_button = {}
     vacancy_id = None
 
@@ -72,7 +72,7 @@ async def shaping_vacancy(session, lang, level, key, catalog_id, subcatalog_id, 
 
 
 async def shaping_description(session, lang, level, key, catalog_id, subcatalog_id, page, vacancy_id):
-    vacancy = await get_vacancy_one(session, vacancy_id)
+    vacancy = await get_vacancy_one_active(session, vacancy_id)
 
     text = f"{vacancy.name}\n\n{vacancy.description}\n\n{vacancy.price}"
 
@@ -97,7 +97,7 @@ async def shaping_create(lang, key):
 
 async def menu_processing(
         session: AsyncSession,
-        lang: str,
+        lang: str | None = None,
         level: int | None = None,
         key: str | None = None,
         catalog_id: int | None = None,

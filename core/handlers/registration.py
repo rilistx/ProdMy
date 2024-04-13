@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.filters.registration import IsContactFilter
 from core.handlers.menu import menu
 from core.keyboards.registration import get_contact_button
-from core.models.querys import search_user, create_username, create_user, get_language_one, get_country_one
+from core.models.querys import search_user, get_language_one, get_currency_one, get_country_one, create_username, create_user
 from core.states.registration import StateRegistration
 from core.utils.connector import connector
 
@@ -25,6 +25,7 @@ async def start(message: Message, state: FSMContext, session: AsyncSession) -> N
 
         await message.answer(text=connector[lang.abbreviation]['message']['start']['authorized'])
         await state.clear()
+
         return await menu(message=message, session=session)
 
     lang = message.from_user.language_code if message.from_user.language_code in connector.keys() else 'uk'
@@ -40,6 +41,7 @@ async def contact(message: Message, state: FSMContext, session: AsyncSession) ->
 
     lang = await get_language_one(session, language_abbreviation=state_data['lang'])
     country = await get_country_one(session, country_name=state_data['lang'])
+    currency = await get_currency_one(session, currency_abbreviation='UAH')
 
     await create_user(
         session=session,
@@ -48,11 +50,13 @@ async def contact(message: Message, state: FSMContext, session: AsyncSession) ->
         first_name=message.contact.first_name if message.contact.first_name else None,
         phone_number=message.contact.phone_number,
         language_id=lang.id,
-        country_id=country.id,
+        currency_id=currency.id,
+        country_id=country.id
     )
 
     await message.answer(text=connector[state_data['lang']]['message']['start']['contact'], reply_markup=ReplyKeyboardRemove())
     await state.clear()
+
     return await menu(message=message, session=session)
 
 

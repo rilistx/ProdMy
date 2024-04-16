@@ -48,7 +48,6 @@ class Country(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     flag: Mapped[str] = mapped_column(String(10), nullable=False)
-    have: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
 class Region(Base):
@@ -56,7 +55,6 @@ class Region(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    have: Mapped[bool] = mapped_column(Boolean, default=True)
     country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=False)
 
     country: Mapped['Country'] = relationship(backref='region')
@@ -67,7 +65,6 @@ class City(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
-    have: Mapped[bool] = mapped_column(Boolean, default=True)
     region_id: Mapped[int] = mapped_column(ForeignKey('region.id', ondelete='CASCADE'), nullable=False)
 
     region: Mapped['Region'] = relationship(backref='city')
@@ -82,7 +79,6 @@ class User(Base):
     phone_number: Mapped[str] = mapped_column(String(50), unique=True)
     money: Mapped[bool] = mapped_column(Integer, default=0)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
-    warning: Mapped[bool] = mapped_column(Integer, default=0)
     blocked: Mapped[bool] = mapped_column(Boolean, default=False)
     language_id: Mapped[int] = mapped_column(ForeignKey('language.id', ondelete='CASCADE'), nullable=False)
 
@@ -100,7 +96,6 @@ class Vacancy(Base):
     disability: Mapped[bool] = mapped_column(Boolean, nullable=False)
     salary: Mapped[str] = mapped_column(BigInteger, nullable=False)
     view: Mapped[int] = mapped_column(Integer, default=0)
-    complaint: Mapped[int] = mapped_column(Integer, default=0)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     subcatalog_id: Mapped[int] = mapped_column(ForeignKey('subcatalog.id', ondelete='CASCADE'), nullable=False)
     currency_id: Mapped[int] = mapped_column(ForeignKey('currency.id', ondelete='CASCADE'), nullable=False)
@@ -117,15 +112,27 @@ class Vacancy(Base):
     user: Mapped['User'] = relationship(backref='vacancy')
 
 
+class Complaint(Base):
+    __tablename__ = 'complaint'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    vacancy_id: Mapped[int] = mapped_column(ForeignKey('vacancy.id', ondelete='CASCADE'), nullable=False)
+
+    user: Mapped['User'] = relationship(backref='complaint')
+    vacancy: Mapped['Vacancy'] = relationship(backref='complaint')
+
+
 class Separator(Base):
     __tablename__ = 'separator'
 
-    id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), primary_key=True, unique=True, nullable=False)
+    id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), primary_key=True)
     experience: Mapped[bool] = mapped_column(Boolean, nullable=True)
     language: Mapped[bool] = mapped_column(Boolean, nullable=True)
     disability: Mapped[bool] = mapped_column(Boolean, nullable=True)
     salary_from: Mapped[str] = mapped_column(BigInteger, nullable=True)
     salary_to: Mapped[str] = mapped_column(BigInteger, nullable=True)
+    catalog_id: Mapped[int] = mapped_column(ForeignKey('catalog.id', ondelete='CASCADE'), nullable=True)
     subcatalog_id: Mapped[int] = mapped_column(ForeignKey('subcatalog.id', ondelete='CASCADE'), nullable=True)
     currency_id: Mapped[int] = mapped_column(ForeignKey('currency.id', ondelete='CASCADE'), nullable=False)
     country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=False)
@@ -133,6 +140,7 @@ class Separator(Base):
     city_id: Mapped[int] = mapped_column(ForeignKey('city.id', ondelete='CASCADE'), nullable=True)
 
     user: Mapped['User'] = relationship(backref='separator')
+    catalog: Mapped['Catalog'] = relationship(backref='separator')
     subcatalog: Mapped['Subcatalog'] = relationship(backref='separator')
     currency: Mapped['Currency'] = relationship(backref='filter')
     country: Mapped['Country'] = relationship(backref='separator')

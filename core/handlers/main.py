@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher, Router
 
-from core.models.auto import create_db, drop_db  # noqa
+from core.models.autocread import create_db, drop_db
 from core.utils.settings import admin
 
 
@@ -16,5 +16,5 @@ async def run(bot: Bot) -> None:
 @main_router.shutdown()
 async def stop(bot: Bot, dispatcher: Dispatcher) -> None:
     await dispatcher.storage.close()
-    # await drop_db()
+    await drop_db()
     await bot.send_message(admin, text='Stop bot 👎🏻')

@@ -1,10 +1,58 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.commands.creator import creator
 from core.models.models import Base, Language, Currency, Country, Region, City, Catalog, Subcatalog, User, Separator
 from core.models.querys import create_username, get_language_one, get_currency_one, get_catalog_one, \
     get_subcatalog_one, get_country_one, get_region_one, get_city_one, search_user
 from core.utils.settings import async_engine, session_maker
+
+
+creator = {
+    'language': {
+        'uk': {
+            'title': 'Українська',
+            'flag': '🇺🇦',
+        },
+    },
+
+    'currency': ['UAH'],
+
+    'catalog': {
+        'construction': {
+            'logo': '🧱',
+            'sub': ['cranes_man', 'tiler', 'fitter', 'welder', 'painter',
+                    'plumber', 'facade_man', 'plasterer', 'electrician', 'other'],
+        },
+        'medical': {
+            'logo': '💊',
+            'sub':  ['nurse', 'dentist', 'pharmacist', 'veterinarian', 'other'],
+        },
+        'it': {
+            'logo': '🖥',
+            'sub':  ['sysadmin', 'operator', 'developer', 'gamedev', 'repairman', 'other'],
+        },
+        'finances': {
+            'logo': '💰',
+            'sub':  ['lawyer', 'other'],
+        },
+        'realestate': {
+            'logo': '🏠',
+            'sub':  ['realtor', 'broker', 'other'],
+        },
+    },
+
+    'country': {
+        'uk': {
+            'flag': '🇺🇦',
+            'region': {
+                'kiev': ['kiev'],
+                'odessa': ['odessa', 'izmail', 'southern', 'chernomorsk', 'sarata'],
+                'nikolajev': ['nikolajev', 'ochakov'],
+                'lviv': ['lviv'],
+                'vinnytsia': ['vinnytsia'],
+            },
+        },
+    },
+}
 
 
 async def create_db() -> None:
@@ -20,7 +68,7 @@ async def create_db() -> None:
         await create_region(session, creator['country'])
         await create_city(session, creator['country'])
 
-        await create_admin(session)
+        # await create_admin(session)
 
 
 async def drop_db() -> None:

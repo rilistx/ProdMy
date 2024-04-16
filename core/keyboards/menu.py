@@ -14,6 +14,8 @@ class MenuCallBack(CallbackData, prefix="main"):
     subcatalog_id: int | None = None
     page: int = 1
     vacancy_id: int | None = None
+    liked_id: int | None = None
+    complaint_id: int | None = None
 
 
 def get_menu_button(lang, level, sizes: tuple[int] = (1, 1, 1, 2, 2, )):
@@ -27,16 +29,29 @@ def get_menu_button(lang, level, sizes: tuple[int] = (1, 1, 1, 2, 2, )):
                     lang=lang, level=level + 1, key=callback,
                 ).pack(),
             ))
+        elif callback == 'browse':
+            keyboard.add(InlineKeyboardButton(
+                text=text,
+                callback_data=MenuCallBack(
+                    lang=lang,
+                    level=10,
+                    key=callback,
+                ).pack()
+            ))
         elif callback == 'create':
             keyboard.add(InlineKeyboardButton(
                 text=text,
                 callback_data=MenuCallBack(
-                    lang=lang, level=6, method='create', key=callback,
+                    lang=lang, level=20, key=callback,
                 ).pack(),
             ))
-        # elif callback == 'browse':
-        #     keyboard.add(InlineKeyboardButton(text=text,
-        #                                       callback_data=MenuCallBack(level=level + 1, key=callback).pack()))
+        elif callback == 'favorite':
+            keyboard.add(InlineKeyboardButton(
+                text=text,
+                callback_data=MenuCallBack(
+                    lang=lang, level=30, key=callback,
+                ).pack(),
+            ))
         else:
             keyboard.add(InlineKeyboardButton(
                 text=text,
@@ -80,7 +95,6 @@ def get_subcatalog_button(lang, level, catalog, subcatalog):
             callback_data=MenuCallBack(
                 lang=lang, level=level + 1, key=item.title, catalog_id=item.catalog_id, subcatalog_id=item.id
             ).pack(),
-            # callback_data=f'view_all_{lang}_{item.catalog_id}_{item.id}',
         ))
 
     keyboard.add(InlineKeyboardButton(
@@ -122,18 +136,18 @@ def get_vacancy_button(lang, level, key, catalog_id, subcatalog_id, page, pagina
             ))
             counter += 1
 
-    if pagination_button:
+    if vacancy_id:
         keyboard.add(InlineKeyboardButton(
-            text='LOOK',
+            text='Просмотреть',
             callback_data=MenuCallBack(
-                lang=lang, level=level + 1, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page, vacancy_id=vacancy_id
+                lang=lang, level=level + 1, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page, vacancy_id=vacancy_id,
             ).pack(),
         ))
 
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['back'],
         callback_data=MenuCallBack(
-            lang=lang, level=level - 1, key='subcatalog', catalog_id=catalog_id, subcatalog_id=subcatalog_id
+            lang=lang, level=level - 1, key='subcatalog', catalog_id=catalog_id,
         ).pack(),
     ))
     keyboard.add(InlineKeyboardButton(
@@ -143,13 +157,53 @@ def get_vacancy_button(lang, level, key, catalog_id, subcatalog_id, page, pagina
         ).pack(),
     ))
 
-    sizes = [counter, 1, 2] if counter else [2]
+    if counter:
+        sizes = [counter, 1, 2]
+    elif vacancy_id:
+        sizes = [1, 2]
+    else:
+        sizes = [2]
 
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_description_button(lang, level, key, catalog_id, subcatalog_id, page, sizes: tuple[int] = (2, )):
+def get_description_button(lang, user_id, level, key, catalog_id, subcatalog_id, page, vacancy_id, liked_id, complaint_id, user_vacancy):
     keyboard = InlineKeyboardBuilder()
+
+    sizes = []
+
+    if not user_vacancy:
+        keyboard.add(InlineKeyboardButton(
+            text='Убрать из избранного' if liked_id else 'В избранное',
+            callback_data=MenuCallBack(
+                lang=lang, user_id=user_id, method='favorite', level=level, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page, vacancy_id=vacancy_id,
+            ).pack(),
+        ))
+
+        keyboard.add(InlineKeyboardButton(
+            text='Убарть жалобу' if complaint_id else 'Пожаловаться',
+            callback_data=MenuCallBack(
+                lang=lang, user_id=user_id, method='feedback', level=level, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page, vacancy_id=vacancy_id,
+            ).pack(),
+        ))
+
+        sizes = [1, 1]
+    else:
+        keyboard.add(InlineKeyboardButton(
+            text='Изменить',
+            callback_data=MenuCallBack(
+                lang=lang, user_id=user_id, method='favorite', level=level, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page, vacancy_id=vacancy_id,
+            ).pack(),
+        ))
+
+        keyboard.add(InlineKeyboardButton(
+            text='Удалить',
+            callback_data=MenuCallBack(
+                lang=lang, user_id=user_id, method='feedback', level=level, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page, vacancy_id=vacancy_id,
+            ).pack(),
+        ))
+
+        sizes = [2]
 
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['back'],
@@ -164,16 +218,180 @@ def get_description_button(lang, level, key, catalog_id, subcatalog_id, page, si
         ).pack(),
     ))
 
+    sizes += [2]
+
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_create_button(lang: str, method: str, sizes: tuple[int] = (2,)):
+def get_your_vacation_button(lang, level, key, page, pagination_button, vacancy_id, counter: [int] = 0):
+    keyboard = InlineKeyboardBuilder()
+
+    for text, menu_name in pagination_button.items():
+        if menu_name == "next":
+            keyboard.add(InlineKeyboardButton(
+                text=text,
+                callback_data=MenuCallBack(
+                    lang=lang, level=level, key=key, page=page + 1
+                ).pack(),
+            ))
+            counter += 1
+        elif menu_name == "previous":
+            keyboard.add(InlineKeyboardButton(
+                text=text,
+                callback_data=MenuCallBack(
+                    lang=lang, level=level, key=key, page=page - 1
+                ).pack(),
+            ))
+            counter += 1
+
+    if vacancy_id:
+        keyboard.add(InlineKeyboardButton(
+            text='Просмотреть',
+            callback_data=MenuCallBack(
+                lang=lang, level=level + 1, key=key, page=page, vacancy_id=vacancy_id,
+            ).pack(),
+        ))
+
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['exit'],
+        callback_data=MenuCallBack(
+            lang=lang, level=0, key='menu'
+        ).pack(),
+    ))
+
+    if counter:
+        sizes = [counter, 1, 1]
+    elif vacancy_id:
+        sizes = [1, 1]
+    else:
+        sizes = [1]
+
+    return keyboard.adjust(*sizes).as_markup()
+
+
+def get_your_description_button(lang, level, key, page, vacancy_id):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(InlineKeyboardButton(
+        text='Изменить',
+        callback_data=MenuCallBack(
+            lang=lang, level=level, key=key, vacancy_id=vacancy_id,
+        ).pack(),
+    ))
+
+    keyboard.add(InlineKeyboardButton(
+        text='Удалить',
+        callback_data=MenuCallBack(
+            lang=lang, level=level, key=key, vacancy_id=vacancy_id,
+        ).pack(),
+    ))
+
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['back'],
+        callback_data=MenuCallBack(
+            lang=lang, level=level - 1, key=key, page=page
+        ).pack(),
+    ))
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['exit'],
+        callback_data=MenuCallBack(
+            lang=lang, level=0, key='menu'
+        ).pack(),
+    ))
+
+    sizes = [2, 2]
+
+    return keyboard.adjust(*sizes).as_markup()
+
+
+def get_favorite_vacation_button(lang, level, key, page, pagination_button, vacancy_id, counter: [int] = 0):
+    keyboard = InlineKeyboardBuilder()
+
+    for text, menu_name in pagination_button.items():
+        if menu_name == "next":
+            keyboard.add(InlineKeyboardButton(
+                text=text,
+                callback_data=MenuCallBack(
+                    lang=lang, level=level, key=key, page=page + 1
+                ).pack(),
+            ))
+            counter += 1
+        elif menu_name == "previous":
+            keyboard.add(InlineKeyboardButton(
+                text=text,
+                callback_data=MenuCallBack(
+                    lang=lang, level=level, key=key, page=page - 1
+                ).pack(),
+            ))
+            counter += 1
+
+    if vacancy_id:
+        keyboard.add(InlineKeyboardButton(
+            text='Просмотреть',
+            callback_data=MenuCallBack(
+                lang=lang, level=level + 1, key=key, page=page, vacancy_id=vacancy_id,
+            ).pack(),
+        ))
+
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['exit'],
+        callback_data=MenuCallBack(
+            lang=lang, level=0, key='menu'
+        ).pack(),
+    ))
+
+    if counter:
+        sizes = [counter, 1, 1]
+    elif vacancy_id:
+        sizes = [1, 1]
+    else:
+        sizes = [1]
+
+    return keyboard.adjust(*sizes).as_markup()
+
+
+def get_favorite_description_button(lang, user_id, level, key, page, vacancy_id, liked_id, complaint_id):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(InlineKeyboardButton(
+        text='Убрать из избранного' if liked_id else 'В избранное',
+        callback_data=MenuCallBack(
+            lang=lang, user_id=user_id, method='favorite', level=level, key=key, page=page, vacancy_id=vacancy_id,
+        ).pack(),
+    ))
+
+    keyboard.add(InlineKeyboardButton(
+        text='Убарть жалобу' if complaint_id else 'Пожаловаться',
+        callback_data=MenuCallBack(
+            lang=lang, user_id=user_id, method='feedback', level=level, key=key, page=page, vacancy_id=vacancy_id,
+        ).pack(),
+    ))
+
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['back'],
+        callback_data=MenuCallBack(
+            lang=lang, level=level - 1, key=key, page=page
+        ).pack(),
+    ))
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['exit'],
+        callback_data=MenuCallBack(
+            lang=lang, level=0, key='menu'
+        ).pack(),
+    ))
+
+    sizes = [1, 1, 2]
+
+    return keyboard.adjust(*sizes).as_markup()
+
+
+def get_create_button(lang: str, sizes: tuple[int] = (2,)):
     keyboard = InlineKeyboardBuilder()
 
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['create'],
         callback_data=MenuCallBack(
-            lang=lang, method=method, key='vacancy'
+            lang=lang, method='create', key='vacancy'
         ).pack(),
     ))
     keyboard.add(InlineKeyboardButton(

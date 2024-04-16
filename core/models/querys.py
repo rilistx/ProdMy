@@ -1,9 +1,11 @@
 import random
 
+from sqlalchemy import select, update, delete  # noqa
+from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
-from core.models.models import Language, User, Separator, Currency, Catalog, Subcatalog, Country, Region, City, Vacancy
+from core.models.models import Language, User, Separator, Currency, Catalog, Subcatalog, Country, Region, City, Vacancy, \
+    Liked, Complaint
 
 
 # ########################################   USER   ############################################### #
@@ -157,7 +159,7 @@ async def get_vacancy_all(session: AsyncSession, subcatalog_id: int):
 
 
 async def get_vacancy_all_active(session: AsyncSession, subcatalog_id: int):
-    query = await session.execute(select(Vacancy).where(Vacancy.subcatalog_id == subcatalog_id, Vacancy.active is True))
+    query = await session.execute(select(Vacancy).where(Vacancy.subcatalog_id == subcatalog_id))
 
     return query.scalars().all()
 
@@ -169,48 +171,129 @@ async def get_vacancy_one(session: AsyncSession, vacancy_id: int):
 
 
 async def get_vacancy_one_active(session: AsyncSession, vacancy_id: int):
-    query = await session.execute(select(Vacancy).where(Vacancy.id == vacancy_id, Vacancy.active is True))
+    query = await session.execute(select(Vacancy).where(Vacancy.id == vacancy_id))
 
     return query.scalar()
 
 
+async def get_vacancy_user_active(session: AsyncSession, vacancy_id: int, user_id: int):
+    query = await session.execute(select(Vacancy).where(Vacancy.id == vacancy_id, Vacancy.user_id == user_id))
+
+    return query.scalar()
+
+
+async def get_vacancy_user_all(session: AsyncSession, user_id: int):
+    query = await session.execute(select(Vacancy).where(Vacancy.user_id == user_id))
+
+    return query.scalars().all()
+
+
 async def get_user_one(session: AsyncSession, user_id: int):
     query = await session.execute(select(User).where(User.id == user_id))
-    user = query.scalar()
 
-    return user
+    return query.scalar()
+
+
+async def get_favorite_all(session: AsyncSession, user_id: int):
+    query = await session.execute(select(Liked).where(Liked.user_id == user_id).options(joinedload(Liked.vacancy)))
+
+    return query.scalars().all()
+
+
+async def get_favorite_one(session: AsyncSession, user_id: int, vacancy_id: int):
+    query = await session.execute(select(Liked).where(Liked.user_id == user_id, Liked.vacancy_id == vacancy_id))
+
+    return query.scalar()
 
 
 # ########################################   VACANCY   ############################################### #
 
 async def create_vacancy(
         session: AsyncSession,
-        subcatalog_id,
         name,
         description,
         experience,
         language,
         disability,
-        currency_id,
         salary,
+        subcatalog_id,
+        currency_id,
         country_id,
         region_id,
         city_id,
         user_id,
 ) -> None:
     session.add(Vacancy(
-        subcatalog_id=subcatalog_id,
         name=name,
         description=description,
         experience=experience,
         language=language,
         disability=disability,
-        currency_id=currency_id,
         salary=salary,
+        currency_id=currency_id,
+        subcatalog_id=subcatalog_id,
         country_id=country_id,
         region_id=region_id,
         city_id=city_id,
         user_id=user_id,
     ))
+
+    await session.commit()
+
+
+# ########################################   LIKED   ############################################### #
+
+async def create_liked(
+        session: AsyncSession,
+        user_id,
+        vacancy_id,
+) -> None:
+    session.add(Liked(
+        user_id=user_id,
+        vacancy_id=vacancy_id,
+    ))
+
+    await session.commit()
+
+
+async def get_liked_one(session: AsyncSession, user_id: int, vacancy_id: int):
+    if user_id and vacancy_id:
+        query = await session.execute(select(Liked).where(Liked.user_id == user_id, Liked.vacancy_id == vacancy_id))
+
+        return query.scalar()
+    else:
+        return None
+
+
+async def delete_liked_one(session: AsyncSession, user_id: int, vacancy_id: int):
+    await session.execute(delete(Liked).where(Liked.user_id == user_id, Liked.vacancy_id == vacancy_id))
+
+    await session.commit()
+
+
+# ########################################   LIKED   ############################################### #
+
+async def create_complaint(
+        session: AsyncSession,
+        user_id,
+        vacancy_id,
+) -> None:
+    session.add(Complaint(
+        user_id=user_id,
+        vacancy_id=vacancy_id,
+    ))
+
+    await session.commit()
+
+
+async def get_complaint_one(session: AsyncSession, user_id: int, vacancy_id: int):
+    if user_id and vacancy_id:
+        query = await session.execute(select(Complaint).where(Complaint.user_id == user_id, Complaint.vacancy_id == vacancy_id))
+
+        return query.scalar()
+
+
+async def delete_complaint_one(session: AsyncSession, user_id: int, vacancy_id: int):
+    await session.execute(delete(Complaint).where(Complaint.user_id == user_id, Complaint.vacancy_id == vacancy_id))
 
     await session.commit()

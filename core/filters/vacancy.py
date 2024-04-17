@@ -2,6 +2,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.filters import BaseFilter
 
+from core.states.vacancy import StateVacancy
 from core.utils.connector import connector
 
 
@@ -27,7 +28,11 @@ class CatalogFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
         state_data = await state.get_data()
 
-        if message.text == 'Вихід':
+        if StateVacancy.change:
+            if message.text == 'Не менять!':
+                return True
+
+        if message.text == connector[state_data['lang']]['button']['exit']:
             return True
 
         for _, value in connector[state_data['lang']]['catalog'].items():
@@ -39,6 +44,10 @@ class CatalogFilter(BaseFilter):
 class SubcatalogFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
         state_data = await state.get_data()
+
+        if StateVacancy.change:
+            if message.text == 'Не менять!':
+                return True
 
         if message.text == 'Назад' or message.text == 'Вихід':
             return True
@@ -52,6 +61,10 @@ class SubcatalogFilter(BaseFilter):
 
 class NameFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
+        if StateVacancy.change:
+            if message.text == 'Не менять!':
+                return True
+
         if message.text == 'Назад' or message.text == 'Вихід':
             return True
 
@@ -62,6 +75,10 @@ class NameFilter(BaseFilter):
 
 class DescriptionFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
+        if StateVacancy.change:
+            if message.text == 'Не менять!':
+                return True
+
         if message.text == 'Назад' or message.text == 'Вихід':
             return True
 
@@ -74,6 +91,10 @@ class ChoiceFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
         state_data = await state.get_data()
 
+        if StateVacancy.change:
+            if message.text == 'Не менять!':
+                return True
+
         if message.text == 'Назад' or message.text == 'Вихід':
             return True
 
@@ -85,6 +106,10 @@ class ChoiceFilter(BaseFilter):
 
 class PriceFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
+        if StateVacancy.change:
+            if message.text == 'Не менять!':
+                return True
+
         if message.text == 'Назад' or message.text == 'Вихід':
             return True
 
@@ -96,6 +121,10 @@ class PriceFilter(BaseFilter):
 class RegionFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
         state_data = await state.get_data()
+
+        if StateVacancy.change:
+            if message.text == 'Не менять!':
+                return True
 
         if message.text == 'Назад' or message.text == 'Вихід':
             return True
@@ -110,6 +139,10 @@ class RegionFilter(BaseFilter):
 class CityFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
         state_data = await state.get_data()
+
+        if StateVacancy.change:
+            if message.text == 'Не менять!':
+                return True
 
         if message.text == 'Назад' or message.text == 'Вихід' or message.text == connector['uk']['button']['skip']:
             return True

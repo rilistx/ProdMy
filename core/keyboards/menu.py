@@ -192,14 +192,14 @@ def get_description_button(lang, user_id, level, key, catalog_id, subcatalog_id,
         keyboard.add(InlineKeyboardButton(
             text='Изменить',
             callback_data=MenuCallBack(
-                lang=lang, user_id=user_id, method='favorite', level=level, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page, vacancy_id=vacancy_id,
+                lang=lang, method='update', key='vacancy', vacancy_id=vacancy_id,
             ).pack(),
         ))
 
         keyboard.add(InlineKeyboardButton(
             text='Удалить',
             callback_data=MenuCallBack(
-                lang=lang, user_id=user_id, method='feedback', level=level, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page, vacancy_id=vacancy_id,
+                lang=lang, method='delete', level=level - 1, key=key, catalog_id=catalog_id, subcatalog_id=subcatalog_id, page=page, vacancy_id=vacancy_id,
             ).pack(),
         ))
 
@@ -275,14 +275,14 @@ def get_your_description_button(lang, level, key, page, vacancy_id):
     keyboard.add(InlineKeyboardButton(
         text='Изменить',
         callback_data=MenuCallBack(
-            lang=lang, level=level, key=key, vacancy_id=vacancy_id,
+            lang=lang, method='update', key='vacancy', vacancy_id=vacancy_id,
         ).pack(),
     ))
 
     keyboard.add(InlineKeyboardButton(
         text='Удалить',
         callback_data=MenuCallBack(
-            lang=lang, level=level, key=key, vacancy_id=vacancy_id,
+            lang=lang, method='delete', level=level - 1, key=key, page=page, vacancy_id=vacancy_id,
         ).pack(),
     ))
 

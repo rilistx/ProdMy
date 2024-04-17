@@ -12,3 +12,5 @@ class StateVacancy(StatesGroup):
     SALARY = State()
     REGION = State()
     CITY = State()
+
+    change = None

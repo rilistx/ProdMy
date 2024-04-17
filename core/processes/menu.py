@@ -1,12 +1,10 @@
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.keyboards.menu import get_menu_button, get_catalog_button, get_subcatalog_button, get_create_button, \
     get_vacancy_button, get_description_button, get_your_description_button, get_your_vacation_button, \
     get_favorite_description_button, get_favorite_vacation_button
 from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, \
-    get_vacancy_one_active, get_liked_one, get_complaint_one, get_vacancy_user_active, get_vacancy_user_all, \
-    get_favorite_all
+    get_liked_one, get_complaint_one, get_vacancy_one, get_vacancy_user, get_favorite_vacancy
 from core.utils.connector import connector
 from core.utils.paginator import Paginator
 
@@ -31,7 +29,7 @@ async def shaping_menu(lang, level, key):
 
 async def shaping_catalog(session, lang, level, key):
     text = connector[lang]['message']['menu'][key]
-    catalog = await get_catalog_all(session)
+    catalog = await get_catalog_all(session=session)
     button = get_catalog_button(lang=lang, level=level, catalog=catalog)
 
     return text, button
@@ -39,15 +37,15 @@ async def shaping_catalog(session, lang, level, key):
 
 async def shaping_subcatalog(session, lang, level, key, catalog_id):
     text = connector[lang]['message']['menu'][key]
-    catalog = await get_catalog_one(session, catalog_id=catalog_id)
-    subcatalog = await get_subcatalog_all(session, catalog_id)
+    catalog = await get_catalog_one(session=session, catalog_id=catalog_id)
+    subcatalog = await get_subcatalog_all(session=session, catalog_id=catalog_id)
     button = get_subcatalog_button(lang=lang, level=level, catalog=catalog, subcatalog=subcatalog)
 
     return text, button
 
 
-async def shaping_vacancy(session, lang, level, key, catalog_id, subcatalog_id, page, vacancy_id=None):
-    vacancy = await get_vacancy_all_active(session, subcatalog_id)
+async def shaping_vacancy_all(session, lang, level, key, catalog_id, subcatalog_id, page, vacancy_id=None):
+    vacancy = await get_vacancy_all_active(session=session, subcatalog_id=subcatalog_id)
     pagination_button = {}
 
     if vacancy:
@@ -74,14 +72,14 @@ async def shaping_vacancy(session, lang, level, key, catalog_id, subcatalog_id, 
     return text, button
 
 
-async def shaping_description(session, lang, user_id, level, key, catalog_id, subcatalog_id, page, vacancy_id):
-    vacancy = await get_vacancy_one_active(session, vacancy_id)
-    user_vacancy = await get_vacancy_user_active(session, vacancy_id, user_id)
+async def shaping_description_all(session, lang, user_id, level, key, catalog_id, subcatalog_id, page, vacancy_id):
+    vacancy = await get_vacancy_one(session=session, vacancy_id=vacancy_id)
+    your_vacancy = await get_vacancy_one(session=session, vacancy_id=vacancy_id, user_id=user_id)
 
-    liked = await get_liked_one(session, user_id=user_id, vacancy_id=vacancy_id)
+    liked = await get_liked_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
     liked_id = liked.id if liked else None
 
-    complaint = await get_complaint_one(session, user_id=user_id, vacancy_id=vacancy_id)
+    complaint = await get_complaint_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
     complaint_id = complaint.id if complaint else None
 
     text = f"{vacancy.name}\n\n{vacancy.description}\n\n{vacancy.salary}"
@@ -97,14 +95,14 @@ async def shaping_description(session, lang, user_id, level, key, catalog_id, su
         vacancy_id=vacancy_id,
         liked_id=liked_id,
         complaint_id=complaint_id,
-        user_vacancy=user_vacancy,
+        user_vacancy=your_vacancy,
     )
 
     return text, button
 
 
-async def shaping_your_vacation(session, lang, user_id, level, key, page, vacancy_id=None):
-    user_vacancy = await get_vacancy_user_all(session, user_id)
+async def shaping_vacation_your(session, lang, user_id, level, key, page, vacancy_id=None):
+    user_vacancy = await get_vacancy_user(session=session, user_id=user_id)
     pagination_button = {}
 
     if user_vacancy:
@@ -129,8 +127,8 @@ async def shaping_your_vacation(session, lang, user_id, level, key, page, vacanc
     return text, button
 
 
-async def shaping_your_description(session, lang, user_id, level, key, page, vacancy_id):
-    user_vacancy = await get_vacancy_user_active(session, vacancy_id, user_id)
+async def shaping_description_your(session, lang, user_id, level, key, page, vacancy_id):
+    user_vacancy = await get_vacancy_one(session=session, vacancy_id=vacancy_id, user_id=user_id)
 
     text = f"{user_vacancy.name}\n\n{user_vacancy.description}\n\n{user_vacancy.salary}"
 
@@ -145,8 +143,8 @@ async def shaping_your_description(session, lang, user_id, level, key, page, vac
     return text, button
 
 
-async def shaping_favorite_vacation(session, lang, user_id, level, key, page, vacancy_id=None):
-    user_favorite = await get_favorite_all(session, user_id)
+async def shaping_vacation_favorite(session, lang, user_id, level, key, page, vacancy_id=None):
+    user_favorite = await get_favorite_vacancy(session=session, user_id=user_id)
 
     pagination_button = {}
 
@@ -172,13 +170,13 @@ async def shaping_favorite_vacation(session, lang, user_id, level, key, page, va
     return text, button
 
 
-async def shaping_favorite_description(session, lang, user_id, level, key, page, vacancy_id):
-    user_favorite = await get_vacancy_one_active(session, vacancy_id)
+async def shaping_description_favorite(session, lang, user_id, level, key, page, vacancy_id):
+    user_favorite = await get_vacancy_one(session=session, vacancy_id=vacancy_id)
 
-    liked = await get_liked_one(session, user_id=user_id, vacancy_id=vacancy_id)
+    liked = await get_liked_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
     liked_id = liked.id if liked else None
 
-    complaint = await get_complaint_one(session, user_id=user_id, vacancy_id=vacancy_id)
+    complaint = await get_complaint_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
     complaint_id = complaint.id if complaint else None
 
     text = f"{user_favorite.name}\n\n{user_favorite.description}\n\n{user_favorite.salary}"
@@ -225,17 +223,17 @@ async def menu_processing(
     elif level == 2:
         return await shaping_subcatalog(session, lang, level, key, catalog_id)
     elif level == 3:
-        return await shaping_vacancy(session, lang, level, key, catalog_id, subcatalog_id, page)
+        return await shaping_vacancy_all(session, lang, level, key, catalog_id, subcatalog_id, page)
     elif level == 4:
-        return await shaping_description(session, lang, user_id, level, key, catalog_id, subcatalog_id, page, vacancy_id)
+        return await shaping_description_all(session, lang, user_id, level, key, catalog_id, subcatalog_id, page, vacancy_id)
 
     elif level == 10:
-        return await shaping_your_vacation(session, lang, user_id, level, key, page)
+        return await shaping_vacation_your(session, lang, user_id, level, key, page)
     elif level == 11:
-        return await shaping_your_description(session, lang, user_id, level, key, page, vacancy_id)
+        return await shaping_description_your(session, lang, user_id, level, key, page, vacancy_id)
     elif level == 20:
         return await shaping_create_vacation(lang, key)
     elif level == 30:
-        return await shaping_favorite_vacation(session, lang, user_id, level, key, page)
+        return await shaping_vacation_favorite(session, lang, user_id, level, key, page)
     elif level == 31:
-        return await shaping_favorite_description(session, lang, user_id, level, key, page, vacancy_id)
+        return await shaping_description_favorite(session, lang, user_id, level, key, page, vacancy_id)

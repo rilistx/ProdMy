@@ -78,15 +78,13 @@ async def redirector(callback: CallbackQuery, callback_data: MenuCallBack, sessi
         session=session,
         lang=lang.abbreviation,
         user_id=callback.from_user.id,
-        method=None,
+        view=callback_data.view,
         level=callback_data.level,
         key=callback_data.key,
         catalog_id=callback_data.catalog_id,
         subcatalog_id=callback_data.subcatalog_id,
         page=callback_data.page,
         vacancy_id=callback_data.vacancy_id,
-        liked_id=callback_data.liked_id,
-        complaint_id=callback_data.complaint_id,
     )
 
     await callback.message.edit_text(text=text, reply_markup=reply_markup)

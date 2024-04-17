@@ -87,7 +87,7 @@ async def update_vacancy(*, session: AsyncSession, data: dict, vacancy_id: int) 
 async def get_vacancy_complaint(*, session: AsyncSession, vacancy_id: int, operation: str) -> None:
     await session.execute(
         update(Vacancy).where(Vacancy.id == vacancy_id).values(
-            complaint=Vacancy.count_complaint + 1 if operation == 'plus' else Vacancy.count_complaint - 1,
+            count_complaint=Vacancy.count_complaint + 1 if operation == 'plus' else Vacancy.count_complaint - 1,
         )
     )
 
@@ -155,7 +155,7 @@ async def get_catalog_all(*, session: AsyncSession):
     return query.scalars().all()
 
 
-async def get_catalog_one(*, session: AsyncSession, catalog_id: str | None = None, catalog_title: str | None = None, catalog_logo: str | None = None):
+async def get_catalog_one(*, session: AsyncSession, catalog_id: int | None = None, catalog_title: str | None = None, catalog_logo: str | None = None):
     query = await session.execute(select(Catalog).where(
         or_(catalog_id is None, Catalog.id == catalog_id),
         or_(catalog_title is None, Catalog.title == catalog_title),
@@ -267,7 +267,7 @@ async def get_vacancy_user(*, session: AsyncSession, user_id: int):
     return query.scalars().all()
 
 
-async def get_favorite_vacancy(*, session: AsyncSession, user_id: int):
+async def get_vacancy_favorite(*, session: AsyncSession, user_id: int):
     query = await session.execute(select(Liked).where(Liked.user_id == user_id).options(joinedload(Liked.vacancy)))
 
     return query.scalars().all()

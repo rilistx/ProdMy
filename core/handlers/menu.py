@@ -16,7 +16,7 @@ menu_router.message.filter(IsUserFilter())
 
 
 @menu_router.message(Command(commands='menu'))
-async def menu(message: Message, session: AsyncSession, level=None, method=None, key=None) -> None:
+async def menu(message: Message, session: AsyncSession, level=None, key=None) -> None:
     user = await search_user(session=session, user_id=message.from_user.id)
     lang = await get_language_one(session=session, language_id=user.language_id)
 
@@ -24,7 +24,6 @@ async def menu(message: Message, session: AsyncSession, level=None, method=None,
         session=session,
         lang=lang.abbreviation,
         level=level if level else 0,
-        method=method,
         key=key if key else "menu",
     )
 

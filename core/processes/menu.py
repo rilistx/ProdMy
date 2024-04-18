@@ -1,9 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.keyboards.menu import get_menu_button, get_create_button, \
-    get_vacancy_button, get_description_button, get_profession_button
-from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, \
-    get_liked_one, get_complaint_one, get_vacancy_one, get_vacancy_user, get_vacancy_favorite
+from core.keyboards.menu import get_menu_button, get_create_button, get_vacancy_button, get_description_button, get_profession_button
+from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, get_vacancy_one, \
+    get_vacancy_user, get_vacancy_favorite, get_liked_one, get_complaint_one
 from core.utils.connector import connector
 from core.utils.paginator import Paginator
 
@@ -25,7 +24,10 @@ async def shaping_menu(
         key: str,
 ):
     text = connector[lang]['message']['menu'][key]
-    button = get_menu_button(lang=lang, level=level)
+    button = get_menu_button(
+        lang=lang,
+        level=level,
+    )
 
     return text, button
 
@@ -36,9 +38,15 @@ async def shaping_catalog(
         level: int,
         key: str,
 ):
-    text = connector[lang]['message']['menu'][key]
     catalog = await get_catalog_all(session=session)
-    button = get_profession_button(lang=lang, level=level, data_name='catalog', data_list=catalog)
+
+    text = connector[lang]['message']['menu'][key]
+    button = get_profession_button(
+        lang=lang,
+        level=level,
+        data_name='catalog',
+        data_list=catalog,
+    )
 
     return text, button
 
@@ -50,10 +58,17 @@ async def shaping_subcatalog(
         key: str,
         catalog_id: int,
 ):
-    text = connector[lang]['message']['menu'][key]
     catalog = await get_catalog_one(session=session, catalog_id=catalog_id)
     subcatalog = await get_subcatalog_all(session=session, catalog_id=catalog_id)
-    button = get_profession_button(lang=lang, level=level, data_name='subcatalog', data_list=subcatalog, catalog_title=catalog.title)
+
+    text = connector[lang]['message']['menu'][key]
+    button = get_profession_button(
+        lang=lang,
+        level=level,
+        data_name='subcatalog',
+        data_list=subcatalog,
+        catalog_title=catalog.title,
+    )
 
     return text, button
 
@@ -128,12 +143,12 @@ async def shaping_description(
         liked = await get_liked_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
         complaint = await get_complaint_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
 
-        liked_id, complaint_id = (liked.id if liked else None), (complaint.id if complaint else None)
+        liked_id = liked.id if liked else None
+        complaint_id = complaint.id if complaint else None
     else:
         vacancy = await get_vacancy_one(session=session, vacancy_id=vacancy_id, user_id=user_id)
 
     text = f"{vacancy.name}\n\n{vacancy.description}\n\n{vacancy.salary}"
-
     button = get_description_button(
         lang=lang,
         user_id=user_id,
@@ -157,7 +172,9 @@ async def shaping_create_vacation(
         key: str,
 ):
     text = connector[lang]['message']['menu'][key]
-    button = get_create_button(lang)
+    button = get_create_button(
+        lang=lang,
+    )
 
     return text, button
 

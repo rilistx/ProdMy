@@ -7,6 +7,7 @@ from core.utils.connector import connector
 class MenuCallBack(CallbackData, prefix="main"):
     lang: str | None = None
     user_id: int | None = None
+    method: str | None = None,
     view: str | None = None
     level: int | None = None
     key: str | None = None
@@ -16,7 +17,10 @@ class MenuCallBack(CallbackData, prefix="main"):
     vacancy_id: int | None = None
 
 
-def get_menu_button(lang, level, sizes: tuple[int] = (1, 1, 1, 2, 2, )):
+def get_menu_button(
+        lang: str,
+        level: int,
+):
     keyboard = InlineKeyboardBuilder()
 
     for callback, text in connector[lang]['button']['menu'].items():
@@ -68,10 +72,18 @@ def get_menu_button(lang, level, sizes: tuple[int] = (1, 1, 1, 2, 2, )):
                 ).pack(),
             ))
 
+    sizes = [1, 1, 1, 2, 2]
+
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_profession_button(*, lang: str, level: int, data_name: str, data_list: list, catalog_title=None):
+def get_profession_button(
+        lang: str,
+        level: int,
+        data_name: str,
+        data_list: list,
+        catalog_title: str | None = None,
+):
     keyboard = InlineKeyboardBuilder()
 
     for item in data_list:
@@ -122,7 +134,18 @@ def get_profession_button(*, lang: str, level: int, data_name: str, data_list: l
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_vacancy_button(lang, view, level, key, catalog_id, subcatalog_id, page, pagination_button, vacancy_id, counter: [int] = 0):
+def get_vacancy_button(
+        lang: str,
+        view: str,
+        level: int,
+        key: str,
+        catalog_id: int,
+        subcatalog_id: int,
+        page: int,
+        pagination_button: dict,
+        vacancy_id: int,
+        counter: [int] = 0,
+):
     keyboard = InlineKeyboardBuilder()
 
     for text, menu_name in pagination_button.items():
@@ -195,7 +218,20 @@ def get_vacancy_button(lang, view, level, key, catalog_id, subcatalog_id, page, 
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_description_button(lang, user_id, view, level, key, catalog_id, subcatalog_id, page, vacancy_id, liked_id, complaint_id, your_vacancy):
+def get_description_button(
+        lang: str,
+        user_id,
+        view: str,
+        level: int,
+        key: str,
+        catalog_id: int,
+        subcatalog_id: int,
+        page: int,
+        vacancy_id: int,
+        liked_id: int,
+        complaint_id: int,
+        your_vacancy,
+):
     keyboard = InlineKeyboardBuilder()
 
     if not your_vacancy and view == 'all' or not your_vacancy and view == 'liked':
@@ -285,7 +321,10 @@ def get_description_button(lang, user_id, view, level, key, catalog_id, subcatal
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_create_button(lang: str, sizes: tuple[int] = (2,)):
+def get_create_button(
+        lang: str,
+        sizes: tuple[int] = (2,),
+):
     keyboard = InlineKeyboardBuilder()
 
     keyboard.add(InlineKeyboardButton(

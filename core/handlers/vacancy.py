@@ -7,11 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.filters.vacancy import CatalogFilter, SubcatalogFilter, NameFilter, ChoiceFilter, PriceFilter, RegionFilter, \
     CityFilter, DescriptionFilter, ExitFilter, BackFilter
-from core.handlers.menu import menu
+from core.handlers.menu import menu, redirector
 from core.keyboards.menu import MenuCallBack
 from core.keyboards.vacancy import vacancy_profession_button, vacancy_keyboard_button, vacancy_location_button, vacancy_choice_button
-from core.models.querys import get_catalog_all, get_subcatalog_all, get_catalog_one, get_subcatalog_one, get_country_first, \
-    get_region_all, get_region_one, get_city_all, get_city_one, create_vacancy, get_vacancy_one, update_vacancy, get_currency_first
+from core.models.querys import get_catalog_all, get_subcatalog_all, get_catalog_one, get_subcatalog_one, get_country_first, get_region_all, \
+    get_region_one, get_city_all, get_city_one, create_vacancy, get_vacancy_one, update_vacancy, get_currency_first, deactivate_vacancy
 from core.states.vacancy import StateVacancy
 from core.utils.connector import connector
 
@@ -19,8 +19,22 @@ from core.utils.connector import connector
 vacancy_router = Router()
 
 
-@vacancy_router.callback_query(StateFilter(None), MenuCallBack.filter(F.key == 'vacancy'))
+@vacancy_router.callback_query(MenuCallBack.filter(F.key == 'vacancy'))
 async def catalog_vacancy_callback(callback: CallbackQuery, callback_data: MenuCallBack, state: FSMContext, session: AsyncSession) -> None:
+    if callback_data.method == 'delete':
+        await deactivate_vacancy(session=session, vacancy_id=callback_data.vacancy_id)
+        await callback.answer("Вакансия деактивирована!.")
+
+        return await redirector(
+            callback=callback,
+            callback_data=callback_data,
+            session=session,
+            view=callback_data.view,
+            level=3,
+            key='view',
+            page=callback_data.page - 1 if callback_data.page - 1 != 0 else 1,
+        )
+
     await callback.message.delete()
 
     state_list = ['lang', 'catalog_id', 'catalog_title', 'currency_id', 'subcatalog_id',
@@ -30,6 +44,13 @@ async def catalog_vacancy_callback(callback: CallbackQuery, callback_data: MenuC
     await state.update_data({key: callback_data.lang if key == 'lang' else None for key in state_list})
 
     if callback_data.method == 'update':
+        await state.update_data({
+            'update_view': callback_data.view,
+            'update_page': callback_data.page,
+            'update_catalog_id': callback_data.catalog_id,
+            'update_subcatalog_id': callback_data.subcatalog_id,
+            'update_vacancy_id': callback_data.vacancy_id,
+        })
         StateVacancy.change = await get_vacancy_one(session=session, vacancy_id=callback_data.vacancy_id)
 
     catalog = await get_catalog_all(session=session)
@@ -57,10 +78,32 @@ async def exit_vacancy(message: Message, state: FSMContext, session: AsyncSessio
         text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['exit'],
     )
 
-    StateVacancy.change = None
-    await state.clear()
+    if StateVacancy.change:
+        StateVacancy.change = None
+        await state.clear()
 
-    return await menu(message=message, session=session, level=20, method='create', key='create')
+        return await menu(
+            message=message,
+            session=session,
+            view=state_data['update_view'],
+            level=4,
+            key='description',
+            page=state_data['update_page'],
+            catalog_id=state_data['update_catalog_id'],
+            subcatalog_id=state_data['update_subcatalog_id'],
+            vacancy_id=state_data['update_vacancy_id'],
+        )
+    else:
+        StateVacancy.change = None
+        await state.clear()
+
+        return await menu(
+            message=message,
+            session=session,
+            method='create',
+            level=10,
+            key='confirm',
+        )
 
 
 @vacancy_router.message(StateFilter("*"), BackFilter())
@@ -254,7 +297,7 @@ async def language_vacancy(message: Message, state: FSMContext) -> None:
 
     await message.answer(
         text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['language'],
-        reply_markup=reply_markup
+        reply_markup=reply_markup,
     )
     await state.set_state(StateVacancy.LANGUAGE)
 
@@ -401,10 +444,29 @@ async def finish_vacancy(message: Message, state: FSMContext, session: AsyncSess
         reply_markup=ReplyKeyboardRemove(),
     )
 
-    StateVacancy.change = None
-    await state.clear()
+    if StateVacancy.change:
+        StateVacancy.change = None
+        await state.clear()
 
-    return await menu(message=message, session=session)
+        return await menu(
+            message=message,
+            session=session,
+            view=state_data['update_view'],
+            level=4,
+            key='description',
+            page=state_data['update_page'],
+            catalog_id=state_data['update_catalog_id'],
+            subcatalog_id=state_data['update_subcatalog_id'],
+            vacancy_id=state_data['update_vacancy_id'],
+        )
+    else:
+        StateVacancy.change = None
+        await state.clear()
+
+        return await menu(
+            message=message,
+            session=session,
+        )
 
 
 @vacancy_router.message(StateFilter("*"))

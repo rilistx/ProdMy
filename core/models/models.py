@@ -108,7 +108,7 @@ class Vacancy(Base):
     salary: Mapped[str] = mapped_column(BigInteger, nullable=False)
     view: Mapped[int] = mapped_column(Integer, default=0)
     count_complaint: Mapped[int] = mapped_column(Integer, default=0)
-    promote: Mapped[bool] = mapped_column(Boolean, default=False)
+    promotion: Mapped[bool] = mapped_column(Boolean, default=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     catalog_id: Mapped[int] = mapped_column(ForeignKey('catalog.id', ondelete='CASCADE'), nullable=False)
     subcatalog_id: Mapped[int] = mapped_column(ForeignKey('subcatalog.id', ondelete='CASCADE'), nullable=False)

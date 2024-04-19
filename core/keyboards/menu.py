@@ -426,7 +426,7 @@ def get_profile_button(
         ).pack()
     ))
 
-    sizes = [2, 1, 1]
+    sizes = [1, 1]
 
     return keyboard.adjust(*sizes).as_markup()
 

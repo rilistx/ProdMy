@@ -76,12 +76,13 @@ async def catalog_vacancy_callback(callback: CallbackQuery, callback_data: MenuC
     await state.set_state(StateVacancy.CATALOG)
 
 
-@vacancy_router.message(StateFilter("*"), ExitFilter())
+@vacancy_router.message(StateFilter(StateVacancy), ExitFilter())
 async def exit_vacancy(message: Message, state: FSMContext, session: AsyncSession) -> None:
     state_data = await state.get_data()
 
     await message.answer(
         text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['exit'],
+        reply_markup=ReplyKeyboardRemove(),
     )
 
     if StateVacancy.change:
@@ -100,7 +101,6 @@ async def exit_vacancy(message: Message, state: FSMContext, session: AsyncSessio
             vacancy_id=state_data['update_vacancy_id'],
         )
     else:
-        StateVacancy.change = None
         await state.clear()
 
         return await menu(
@@ -112,7 +112,7 @@ async def exit_vacancy(message: Message, state: FSMContext, session: AsyncSessio
         )
 
 
-@vacancy_router.message(StateFilter("*"), BackFilter())
+@vacancy_router.message(StateFilter(StateVacancy), BackFilter())
 async def back_vacancy(message: Message, state: FSMContext, session: AsyncSession) -> None:
     state_data = await state.get_state()
 
@@ -523,12 +523,12 @@ async def finish_vacancy(message: Message, state: FSMContext, session: AsyncSess
         )
 
 
-@vacancy_router.message(StateFilter("*"))
+@vacancy_router.message(StateFilter(StateVacancy))
 async def error_vacancy(message: Message) -> None:
     await message.delete()
 
 
-@vacancy_router.message()
+@vacancy_router.message(StateFilter(StateVacancy))
 async def catalog_vacancy_message(message: Message, state: FSMContext, session: AsyncSession) -> None:
     state_data = await state.get_data()
     catalog = await get_catalog_all(session=session)

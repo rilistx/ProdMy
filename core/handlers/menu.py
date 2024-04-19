@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.filters.menu import IsUserFilter
 from core.keyboards.menu import MenuCallBack
 from core.models.querys import get_language_one, create_liked, get_liked_one, get_complaint_one, create_complaint, \
-    get_vacancy_complaint, search_user, delete_liked, delete_complaint
+    update_vacancy_complaint, search_user, delete_liked, delete_complaint
 from core.processes.menu import menu_processing
 
 
@@ -98,7 +98,7 @@ async def complaint(
         vacancy_id=callback_data.vacancy_id,
     )
 
-    await get_vacancy_complaint(
+    await update_vacancy_complaint(
         session=session,
         vacancy_id=callback_data.vacancy_id,
         operation='minus' if feedback else 'plus',
@@ -124,7 +124,8 @@ async def complaint(
         )
 
 
-@menu_router.callback_query(MenuCallBack.filter(F.key != 'vacancy'))
+@menu_router.callback_query(MenuCallBack.filter(F.key != 'vacancy'), MenuCallBack.filter(F.key != 'change'))
+# @menu_router.callback_query(MenuCallBack.filter(F.key != 'change'))
 async def redirector(
         callback: CallbackQuery,
         callback_data: MenuCallBack,

@@ -11,6 +11,7 @@ class MenuCallBack(CallbackData, prefix="main"):
     view: str | None = None
     level: int | None = None
     key: str | None = None
+    data: str | None = None
     page: int = 1
     catalog_id: int | None = None
     subcatalog_id: int | None = None
@@ -96,16 +97,6 @@ def get_menu_button(
                     key=callback,
                 ).pack()
             ))
-        elif callback == 'channel':
-            keyboard.add(InlineKeyboardButton(
-                text=text,
-                callback_data=MenuCallBack(
-                    lang=lang,
-                    method=None,
-                    level=11,
-                    key=callback,
-                ).pack()
-            ))
         else:
             keyboard.add(InlineKeyboardButton(
                 text=text,
@@ -117,7 +108,7 @@ def get_menu_button(
                 ).pack()
             ))
 
-    sizes = [1, 1, 1, 2, 2, 1]
+    sizes = [1, 1, 1, 2, 2]
 
     return keyboard.adjust(*sizes).as_markup()
 
@@ -413,10 +404,18 @@ def get_confirm_button(
 
 def get_profile_button(
         lang: str,
-        key: str,
-        sizes: tuple[int] = (2,),
+        level: int,
 ):
     keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(InlineKeyboardButton(
+        text='Настройки профиля',
+        callback_data=MenuCallBack(
+            lang=lang,
+            level=level + 1,
+            key='setting',
+        ).pack()
+    ))
 
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['exit'],
@@ -426,5 +425,38 @@ def get_profile_button(
             key='menu',
         ).pack()
     ))
+
+    sizes = [2, 1, 1]
+
+    return keyboard.adjust(*sizes).as_markup()
+
+
+def get_setting_button(
+        lang: str,
+        level: int,
+        first_name: str | None = None,
+):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(InlineKeyboardButton(
+        text='Изменить имя' if first_name else 'Добавить имя',
+        callback_data=MenuCallBack(
+            lang=lang,
+            level=level,
+            key='change',
+            data='name'
+        ).pack()
+    ))
+
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['exit'],
+        callback_data=MenuCallBack(
+            lang=lang,
+            level=level - 1,
+            key='profile',
+        ).pack()
+    ))
+
+    sizes = [1, 1]
 
     return keyboard.adjust(*sizes).as_markup()

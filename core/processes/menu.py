@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.keyboards.menu import get_menu_button, get_vacancy_button, get_description_button, get_profession_button, \
-    get_profile_button, get_confirm_button
+    get_profile_button, get_confirm_button, get_setting_button
 from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, \
-    get_vacancy_one, get_vacancy_user, get_vacancy_favorite, get_liked_one, get_complaint_one
+    get_vacancy_one, get_vacancy_user, get_vacancy_favorite, get_liked_one, get_complaint_one, search_user
 from core.utils.connector import connector
 from core.utils.paginator import Paginator
 
@@ -226,12 +226,33 @@ async def shaping_confirm(
 
 async def shaping_profile(
         lang: str,
+        level: int,
         key: str,
 ):
+
     text = connector[lang]['message']['menu'][key]
     button = get_profile_button(
         lang=lang,
-        key=key,
+        level=level,
+    )
+
+    return text, button
+
+
+async def shaping_setting(
+        session,
+        lang: str,
+        user_id: int,
+        level: int,
+        key: str,
+):
+    user = await search_user(session=session, user_id=user_id)
+
+    text = 'Основные настройки профиля'
+    button = get_setting_button(
+        lang=lang,
+        level=level,
+        first_name=user.first_name
     )
 
     return text, button
@@ -264,4 +285,6 @@ async def menu_processing(
     elif level == 10:
         return await shaping_confirm(lang, method, view, page, catalog_id, subcatalog_id, vacancy_id)
     elif level == 11:
-        return await shaping_profile(lang, key)
+        return await shaping_profile(lang, level, key)
+    elif level == 12:
+        return await shaping_setting(session, lang, user_id, level, key)

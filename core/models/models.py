@@ -77,7 +77,8 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(25), nullable=False, unique=True)
     first_name: Mapped[str] = mapped_column(String(50), nullable=True)
     phone_number: Mapped[str] = mapped_column(String(50), unique=True)
-    money: Mapped[bool] = mapped_column(Integer, default=0)
+    money: Mapped[int] = mapped_column(BigInteger, default=0)
+    count_vacancy: Mapped[int] = mapped_column(BigInteger, default=0)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     blocked: Mapped[bool] = mapped_column(Boolean, default=False)
     language_id: Mapped[int] = mapped_column(ForeignKey('language.id', ondelete='CASCADE'), nullable=False)
@@ -89,7 +90,7 @@ class Transaction(Base):
     __tablename__ = 'transaction'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    money: Mapped[int] = mapped_column(Integer, nullable=False)
+    money: Mapped[int] = mapped_column(BigInteger, nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
 
     user: Mapped['User'] = relationship(backref='transaction')
@@ -107,6 +108,7 @@ class Vacancy(Base):
     salary: Mapped[str] = mapped_column(BigInteger, nullable=False)
     view: Mapped[int] = mapped_column(Integer, default=0)
     count_complaint: Mapped[int] = mapped_column(Integer, default=0)
+    promote: Mapped[bool] = mapped_column(Boolean, default=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     catalog_id: Mapped[int] = mapped_column(ForeignKey('catalog.id', ondelete='CASCADE'), nullable=False)
     subcatalog_id: Mapped[int] = mapped_column(ForeignKey('subcatalog.id', ondelete='CASCADE'), nullable=False)
@@ -123,6 +125,15 @@ class Vacancy(Base):
     region: Mapped['Region'] = relationship(backref='vacancy')
     city: Mapped['City'] = relationship(backref='vacancy')
     user: Mapped['User'] = relationship(backref='vacancy')
+
+
+class Promote(Base):
+    __tablename__ = 'promote'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    vacancy_id: Mapped[int] = mapped_column(ForeignKey('vacancy.id', ondelete='CASCADE'), nullable=False)
+
+    vacancy: Mapped['Vacancy'] = relationship(backref='promote')
 
 
 class Complaint(Base):

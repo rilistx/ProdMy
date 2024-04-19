@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.types import Message, ReplyKeyboardRemove
-from aiogram.filters import CommandStart, StateFilter
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,7 @@ from core.utils.username import create_username
 registration_router = Router()
 
 
-@registration_router.message(StateFilter(None), CommandStart())
+@registration_router.message(CommandStart())
 async def start(message: Message, state: FSMContext, session: AsyncSession) -> None:
     user_exist = await search_user(session=session, user_id=message.from_user.id)
 

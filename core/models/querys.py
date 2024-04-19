@@ -20,6 +20,16 @@ async def create_user(*, session: AsyncSession, user_id, username, first_name, p
     await session.commit()
 
 
+async def update_name_user(*, session: AsyncSession, user_id: int, first_name: str) -> None:
+    await session.execute(
+        update(User).where(User.id == user_id).values(
+            first_name=first_name,
+        )
+    )
+
+    await session.commit()
+
+
 async def search_user(*, session: AsyncSession, user_id: int | None = None, username: str | None = None):
     query = await session.execute(select(User).where(
         or_(user_id is None, User.id == user_id),
@@ -84,7 +94,7 @@ async def update_vacancy(*, session: AsyncSession, data: dict, vacancy_id: int) 
     await session.commit()
 
 
-async def get_vacancy_complaint(*, session: AsyncSession, vacancy_id: int, operation: str) -> None:
+async def update_vacancy_complaint(*, session: AsyncSession, vacancy_id: int, operation: str) -> None:
     await session.execute(
         update(Vacancy).where(Vacancy.id == vacancy_id).values(
             count_complaint=Vacancy.count_complaint + 1 if operation == 'plus' else Vacancy.count_complaint - 1,

@@ -45,14 +45,14 @@ def get_menu_button(
                     key='view',
                 ).pack()
             ))
-        elif callback == 'confirm':
+        elif callback == 'create':
             keyboard.add(InlineKeyboardButton(
                 text=text,
                 callback_data=MenuCallBack(
                     lang=lang,
                     method='create',
                     level=10,
-                    key=callback,
+                    key='confirm',
                 ).pack()
             ))
         elif callback == 'favorite':
@@ -66,18 +66,58 @@ def get_menu_button(
                     key='view',
                 ).pack()
             ))
+        elif callback == 'profile':
+            keyboard.add(InlineKeyboardButton(
+                text=text,
+                callback_data=MenuCallBack(
+                    lang=lang,
+                    method=None,
+                    level=11,
+                    key=callback,
+                ).pack()
+            ))
+        elif callback == 'about':
+            keyboard.add(InlineKeyboardButton(
+                text=text,
+                callback_data=MenuCallBack(
+                    lang=lang,
+                    method=None,
+                    level=11,
+                    key=callback,
+                ).pack()
+            ))
+        elif callback == 'about':
+            keyboard.add(InlineKeyboardButton(
+                text=text,
+                callback_data=MenuCallBack(
+                    lang=lang,
+                    method=None,
+                    level=11,
+                    key=callback,
+                ).pack()
+            ))
+        elif callback == 'channel':
+            keyboard.add(InlineKeyboardButton(
+                text=text,
+                callback_data=MenuCallBack(
+                    lang=lang,
+                    method=None,
+                    level=11,
+                    key=callback,
+                ).pack()
+            ))
         else:
             keyboard.add(InlineKeyboardButton(
                 text=text,
                 callback_data=MenuCallBack(
                     lang=lang,
                     method=None,
-                    level=level,
+                    level=11,
                     key=callback,
                 ).pack()
             ))
 
-    sizes = [1, 1, 1, 2, 2]
+    sizes = [1, 1, 1, 2, 2, 1]
 
     return keyboard.adjust(*sizes).as_markup()
 
@@ -134,7 +174,8 @@ def get_profession_button(
         ).pack()
     ))
 
-    sizes = [2 for _ in range(len(data_list) // 2)] + ([1] if len(data_list) % 2 else []) + ([2] if data_name == 'subcatalog' else [1])
+    sizes = ([2 for _ in range(len(data_list) // 2)] + ([1] if len(data_list) % 2 else []) +
+             ([2] if data_name == 'subcatalog' else [1]))
 
     return keyboard.adjust(*sizes).as_markup()
 
@@ -328,7 +369,7 @@ def get_description_button(
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_create_button(
+def get_confirm_button(
         lang: str,
         method: str,
         view: str,
@@ -364,6 +405,25 @@ def get_create_button(
             catalog_id=None if method == 'create' else catalog_id,
             subcatalog_id=None if method == 'create' else subcatalog_id,
             vacancy_id=None if method == 'create' else vacancy_id,
+        ).pack()
+    ))
+
+    return keyboard.adjust(*sizes).as_markup()
+
+
+def get_profile_button(
+        lang: str,
+        key: str,
+        sizes: tuple[int] = (2,),
+):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['exit'],
+        callback_data=MenuCallBack(
+            lang=lang,
+            level=0,
+            key='menu',
         ).pack()
     ))
 

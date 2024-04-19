@@ -1,8 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.keyboards.menu import get_menu_button, get_create_button, get_vacancy_button, get_description_button, get_profession_button
-from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, get_vacancy_one, \
-    get_vacancy_user, get_vacancy_favorite, get_liked_one, get_complaint_one
+from core.keyboards.menu import get_menu_button, get_vacancy_button, get_description_button, get_profession_button, \
+    get_profile_button, get_confirm_button
+from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, \
+    get_vacancy_one, get_vacancy_user, get_vacancy_favorite, get_liked_one, get_complaint_one
 from core.utils.connector import connector
 from core.utils.paginator import Paginator
 
@@ -22,13 +23,11 @@ async def shaping_menu(
         lang: str,
         level: int,
         key: str,
-        page: int,
 ):
     text = connector[lang]['message']['menu'][key]
     button = get_menu_button(
         lang=lang,
         level=level,
-        page=page,
     )
 
     return text, button
@@ -60,8 +59,14 @@ async def shaping_subcatalog(
         key: str,
         catalog_id: int,
 ):
-    catalog = await get_catalog_one(session=session, catalog_id=catalog_id)
-    subcatalog = await get_subcatalog_all(session=session, catalog_id=catalog_id)
+    catalog = await get_catalog_one(
+        session=session,
+        catalog_id=catalog_id,
+    )
+    subcatalog = await get_subcatalog_all(
+        session=session,
+        catalog_id=catalog_id,
+    )
 
     text = connector[lang]['message']['menu'][key]
     button = get_profession_button(
@@ -88,11 +93,20 @@ async def shaping_vacancy(
         vacancy_id: int | None = None,
 ):
     if view == 'all':
-        vacancy = await get_vacancy_all_active(session=session, subcatalog_id=subcatalog_id)
+        vacancy = await get_vacancy_all_active(
+            session=session,
+            subcatalog_id=subcatalog_id,
+        )
     elif view == 'your':
-        vacancy = await get_vacancy_user(session=session, user_id=user_id)
+        vacancy = await get_vacancy_user(
+            session=session,
+            user_id=user_id,
+        )
     else:
-        vacancy = await get_vacancy_favorite(session=session, user_id=user_id)
+        vacancy = await get_vacancy_favorite(
+            session=session,
+            user_id=user_id,
+        )
 
     pagination_button = {}
 
@@ -137,18 +151,37 @@ async def shaping_description(
         your_vacancy=None,
 ):
     if view == 'all' or view == 'liked':
-        vacancy = await get_vacancy_one(session=session, vacancy_id=vacancy_id)
+        vacancy = await get_vacancy_one(
+            session=session,
+            vacancy_id=vacancy_id,
+        )
 
         if view == 'all':
-            your_vacancy = await get_vacancy_one(session=session, vacancy_id=vacancy_id, user_id=user_id)
+            your_vacancy = await get_vacancy_one(
+                session=session,
+                vacancy_id=vacancy_id,
+                user_id=user_id,
+            )
 
-        liked = await get_liked_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
-        complaint = await get_complaint_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
+        liked = await get_liked_one(
+            session=session,
+            user_id=user_id,
+            vacancy_id=vacancy_id,
+        )
+        complaint = await get_complaint_one(
+            session=session,
+            user_id=user_id,
+            vacancy_id=vacancy_id,
+        )
 
         liked_id = liked.id if liked else None
         complaint_id = complaint.id if complaint else None
     else:
-        vacancy = await get_vacancy_one(session=session, vacancy_id=vacancy_id, user_id=user_id)
+        vacancy = await get_vacancy_one(
+            session=session,
+            vacancy_id=vacancy_id,
+            user_id=user_id,
+        )
 
     text = f"{vacancy.name}\n\n{vacancy.description}\n\n{vacancy.salary}"
     button = get_description_button(
@@ -178,7 +211,7 @@ async def shaping_confirm(
         vacancy_id: int,
 ):
     text = connector[lang]['message']['menu']['confirm'][method]
-    button = get_create_button(
+    button = get_confirm_button(
         lang=lang,
         method=method,
         view=view,
@@ -186,6 +219,19 @@ async def shaping_confirm(
         catalog_id=catalog_id,
         subcatalog_id=subcatalog_id,
         vacancy_id=vacancy_id,
+    )
+
+    return text, button
+
+
+async def shaping_profile(
+        lang: str,
+        key: str,
+):
+    text = connector[lang]['message']['menu'][key]
+    button = get_profile_button(
+        lang=lang,
+        key=key,
     )
 
     return text, button
@@ -205,7 +251,7 @@ async def menu_processing(
         vacancy_id: int | None = None,
 ):
     if level == 0:
-        return await shaping_menu(lang, level, key, page)
+        return await shaping_menu(lang, level, key)
     elif level == 1:
         return await shaping_catalog(session, lang, level, key)
     elif level == 2:
@@ -217,3 +263,5 @@ async def menu_processing(
 
     elif level == 10:
         return await shaping_confirm(lang, method, view, page, catalog_id, subcatalog_id, vacancy_id)
+    elif level == 11:
+        return await shaping_profile(lang, key)

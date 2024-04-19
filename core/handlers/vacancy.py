@@ -22,7 +22,10 @@ vacancy_router = Router()
 @vacancy_router.callback_query(MenuCallBack.filter(F.key == 'vacancy'))
 async def catalog_vacancy_callback(callback: CallbackQuery, callback_data: MenuCallBack, state: FSMContext, session: AsyncSession) -> None:
     if callback_data.method == 'delete':
-        await deactivate_vacancy(session=session, vacancy_id=callback_data.vacancy_id)
+        await deactivate_vacancy(
+            session=session,
+            vacancy_id=callback_data.vacancy_id,
+        )
         await callback.answer("Вакансия деактивирована!.")
 
         return await redirector(
@@ -51,7 +54,10 @@ async def catalog_vacancy_callback(callback: CallbackQuery, callback_data: MenuC
             'update_subcatalog_id': callback_data.subcatalog_id,
             'update_vacancy_id': callback_data.vacancy_id,
         })
-        StateVacancy.change = await get_vacancy_one(session=session, vacancy_id=callback_data.vacancy_id)
+        StateVacancy.change = await get_vacancy_one(
+            session=session,
+            vacancy_id=callback_data.vacancy_id,
+        )
 
     catalog = await get_catalog_all(session=session)
 
@@ -168,7 +174,11 @@ async def back_vacancy(message: Message, state: FSMContext, session: AsyncSessio
             'region_name': None,
         })
         await state.set_state(StateVacancy.REGION)
-        return await region_vacancy(message=message, state=state, session=session)
+        return await region_vacancy(
+            message=message,
+            state=state,
+            session=session,
+        )
 
 
 @vacancy_router.message(StateVacancy.CATALOG, CatalogFilter())
@@ -177,9 +187,15 @@ async def subcatalog_vacancy(message: Message, state: FSMContext, session: Async
 
     if not state_data['catalog_id'] and not state_data['catalog_title'] and not state_data['currency_id']:
         if message.text == 'Не менять!':
-            catalog = await get_catalog_one(session=session, catalog_id=StateVacancy.change.catalog_id)
+            catalog = await get_catalog_one(
+                session=session,
+                catalog_id=StateVacancy.change.catalog_id,
+            )
         else:
-            catalog = await get_catalog_one(session=session, catalog_logo=message.text.split(' ')[0])
+            catalog = await get_catalog_one(
+                session=session,
+                catalog_logo=message.text.split(' ')[0],
+            )
 
         currency = await get_currency_first(session=session)
 
@@ -190,7 +206,10 @@ async def subcatalog_vacancy(message: Message, state: FSMContext, session: Async
         })
         state_data = await state.get_data()
 
-    subcatalog = await get_subcatalog_all(session=session, catalog_id=state_data['catalog_id'])
+    subcatalog = await get_subcatalog_all(
+        session=session,
+        catalog_id=state_data['catalog_id'],
+    )
 
     reply_markup = vacancy_profession_button(
         lang=state_data['lang'],
@@ -213,7 +232,11 @@ async def name_vacancy(message: Message, state: FSMContext, session: AsyncSessio
 
     if not state_data['subcatalog_id']:
         if message.text == 'Не менять!':
-            subcatalog = await get_subcatalog_one(session=session, subcatalog_id=StateVacancy.change.subcatalog_id, catalog_id=state_data['catalog_id'])
+            subcatalog = await get_subcatalog_one(
+                session=session,
+                subcatalog_id=StateVacancy.change.subcatalog_id,
+                catalog_id=state_data['catalog_id'],
+            )
         else:
             subcatalog_title = ''
             for key, value in connector[state_data['lang']]['catalog'][state_data['catalog_title']]['subcatalog'].items():
@@ -221,7 +244,11 @@ async def name_vacancy(message: Message, state: FSMContext, session: AsyncSessio
                     subcatalog_title = key
                     break
 
-            subcatalog = await get_subcatalog_one(session=session, subcatalog_title=subcatalog_title, catalog_id=state_data['catalog_id'])
+            subcatalog = await get_subcatalog_one(
+                session=session,
+                subcatalog_title=subcatalog_title,
+                catalog_id=state_data['catalog_id'],
+            )
 
         await state.update_data({
             'subcatalog_id': subcatalog.id,
@@ -353,7 +380,11 @@ async def region_vacancy(message: Message, state: FSMContext, session: AsyncSess
             'salary': StateVacancy.change.salary if message.text == 'Не менять!' else int(message.text),
         })
 
-    country, region = await get_country_first(session=session), await get_region_all(session=session)
+    country = await get_country_first(session=session)
+    region = await get_region_all(
+        session=session,
+        country_id=country.id,
+    )
 
     reply_markup = vacancy_location_button(
         lang=state_data['lang'],
@@ -377,7 +408,10 @@ async def city_vacancy(message: Message, state: FSMContext, session: AsyncSessio
     if not state_data['country_id'] and not state_data['country_name'] and not state_data['region_id'] and not state_data['region_name']:
         country = await get_country_first(session=session)
         if message.text == 'Не менять!':
-            region = await get_region_one(session=session, region_id=StateVacancy.change.region_id)
+            region = await get_region_one(
+                session=session,
+                region_id=StateVacancy.change.region_id,
+            )
         else:
             region_name = ''
             for key, value in connector[state_data['lang']]['country'][country.name]['region'].items():
@@ -385,7 +419,10 @@ async def city_vacancy(message: Message, state: FSMContext, session: AsyncSessio
                     region_name = key
                     break
 
-            region = await get_region_one(session=session, region_name=region_name)
+            region = await get_region_one(
+                session=session,
+                region_name=region_name,
+            )
 
         await state.update_data({
             'country_id': country.id,
@@ -395,7 +432,10 @@ async def city_vacancy(message: Message, state: FSMContext, session: AsyncSessio
         })
         state_data = await state.get_data()
 
-    city = await get_city_all(session=session, region_id=state_data['region_id'])
+    city = await get_city_all(
+        session=session,
+        region_id=state_data['region_id'],
+    )
 
     reply_markup = vacancy_location_button(
         lang=state_data['lang'],
@@ -419,7 +459,10 @@ async def finish_vacancy(message: Message, state: FSMContext, session: AsyncSess
 
     if message.text != connector[state_data['lang']]['button']['skip']:
         if message.text == 'Не менять!':
-            city = await get_city_one(session=session, city_id=StateVacancy.change.city_id)
+            city = await get_city_one(
+                session=session,
+                city_id=StateVacancy.change.city_id,
+            )
         else:
             city_name = ''
             for key, value in connector[state_data['lang']]['country'][state_data['country_name']]['region'][state_data['region_name']]['city'].items():
@@ -427,7 +470,10 @@ async def finish_vacancy(message: Message, state: FSMContext, session: AsyncSess
                     city_name = key
                     break
 
-            city = await get_city_one(session=session, city_name=city_name)
+            city = await get_city_one(
+                session=session,
+                city_name=city_name,
+            )
         await state.update_data({
             'city_id': city.id,
         })
@@ -435,9 +481,17 @@ async def finish_vacancy(message: Message, state: FSMContext, session: AsyncSess
     state_data = await state.get_data()
 
     if StateVacancy.change:
-        await update_vacancy(session=session, data=state_data, vacancy_id=StateVacancy.change.id)
+        await update_vacancy(
+            session=session,
+            data=state_data,
+            vacancy_id=StateVacancy.change.id,
+        )
     else:
-        await create_vacancy(session=session, data=state_data, user_id=message.from_user.id)
+        await create_vacancy(
+            session=session,
+            data=state_data,
+            user_id=message.from_user.id,
+        )
 
     await message.answer(
         text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['finish'],

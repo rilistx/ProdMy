@@ -155,7 +155,13 @@ async def get_catalog_all(*, session: AsyncSession):
     return query.scalars().all()
 
 
-async def get_catalog_one(*, session: AsyncSession, catalog_id: int | None = None, catalog_title: str | None = None, catalog_logo: str | None = None):
+async def get_catalog_one(
+        *,
+        session: AsyncSession,
+        catalog_id: int | None = None,
+        catalog_title: str | None = None,
+        catalog_logo: str | None = None
+):
     query = await session.execute(select(Catalog).where(
         or_(catalog_id is None, Catalog.id == catalog_id),
         or_(catalog_title is None, Catalog.title == catalog_title),
@@ -196,8 +202,8 @@ async def get_country_first(*, session: AsyncSession):
     return query.scalars().first()
 
 
-async def get_region_all(*, session: AsyncSession):
-    query = await session.execute(select(Region))
+async def get_region_all(*, session: AsyncSession, country_id: int):
+    query = await session.execute(select(Region).where(Region.country_id == country_id))
 
     return query.scalars().all()
 

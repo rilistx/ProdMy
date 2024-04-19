@@ -28,8 +28,14 @@ async def menu(
         subcatalog_id: int | None = None,
         vacancy_id: int | None = None,
 ) -> None:
-    user = await search_user(session=session, user_id=message.from_user.id)
-    lang = await get_language_one(session=session, language_id=user.language_id)
+    user = await search_user(
+        session=session,
+        user_id=message.from_user.id,
+    )
+    lang = await get_language_one(
+        session=session,
+        language_id=user.language_id,
+    )
 
     text, reply_markup = await menu_processing(
         session=session,
@@ -44,39 +50,78 @@ async def menu(
         vacancy_id=vacancy_id if vacancy_id else None,
     )
 
-    await message.answer(text=text, reply_markup=reply_markup)
+    await message.answer(
+        text=text,
+        reply_markup=reply_markup,
+    )
 
 
 async def favorite(
         callback: CallbackQuery,
         callback_data: MenuCallBack,
-        session: AsyncSession
+        session: AsyncSession,
 ) -> None:
-    liked = await get_liked_one(session=session, user_id=callback.from_user.id, vacancy_id=callback_data.vacancy_id)
+    liked = await get_liked_one(
+        session=session,
+        user_id=callback.from_user.id,
+        vacancy_id=callback_data.vacancy_id,
+    )
 
     if liked:
-        await delete_liked(session=session, user_id=callback.from_user.id, vacancy_id=callback_data.vacancy_id)
-        await callback.answer("Вакансия убрана из избранного!.")
+        await delete_liked(
+            session=session,
+            user_id=callback.from_user.id,
+            vacancy_id=callback_data.vacancy_id,
+        )
+        await callback.answer(
+            text="Вакансия убрана из избранного!.",
+        )
     else:
-        await create_liked(session=session, user_id=callback.from_user.id, vacancy_id=callback_data.vacancy_id)
-        await callback.answer("Вакансия добавлена в избранное!.")
+        await create_liked(
+            session=session,
+            user_id=callback.from_user.id,
+            vacancy_id=callback_data.vacancy_id,
+        )
+        await callback.answer(
+            text="Вакансия добавлена в избранное!.",
+        )
 
 
 async def complaint(
         callback: CallbackQuery,
         callback_data: MenuCallBack,
-        session: AsyncSession
+        session: AsyncSession,
 ) -> None:
-    feedback = await get_complaint_one(session=session, user_id=callback.from_user.id, vacancy_id=callback_data.vacancy_id)
+    feedback = await get_complaint_one(
+        session=session,
+        user_id=callback.from_user.id,
+        vacancy_id=callback_data.vacancy_id,
+    )
 
-    await get_vacancy_complaint(session=session, vacancy_id=callback_data.vacancy_id, operation='minus' if feedback else 'plus')
+    await get_vacancy_complaint(
+        session=session,
+        vacancy_id=callback_data.vacancy_id,
+        operation='minus' if feedback else 'plus',
+    )
 
     if feedback:
-        await delete_complaint(session=session, user_id=callback.from_user.id, vacancy_id=callback_data.vacancy_id)
-        await callback.answer("Вы убрали жалобу!.")
+        await delete_complaint(
+            session=session,
+            user_id=callback.from_user.id,
+            vacancy_id=callback_data.vacancy_id,
+        )
+        await callback.answer(
+            text="Вы убрали жалобу!.",
+        )
     else:
-        await create_complaint(session=session, user_id=callback.from_user.id, vacancy_id=callback_data.vacancy_id)
-        await callback.answer("Вы пожаловались!.")
+        await create_complaint(
+            session=session,
+            user_id=callback.from_user.id,
+            vacancy_id=callback_data.vacancy_id,
+        )
+        await callback.answer(
+            text="Вы пожаловались!.",
+        )
 
 
 @menu_router.callback_query(MenuCallBack.filter(F.key != 'vacancy'))
@@ -90,13 +135,27 @@ async def redirector(
         page: int | None = None,
 ) -> None:
     if callback_data.method == "favorite":
-        await favorite(callback=callback, callback_data=callback_data, session=session)
+        await favorite(
+            callback=callback,
+            callback_data=callback_data,
+            session=session,
+        )
 
     if callback_data.method == "feedback":
-        await complaint(callback=callback, callback_data=callback_data, session=session)
+        await complaint(
+            callback=callback,
+            callback_data=callback_data,
+            session=session,
+        )
 
-    user = await search_user(session=session, user_id=callback.from_user.id)
-    lang = await get_language_one(session=session, language_id=user.language_id)
+    user = await search_user(
+        session=session,
+        user_id=callback.from_user.id,
+    )
+    lang = await get_language_one(
+        session=session,
+        language_id=user.language_id,
+    )
 
     text, reply_markup = await menu_processing(
         session=session,
@@ -112,5 +171,8 @@ async def redirector(
         vacancy_id=callback_data.vacancy_id,
     )
 
-    await callback.message.edit_text(text=text, reply_markup=reply_markup)
+    await callback.message.edit_text(
+        text=text,
+        reply_markup=reply_markup,
+    )
     await callback.answer()

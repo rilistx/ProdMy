@@ -1,20 +1,24 @@
 from sqlalchemy import select, update, delete, or_
+from sqlalchemy.sql import func
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models.models import Language, User, Separator, Currency, Catalog, Subcatalog, Country, Region, City, Vacancy, Liked, Complaint, Transaction  # noqa
+from core.models.models import Language, User, Currency, Catalog, Subcatalog, Country, Region, City, \
+    Vacancy, Liked, Complaint, Transaction, Preview  # noqa
 
 
 # ########################################   USER   ############################################### #
 
-async def create_user(*, session: AsyncSession, user_id, username, first_name, phone_number, language_id, is_admin=False) -> None:
+async def create_user(*, session: AsyncSession, user_id, username, first_name, phone_number, language_id, currency_id, country_id, is_admin=False) -> None:
     session.add(User(
         id=user_id,
         username=username,
         first_name=first_name,
         phone_number=phone_number,
-        is_admin=is_admin,
         language_id=language_id,
+        currency_id=currency_id,
+        country_id=country_id,
+        is_admin=is_admin,
     ))
 
     await session.commit()
@@ -39,22 +43,10 @@ async def search_user(*, session: AsyncSession, user_id: int | None = None, user
     return query.scalar()
 
 
-# ########################################   FILTER   ############################################### #
-
-async def create_separator(*, session: AsyncSession, user_id, currency_id, country_id) -> None:
-    session.add(Separator(
-        id=user_id,
-        currency_id=currency_id,
-        country_id=country_id,
-    ))
-
-    await session.commit()
-
-
 # ########################################   VACANCY   ############################################### #
 
-async def create_vacancy(*, session: AsyncSession, data: dict, user_id: int) -> None:
-    session.add(Vacancy(
+async def create_vacancy(*, session: AsyncSession, data: dict, user_id: int):
+    vacancy = Vacancy(
         name=data['name'],
         description=data['description'],
         experience=data['experience'],
@@ -68,9 +60,11 @@ async def create_vacancy(*, session: AsyncSession, data: dict, user_id: int) -> 
         region_id=data['region_id'],
         city_id=data['city_id'],
         user_id=user_id,
-    ))
-
+    )
+    session.add(vacancy)
     await session.commit()
+
+    return vacancy.id
 
 
 async def update_vacancy(*, session: AsyncSession, data: dict, vacancy_id: int) -> None:
@@ -94,22 +88,29 @@ async def update_vacancy(*, session: AsyncSession, data: dict, vacancy_id: int) 
     await session.commit()
 
 
-async def update_vacancy_complaint(*, session: AsyncSession, vacancy_id: int, operation: str) -> None:
+async def deactivate_vacancy(*, session: AsyncSession, vacancy_id: int, method: str) -> None:
     await session.execute(
         update(Vacancy).where(Vacancy.id == vacancy_id).values(
-            count_complaint=Vacancy.count_complaint + 1 if operation == 'plus' else Vacancy.count_complaint - 1,
+            active=True if method == 'activate' else False,
         )
     )
 
     await session.commit()
 
 
-async def deactivate_vacancy(*, session: AsyncSession, vacancy_id: int) -> None:
-    await session.execute(
-        update(Vacancy).where(Vacancy.id == vacancy_id).values(
-            active=False,
-        )
-    )
+async def delete_vacancy(*, session: AsyncSession, vacancy_id: int) -> None:
+    await session.execute(delete(Vacancy).where(Vacancy.id == vacancy_id))
+
+    await session.commit()
+
+
+# ########################################   PREVIEW   ############################################### #
+
+async def create_preview(*, session: AsyncSession, user_id: int, vacancy_id: int) -> None:
+    session.add(Preview(
+        user_id=user_id,
+        vacancy_id=vacancy_id,
+    ))
 
     await session.commit()
 
@@ -155,6 +156,12 @@ async def get_language_one(*, session: AsyncSession, language_id: int | None = N
         or_(language_id is None, Language.id == language_id),
         or_(language_abbreviation is None, Language.abbreviation == language_abbreviation),
     ))
+
+    return query.scalar()
+
+
+async def get_language_user(*, session: AsyncSession, user_id: int):
+    query = await session.execute(select(User).where(User.id == user_id).join(User.language).options(joinedload(User.language)))
 
     return query.scalar()
 
@@ -255,11 +262,24 @@ async def get_currency_first(*, session: AsyncSession):
 
 
 async def get_vacancy_all_active(*, session: AsyncSession, subcatalog_id: int):
-    query = await session.execute(select(Vacancy).where(
-        Vacancy.subcatalog_id == subcatalog_id,
-        Vacancy.active,
-        or_(Vacancy.count_complaint < 5, Vacancy.count_complaint > 5),
-    ))
+    query = await session.execute(
+        select(
+            Vacancy,
+            func.count(Complaint.vacancy_id).label("count_complaint"),
+        ).where(
+            Vacancy.active,
+            Vacancy.subcatalog_id == subcatalog_id,
+        ).select_from(
+            Vacancy
+        ).join(
+            Complaint,
+            Vacancy.id == Complaint.vacancy_id,
+            full=True
+        ).group_by(
+            Vacancy.id,
+        ).having(
+            func.count(Complaint.vacancy_id) != 5,
+        ))
 
     return query.scalars().all()
 
@@ -267,7 +287,6 @@ async def get_vacancy_all_active(*, session: AsyncSession, subcatalog_id: int):
 async def get_vacancy_one(*, session: AsyncSession, vacancy_id: int, user_id: int | None = None):
     query = await session.execute(select(Vacancy).where(
         Vacancy.id == vacancy_id,
-        Vacancy.active,
         or_(user_id is None, Vacancy.user_id == user_id),
     ))
 
@@ -275,18 +294,44 @@ async def get_vacancy_one(*, session: AsyncSession, vacancy_id: int, user_id: in
 
 
 async def get_vacancy_user(*, session: AsyncSession, user_id: int):
-    query = await session.execute(select(Vacancy).where(
-        Vacancy.user_id == user_id,
-        Vacancy.active,
-    ))
+    query = await session.execute(select(Vacancy).where(Vacancy.user_id == user_id))
 
     return query.scalars().all()
 
 
 async def get_vacancy_favorite(*, session: AsyncSession, user_id: int):
-    query = await session.execute(select(Liked).where(Liked.user_id == user_id).options(joinedload(Liked.vacancy)))
+    query = await session.execute(
+        select(
+            Vacancy,
+        ).where(
+            Vacancy.active,
+            Liked.user_id == user_id,
+        ).select_from(
+            Vacancy,
+        ).join(
+            Liked,
+            Vacancy.id == Liked.vacancy_id,
+            full=True,
+        ).select_from(
+            Vacancy,
+        ).join(
+            Complaint,
+            Vacancy.id == Complaint.vacancy_id,
+            full=True,
+        ).group_by(
+            Vacancy.id
+        ).having(
+            func.count(Complaint.vacancy_id) != 5,
+        )
+    )
 
     return query.scalars().all()
+
+
+async def get_preview_one(*, session: AsyncSession, user_id: int, vacancy_id: int):
+    query = await session.execute(select(Preview).where(Preview.user_id == user_id, Preview.vacancy_id == vacancy_id))
+
+    return query.scalar()
 
 
 async def get_complaint_one(*, session: AsyncSession, user_id: int, vacancy_id: int):

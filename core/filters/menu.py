@@ -3,7 +3,7 @@ from aiogram.filters import BaseFilter
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models.querys import search_user
+from core.database.querys import search_user
 
 
 class IsUserFilter(BaseFilter):

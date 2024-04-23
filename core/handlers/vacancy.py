@@ -14,7 +14,7 @@ from core.filters.vacancy import CatalogFilter, SubcatalogFilter, NameFilter, Ch
 from core.handlers.menu import menu, redirector
 from core.keyboards.menu import MenuCallBack
 from core.keyboards.vacancy import vacancy_profession_button, vacancy_keyboard_button, vacancy_location_button, vacancy_choice_button
-from core.models.querys import get_catalog_all, get_subcatalog_all, get_catalog_one, get_subcatalog_one, \
+from core.database.querys import get_catalog_all, get_subcatalog_all, get_catalog_one, get_subcatalog_one, \
     get_country_first, get_region_all, get_region_one, get_city_all, get_city_one, create_vacancy, get_vacancy_one, \
     update_vacancy, get_currency_first, deactivate_vacancy, delete_vacancy
 from core.schedulers.vacancy import scheduler_deactivate_vacancy
@@ -95,9 +95,11 @@ async def catalog_vacancy_callback(
 
     await callback.message.delete()
 
-    state_list = ['lang', 'catalog_id', 'catalog_title', 'currency_id', 'subcatalog_id',
-                  'name', 'description', 'language', 'experience', 'disability', 'salary',
-                  'country_id', 'country_name', 'region_id', 'region_name', 'city_id']
+    state_list = [
+        'lang', 'catalog_id', 'catalog_title', 'currency_id', 'subcatalog_id',
+        'name', 'description', 'language', 'experience', 'disability', 'salary',
+        'country_id', 'country_name', 'region_id', 'region_name', 'city_id',
+    ]
 
     await state.update_data({key: callback_data.lang if key == 'lang' else None for key in state_list})
 
@@ -675,14 +677,14 @@ async def finish_vacancy(
             vacancy_id=state_data['update_vacancy_id'],
         )
     else:
-        vacancy_id = await create_vacancy(
+        vacancy = await create_vacancy(
             session=session,
             data=state_data,
             user_id=message.from_user.id,
         )
 
-        if apscheduler.get_job(f'deactivate_vacancy_{str(vacancy_id)}'):
-            apscheduler.remove_job(f'deactivate_vacancy_{str(vacancy_id)}')
+        if apscheduler.get_job(f'deactivate_vacancy_{str(vacancy.id)}'):
+            apscheduler.remove_job(f'deactivate_vacancy_{str(vacancy.id)}')
 
         apscheduler.add_job(
             scheduler_deactivate_vacancy,
@@ -690,13 +692,14 @@ async def finish_vacancy(
             next_run_time=datetime.now() + timedelta(seconds=30),
             kwargs={
                 'chat_id': message.chat.id,
-                'vacancy_id': vacancy_id,
+                'vacancy_id': vacancy.id,
             },
-            id=f'deactivate_vacancy_{str(vacancy_id)}',
+            id=f'deactivate_vacancy_{str(vacancy.id)}',
         )
 
         await vacancy_channel(
             bot=bot,
+            data=vacancy,
         )
 
         await state.clear()

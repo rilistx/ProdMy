@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.filters.registration import IsContactFilter
 from core.handlers.menu import menu
 from core.keyboards.registration import get_contact_button
-from core.models.querys import search_user, get_language_one, get_currency_one, get_country_one, create_user
+from core.database.querys import search_user, get_language_one, get_currency_one, get_country_one, create_user
 from core.states.registration import StateRegistration
 from core.utils.connector import connector
 from core.utils.username import create_username

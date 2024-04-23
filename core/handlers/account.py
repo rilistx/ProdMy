@@ -9,7 +9,7 @@ from core.filters.account import ExitFilter, NameFilter
 from core.handlers.menu import menu
 from core.keyboards.account import account_name_button
 from core.keyboards.menu import MenuCallBack
-from core.models.querys import search_user, update_name_user
+from core.database.querys import search_user, update_name_user
 from core.states.account import StateAccount
 from core.utils.connector import connector  # noqa
 

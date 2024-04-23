@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.filters.menu import IsUserFilter
 from core.keyboards.menu import MenuCallBack
-from core.models.querys import create_liked, get_liked_one, get_complaint_one, create_complaint, delete_liked, \
+from core.database.querys import create_liked, get_liked_one, get_complaint_one, create_complaint, delete_liked, \
     delete_complaint, get_vacancy_one, get_language_user
 from core.processes.menu import menu_processing
 

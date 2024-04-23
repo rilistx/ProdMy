@@ -1,7 +1,7 @@
 from aiogram import Bot
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models.querys import deactivate_vacancy
+from core.database.querys import deactivate_vacancy
 
 
 async def scheduler_deactivate_vacancy(bot: Bot, session: AsyncSession, chat_id: int, vacancy_id: int):

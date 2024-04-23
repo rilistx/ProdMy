@@ -2,14 +2,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.keyboards.menu import get_menu_button, get_vacancy_button, get_description_button, get_profession_button, \
     get_profile_button, get_confirm_button, get_setting_button, get_about_button
-from core.models.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, \
+from core.database.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, \
     get_vacancy_one, get_vacancy_user, get_vacancy_favorite, get_liked_one, get_complaint_one, search_user, \
     get_preview_one, create_preview
 from core.utils.connector import connector
 from core.utils.paginator import Paginator
 
 
-def pages(paginator: Paginator):
+def pages(
+        paginator: Paginator,
+):
     button = dict()
     if paginator.has_previous():
         button["◀ Пред."] = "previous"
@@ -44,7 +46,7 @@ async def shaping_menu(
 
 
 async def shaping_catalog(
-        session,
+        session: AsyncSession,
         lang: str,
         level: int,
         key: str,
@@ -63,7 +65,7 @@ async def shaping_catalog(
 
 
 async def shaping_subcatalog(
-        session,
+        session: AsyncSession,
         lang: str,
         level: int,
         key: str,
@@ -91,7 +93,7 @@ async def shaping_subcatalog(
 
 
 async def shaping_vacancy(
-        session,
+        session: AsyncSession,
         lang: str,
         user_id: int,
         view: str,
@@ -147,7 +149,7 @@ async def shaping_vacancy(
 
 
 async def shaping_description(
-        session,
+        session: AsyncSession,
         lang: str,
         user_id: int,
         view: str,
@@ -258,7 +260,7 @@ async def shaping_profile(
 
 
 async def shaping_setting(
-        session,
+        session: AsyncSession,
         lang: str,
         user_id: int,
         level: int,
@@ -279,13 +281,16 @@ async def shaping_about(
         lang: str,
         key: str,
 ):
-
     text = connector[lang]['message']['menu'][key]
     button = get_about_button(
         lang=lang,
     )
 
     return text, button
+
+
+async def shaping_admin_panel():
+    pass
 
 
 async def menu_processing(
@@ -322,3 +327,6 @@ async def menu_processing(
 
     elif level == 30:
         return await shaping_about(lang, key)
+
+    elif level == 40:
+        return await shaping_admin_panel()

@@ -1,7 +1,11 @@
 from aiogram import Bot
 
-from core.utils.settings import channel
+from core.database.models import Vacancy
 
 
-async def vacancy_channel(bot: Bot) -> None:
-    await bot.send_message(chat_id=channel, text='Новая вакансия!')
+# from core.utils.settings import async_session_maker, channel
+
+
+async def vacancy_channel(bot: Bot, data: Vacancy) -> None:
+    # await bot.send_message(chat_id=channel, text='Новая вакансия!')
+    pass

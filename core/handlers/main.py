@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher, Router
 
-from core.models.autocread import create_db, drop_db  # noqa
+from core.database.autocreads import create_db, drop_db  # noqa
 from core.utils.settings import admin
 
 

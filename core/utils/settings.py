@@ -68,13 +68,13 @@ scheduler = scheduler_env('.env')
 
 PostgresURL = f"postgresql+asyncpg://{postgres['db_user']}:{postgres['db_pass']}@{postgres['db_host']}/{postgres['db_name']}"
 async_engine = create_async_engine(PostgresURL, echo=True)
-session_maker = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
+async_session_maker = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
 bot = Bot(token=token, parse_mode=ParseMode.HTML)
 storage = RedisStorage.from_url(f"{redis['db_name']}://{redis['db_host']}:{redis['db_port']}/0")
 
 
-async def async_scheduler():
+def async_scheduler():
     connect = ContextSchedulerDecorator(AsyncIOScheduler(
         timezone="Europe/Kiev",
         jobstores={
@@ -89,8 +89,5 @@ async def async_scheduler():
     ))
 
     connect.ctx.add_instance(bot, declared_class=Bot)
-
-    async with session_maker() as session:
-        connect.ctx.add_instance(session, declared_class=AsyncSession)
 
     return connect

@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models.models import Base, Language, Currency, Country, Region, City, Catalog, Subcatalog
-from core.models.querys import get_language_one, get_currency_one, get_catalog_one, get_subcatalog_one, \
+from core.database.models import Base, Language, Currency, Country, Region, City, Catalog, Subcatalog
+from core.database.querys import get_language_one, get_currency_one, get_catalog_one, get_subcatalog_one, \
     get_country_one, get_region_one, get_city_one, search_user, create_user
-from core.utils.settings import async_engine, session_maker, admin
+from core.utils.settings import async_engine, async_session_maker, admin
 from core.utils.username import create_username
 
 creator = {
@@ -59,7 +59,7 @@ async def create_db() -> None:
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    async with session_maker() as session:
+    async with async_session_maker() as session:
         await create_language(session, creator['language'])
         await create_currency(session, creator['currency'])
         await create_catalog(session, creator['catalog'])

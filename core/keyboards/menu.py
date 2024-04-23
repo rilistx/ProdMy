@@ -11,6 +11,7 @@ class MenuCallBack(CallbackData, prefix="main"):
     view: str | None = None
     level: int | None = None
     key: str | None = None
+    data: str | None = None
     page: int = 1
     catalog_id: int | None = None
     subcatalog_id: int | None = None
@@ -20,64 +21,98 @@ class MenuCallBack(CallbackData, prefix="main"):
 def get_menu_button(
         lang: str,
         level: int,
+        blocked: bool,
+        admin: bool,
 ):
     keyboard = InlineKeyboardBuilder()
 
     for callback, text in connector[lang]['button']['menu'].items():
-        if callback == 'catalog':
+        if not blocked:
+            if callback == 'catalog':
+                keyboard.add(InlineKeyboardButton(
+                    text=text,
+                    callback_data=MenuCallBack(
+                        lang=lang,
+                        method=None,
+                        level=level + 1,
+                        key=callback,
+                    ).pack()
+                ))
+            elif callback == 'browse':
+                keyboard.add(InlineKeyboardButton(
+                    text=text,
+                    callback_data=MenuCallBack(
+                        lang=lang,
+                        method=None,
+                        view='your',
+                        level=3,
+                        key='view',
+                    ).pack()
+                ))
+            elif callback == 'create':
+                keyboard.add(InlineKeyboardButton(
+                    text=text,
+                    callback_data=MenuCallBack(
+                        lang=lang,
+                        method='create',
+                        level=10,
+                        key='confirm',
+                    ).pack()
+                ))
+            elif callback == 'favorite':
+                keyboard.add(InlineKeyboardButton(
+                    text=text,
+                    callback_data=MenuCallBack(
+                        lang=lang,
+                        method=None,
+                        view='liked',
+                        level=3,
+                        key='view',
+                    ).pack()
+                ))
+            elif callback == 'profile':
+                keyboard.add(InlineKeyboardButton(
+                    text=text,
+                    callback_data=MenuCallBack(
+                        lang=lang,
+                        method=None,
+                        level=20,
+                        key=callback,
+                    ).pack()
+                ))
+            elif callback == 'about':
+                keyboard.add(InlineKeyboardButton(
+                    text=text,
+                    callback_data=MenuCallBack(
+                        lang=lang,
+                        method=None,
+                        level=30,
+                        key=callback,
+                    ).pack()
+                ))
+            elif callback == 'about':
+                keyboard.add(InlineKeyboardButton(
+                    text=text,
+                    callback_data=MenuCallBack(
+                        lang=lang,
+                        method=None,
+                        level=11,
+                        key=callback,
+                    ).pack()
+                ))
+        if callback == 'support':
             keyboard.add(InlineKeyboardButton(
                 text=text,
-                callback_data=MenuCallBack(
-                    lang=lang,
-                    method=None,
-                    level=level + 1,
-                    key=callback,
-                ).pack()
-            ))
-        elif callback == 'browse':
-            keyboard.add(InlineKeyboardButton(
-                text=text,
-                callback_data=MenuCallBack(
-                    lang=lang,
-                    method=None,
-                    view='your',
-                    level=3,
-                    key='view',
-                ).pack()
-            ))
-        elif callback == 'confirm':
-            keyboard.add(InlineKeyboardButton(
-                text=text,
-                callback_data=MenuCallBack(
-                    lang=lang,
-                    method='create',
-                    level=10,
-                    key=callback,
-                ).pack()
-            ))
-        elif callback == 'favorite':
-            keyboard.add(InlineKeyboardButton(
-                text=text,
-                callback_data=MenuCallBack(
-                    lang=lang,
-                    method=None,
-                    view='liked',
-                    level=3,
-                    key='view',
-                ).pack()
-            ))
-        else:
-            keyboard.add(InlineKeyboardButton(
-                text=text,
-                callback_data=MenuCallBack(
-                    lang=lang,
-                    method=None,
-                    level=level,
-                    key=callback,
-                ).pack()
+                url="https://t.me/rilistx",
             ))
 
-    sizes = [1, 1, 1, 2, 2]
+    if admin:
+        keyboard.add(InlineKeyboardButton(
+            text='Админ панель',
+            url="https://t.me/rilistx",
+        ))
+
+    sizes = [1, 1, 1, 2, 2] if not blocked else [1]
 
     return keyboard.adjust(*sizes).as_markup()
 
@@ -134,7 +169,8 @@ def get_profession_button(
         ).pack()
     ))
 
-    sizes = [2 for _ in range(len(data_list) // 2)] + ([1] if len(data_list) % 2 else []) + ([2] if data_name == 'subcatalog' else [1])
+    sizes = ([2 for _ in range(len(data_list) // 2)] + ([1] if len(data_list) % 2 else []) +
+             ([2] if data_name == 'subcatalog' else [1]))
 
     return keyboard.adjust(*sizes).as_markup()
 
@@ -234,7 +270,9 @@ def get_description_button(
         vacancy_id: int,
         liked_id: int,
         complaint_id: int,
-        your_vacancy,
+        deactivate: bool,
+        your_vacancy: bool,
+        # count_complaint: int,
 ):
     keyboard = InlineKeyboardBuilder()
 
@@ -270,20 +308,36 @@ def get_description_button(
 
         sizes = [1, 1]
     else:
-        keyboard.add(InlineKeyboardButton(
-            text='Изменить',
-            callback_data=MenuCallBack(
-                lang=lang,
-                method='update',
-                view=view,
-                level=10,
-                key='confirm',
-                page=page,
-                catalog_id=catalog_id,
-                subcatalog_id=subcatalog_id,
-                vacancy_id=vacancy_id,
-            ).pack()
-        ))
+        if 5:
+            keyboard.add(InlineKeyboardButton(
+                text='Деактивировать' if deactivate else 'Активировать',
+                callback_data=MenuCallBack(
+                    lang=lang,
+                    method='deactivate' if deactivate else 'activate',
+                    view=view,
+                    level=10,
+                    key='confirm',
+                    page=page,
+                    catalog_id=catalog_id,
+                    subcatalog_id=subcatalog_id,
+                    vacancy_id=vacancy_id,
+                ).pack()
+            ))
+
+            keyboard.add(InlineKeyboardButton(
+                text='Изменить',
+                callback_data=MenuCallBack(
+                    lang=lang,
+                    method='update',
+                    view=view,
+                    level=10,
+                    key='confirm',
+                    page=page,
+                    catalog_id=catalog_id,
+                    subcatalog_id=subcatalog_id,
+                    vacancy_id=vacancy_id,
+                ).pack()
+            ))
 
         keyboard.add(InlineKeyboardButton(
             text='Удалить',
@@ -300,7 +354,7 @@ def get_description_button(
             ).pack()
         ))
 
-        sizes = [2]
+        sizes = [1, 2]
 
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['back'],
@@ -328,7 +382,7 @@ def get_description_button(
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_create_button(
+def get_confirm_button(
         lang: str,
         method: str,
         view: str,
@@ -366,5 +420,86 @@ def get_create_button(
             vacancy_id=None if method == 'create' else vacancy_id,
         ).pack()
     ))
+
+    return keyboard.adjust(*sizes).as_markup()
+
+
+def get_profile_button(
+        lang: str,
+        level: int,
+):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(InlineKeyboardButton(
+        text='Настройки профиля',
+        callback_data=MenuCallBack(
+            lang=lang,
+            level=level + 1,
+            key='setting',
+        ).pack()
+    ))
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['exit'],
+        callback_data=MenuCallBack(
+            lang=lang,
+            level=0,
+            key='menu',
+        ).pack()
+    ))
+
+    sizes = [1, 1]
+
+    return keyboard.adjust(*sizes).as_markup()
+
+
+def get_setting_button(
+        lang: str,
+        level: int,
+        first_name: str | None = None,
+):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(InlineKeyboardButton(
+        text='Изменить имя' if first_name else 'Добавить имя',
+        callback_data=MenuCallBack(
+            lang=lang,
+            level=level,
+            key='change',
+            data='name',
+        ).pack()
+    ))
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['exit'],
+        callback_data=MenuCallBack(
+            lang=lang,
+            level=level - 1,
+            key='profile',
+        ).pack()
+    ))
+
+    sizes = [1, 1]
+
+    return keyboard.adjust(*sizes).as_markup()
+
+
+def get_about_button(
+        lang: str,
+):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(InlineKeyboardButton(
+        text='Наш канал',
+        url="https://t.me/wadsworkuk",
+    ))
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['exit'],
+        callback_data=MenuCallBack(
+            lang=lang,
+            level=0,
+            key='menu',
+        ).pack()
+    ))
+
+    sizes = [2]
 
     return keyboard.adjust(*sizes).as_markup()

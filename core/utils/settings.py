@@ -10,14 +10,20 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler_di import ContextSchedulerDecorator
 
-from core.schedulers.schedulers import scheduler_add
-
 
 def telegram_env(path: str):
     env = Env()
     env.read_env(path)
 
-    return env.str("BOT_TOKEN"), env.int("BOT_ADMIN")
+    return (
+        env.str("BOT_TOKEN"),
+        env.int("ID_CHANNEL_UK"),
+        {
+            'id': env.int("ADMIN_ID"),
+            'name': env.str("ADMIN_NAME"),
+            'phone': env.str("ADMIN_PHONE"),
+        },
+    )
 
 
 def postgres_env(path: str):
@@ -54,15 +60,22 @@ def scheduler_env(path: str):
     }
 
 
-token, admin = telegram_env('.env')
+token, channel, admin = telegram_env('.env')
 postgres = postgres_env('.env')
 redis = redis_env('.env')
 scheduler = scheduler_env('.env')
 
 
-# Time Tasks
-def scheduler_tasks():
-    return ContextSchedulerDecorator(AsyncIOScheduler(
+PostgresURL = f"postgresql+asyncpg://{postgres['db_user']}:{postgres['db_pass']}@{postgres['db_host']}/{postgres['db_name']}"
+async_engine = create_async_engine(PostgresURL, echo=True)
+async_session_maker = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
+
+bot = Bot(token=token, parse_mode=ParseMode.HTML)
+storage = RedisStorage.from_url(f"{redis['db_name']}://{redis['db_host']}:{redis['db_port']}/0")
+
+
+def async_scheduler():
+    connect = ContextSchedulerDecorator(AsyncIOScheduler(
         timezone="Europe/Kiev",
         jobstores={
             'default': RedisJobStore(
@@ -75,11 +88,6 @@ def scheduler_tasks():
         }
     ))
 
+    connect.ctx.add_instance(bot, declared_class=Bot)
 
-PostgresURL = f"postgresql+asyncpg://{postgres['db_user']}:{postgres['db_pass']}@{postgres['db_host']}/{postgres['db_name']}"
-async_engine = create_async_engine(PostgresURL, echo=True)
-session_maker = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
-
-bot = Bot(token=token, parse_mode=ParseMode.HTML)
-storage = RedisStorage.from_url(f"{redis['db_name']}://{redis['db_host']}:{redis['db_port']}/0")
-schedulers = scheduler_add(scheduler_tasks())
+    return connect

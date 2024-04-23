@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models.models import Base, Language, Currency, Country, Region, City, Catalog, Subcatalog
-from core.models.querys import get_language_one, get_currency_one, get_catalog_one, get_subcatalog_one, \
-    get_country_one, get_region_one, get_city_one, search_user, create_user, create_separator
-from core.utils.settings import async_engine, session_maker
+from core.database.models import Base, Language, Currency, Country, Region, City, Catalog, Subcatalog
+from core.database.querys import get_language_one, get_currency_one, get_catalog_one, get_subcatalog_one, \
+    get_country_one, get_region_one, get_city_one, search_user, create_user
+from core.utils.settings import async_engine, async_session_maker, admin
 from core.utils.username import create_username
 
 creator = {
@@ -59,7 +59,7 @@ async def create_db() -> None:
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    async with session_maker() as session:
+    async with async_session_maker() as session:
         await create_language(session, creator['language'])
         await create_currency(session, creator['currency'])
         await create_catalog(session, creator['catalog'])
@@ -147,26 +147,33 @@ async def create_city(session: AsyncSession, data: dict) -> None:
 
 
 async def create_admin(session: AsyncSession) -> None:
-    user_exist = await search_user(session=session, user_id=406105379)
+    user_exist = await search_user(
+        session=session,
+        user_id=admin['id'],
+    )
 
     if not user_exist:
-        lang = await get_language_one(session=session, language_abbreviation='uk')
-        country = await get_country_one(session=session, country_name='uk')
-        currency = await get_currency_one(session=session, currency_abbreviation='UAH')
+        lang = await get_language_one(
+            session=session,
+            language_abbreviation='uk',
+        )
+        country = await get_country_one(
+            session=session,
+            country_name='uk',
+        )
+        currency = await get_currency_one(
+            session=session,
+            currency_abbreviation='UAH',
+        )
 
         await create_user(
             session=session,
-            user_id=406105379,
+            user_id=admin['id'],
             username=await create_username(session=session),
-            first_name='admin',
-            phone_number='380730797933',
-            is_admin=True,
+            first_name=admin['name'],
+            phone_number=admin['phone'],
             language_id=lang.id,
-        )
-
-        await create_separator(
-            session=session,
-            user_id=406105379,
             currency_id=currency.id,
             country_id=country.id,
+            is_admin=True,
         )

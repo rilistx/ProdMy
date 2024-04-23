@@ -134,6 +134,7 @@ def vacancy_location_button(
         text=connector[lang]['button']['exit'],
     ))
 
-    sizes = ([1] if change else []) + [2 for _ in range(len(data_list) // 2)] + ([1] if len(data_list) % 2 else []) + ([1] if data_name == 'city' else []) + [2]
+    sizes = (([1] if change else []) + [2 for _ in range(len(data_list) // 2)] +
+             ([1] if len(data_list) % 2 else []) + ([1] if data_name == 'city' else []) + [2])
 
     return keyboard.adjust(*sizes).as_markup(resize_keyboard=True, one_time_keyboard=True)

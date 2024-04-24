@@ -97,8 +97,8 @@ async def catalog_vacancy_callback(
 
     state_list = [
         'lang', 'catalog_id', 'catalog_title', 'currency_id', 'subcatalog_id',
-        'name', 'description', 'language', 'experience', 'disability', 'salary',
-        'country_id', 'country_name', 'region_id', 'region_name', 'city_id',
+        'name', 'description', 'language', 'foreigner', 'experience', 'disability',
+        'salary', 'country_id', 'country_name', 'region_id', 'region_name', 'city_id',
     ]
 
     await state.update_data({key: callback_data.lang if key == 'lang' else None for key in state_list})
@@ -244,7 +244,7 @@ async def back_vacancy(
             message=message,
             state=state,
         )
-    elif state_data == StateVacancy.DISABILITY:
+    elif state_data == StateVacancy.FOREIGNER:
         await state.update_data({
             'language': None,
         })
@@ -252,6 +252,17 @@ async def back_vacancy(
         await state.set_state(StateVacancy.LANGUAGE)
 
         return await language_vacancy(
+            message=message,
+            state=state,
+        )
+    elif state_data == StateVacancy.DISABILITY:
+        await state.update_data({
+            'foreigner': None,
+        })
+
+        await state.set_state(StateVacancy.FOREIGNER)
+
+        return await foreigner_vacancy(
             message=message,
             state=state,
         )
@@ -468,7 +479,7 @@ async def language_vacancy(
 
 
 @vacancy_router.message(StateVacancy.LANGUAGE, ChoiceFilter())
-async def disability_vacancy(
+async def foreigner_vacancy(
         message: Message,
         state: FSMContext,
 ) -> None:
@@ -477,6 +488,31 @@ async def disability_vacancy(
     if not state_data['language']:
         await state.update_data({
             'language': StateVacancy.change.language if message.text == 'Не менять!' else (True if message.text.split(' ')[0] == '✅' else False),
+        })
+
+    reply_markup = vacancy_choice_button(
+        lang=state_data['lang'],
+        change=StateVacancy.change,
+    )
+
+    await message.answer(
+        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['foreigner'],
+        reply_markup=reply_markup,
+    )
+
+    await state.set_state(StateVacancy.FOREIGNER)
+
+
+@vacancy_router.message(StateVacancy.FOREIGNER, ChoiceFilter())
+async def disability_vacancy(
+        message: Message,
+        state: FSMContext,
+) -> None:
+    state_data = await state.get_data()
+
+    if not state_data['foreigner']:
+        await state.update_data({
+            'foreigner': StateVacancy.change.foreigner if message.text == 'Не менять!' else (True if message.text.split(' ')[0] == '✅' else False),
         })
 
     reply_markup = vacancy_choice_button(
@@ -662,6 +698,14 @@ async def finish_vacancy(
             vacancy_id=StateVacancy.change.id,
         )
 
+        await vacancy_channel(
+            bot=bot,
+            session=session,
+            method='update',
+            user_id=message.chat.id,
+            vacancy_id=StateVacancy.change.id,
+        )
+
         StateVacancy.change = None
         await state.clear()
 
@@ -699,7 +743,10 @@ async def finish_vacancy(
 
         await vacancy_channel(
             bot=bot,
-            data=vacancy,
+            session=session,
+            method='create',
+            user_id=message.chat.id,
+            vacancy_id=vacancy.id,
         )
 
         await state.clear()

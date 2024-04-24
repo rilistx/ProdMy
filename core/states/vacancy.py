@@ -8,6 +8,7 @@ class StateVacancy(StatesGroup):
     DESCRIPTION = State()
     EXPERIENCE = State()
     LANGUAGE = State()
+    FOREIGNER = State()
     DISABILITY = State()
     SALARY = State()
     REGION = State()

@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.keyboards.menu import get_menu_button, get_vacancy_button, get_description_button, get_profession_button, \
-    get_profile_button, get_confirm_button, get_setting_button, get_about_button
+    get_profile_button, get_confirm_button, get_setting_button, get_about_button, get_admin_button
 from core.database.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, \
     get_vacancy_one, get_vacancy_user, get_vacancy_favorite, get_liked_one, get_complaint_one, search_user, \
-    get_preview_one, create_preview
+    get_preview_one, create_preview, get_vacancy_admin
 from core.utils.connector import connector
 from core.utils.paginator import Paginator
 
@@ -104,12 +104,15 @@ async def shaping_vacancy(
         subcatalog_id: int,
         vacancy_id: int | None = None,
 ):
-    if view == 'all':
+    if view == 'complaint':
+        vacancy = await get_vacancy_admin(
+            session=session,
+        )
+    elif view == 'all':
         vacancy = await get_vacancy_all_active(
             session=session,
             subcatalog_id=subcatalog_id,
         )
-
     elif view == 'your':
         vacancy = await get_vacancy_user(
             session=session,
@@ -163,7 +166,7 @@ async def shaping_description(
         complaint_id: int | None = None,
         your_vacancy: bool | None = None,
 ):
-    if view == 'all' or view == 'liked':
+    if view == 'all' or view == 'liked' or view == 'complaint':
         vacancy = await get_vacancy_one(
             session=session,
             vacancy_id=vacancy_id,
@@ -215,7 +218,6 @@ async def shaping_description(
         complaint_id=complaint_id,
         your_vacancy=True if your_vacancy else False,
         deactivate=vacancy.active,
-        # count_complaint=vacancy.count_complaint,
     )
 
     return text, button
@@ -225,16 +227,22 @@ async def shaping_confirm(
         lang: str,
         method: str,
         view: str,
+        key: str,
         page: int,
         catalog_id: int,
         subcatalog_id: int,
         vacancy_id: int,
 ):
-    text = connector[lang]['message']['menu']['confirm'][method]
+    if key == 'confirm_user':
+        text = connector[lang]['message'][key][method]
+    else:
+        text = connector[lang]['message'][key][method]
+
     button = get_confirm_button(
         lang=lang,
         method=method,
         view=view,
+        key=key,
         page=page,
         catalog_id=catalog_id,
         subcatalog_id=subcatalog_id,
@@ -289,8 +297,16 @@ async def shaping_about(
     return text, button
 
 
-async def shaping_admin_panel():
-    pass
+async def shaping_admin(
+        lang: str,
+        key: str,
+):
+    text = connector[lang]['message']['menu'][key]
+    button = get_admin_button(
+        lang=lang,
+    )
+
+    return text, button
 
 
 async def menu_processing(
@@ -318,7 +334,7 @@ async def menu_processing(
         return await shaping_description(session, lang, user_id, view, level, key, page, catalog_id, subcatalog_id, vacancy_id)
 
     elif level == 10:
-        return await shaping_confirm(lang, method, view, page, catalog_id, subcatalog_id, vacancy_id)
+        return await shaping_confirm(lang, method, view, key, page, catalog_id, subcatalog_id, vacancy_id)
 
     elif level == 20:
         return await shaping_profile(lang, level, key)
@@ -329,4 +345,4 @@ async def menu_processing(
         return await shaping_about(lang, key)
 
     elif level == 40:
-        return await shaping_admin_panel()
+        return await shaping_admin(lang, key)

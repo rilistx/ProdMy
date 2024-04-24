@@ -1,11 +1,16 @@
-# ProdMy
-It is an online classifieds telegram bot that connects people to buy, sell or exchange goods and services.
+# wAdsWork
+It's an online classifieds telegram bot that connects people to search and hire for jobs.
 
 .env
 
     BOT_TOKEN='bot_token'
-    BOT_ADMIN=bot_admin
-    
+
+    ID_CHANNEL_UA=channel_id
+
+    ADMIN_ID=admin_id
+    ADMIN_NAME='admin_name'
+    ADMIN_PHONE='admin_phone'
+
     POSTGRES_NAME='db_name'
     POSTGRES_USER='db_user'
     POSTGRES_PASS='db_pass'

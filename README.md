@@ -1,5 +1,6 @@
 # wAdsWork
 It's an online classifieds telegram bot that connects people to search and hire for jobs.
+Get a decent job!
 
 .env
 

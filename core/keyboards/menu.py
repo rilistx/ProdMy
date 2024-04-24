@@ -27,9 +27,9 @@ def get_menu_button(
     keyboard = InlineKeyboardBuilder()
 
     for callback, text in connector[lang]['button']['menu'].items():
-        if not blocked:
-            if callback == 'catalog':
-                keyboard.add(InlineKeyboardButton(
+        if callback == 'catalog' and not blocked:
+            keyboard.add(
+                InlineKeyboardButton(
                     text=text,
                     callback_data=MenuCallBack(
                         lang=lang,
@@ -37,9 +37,11 @@ def get_menu_button(
                         level=level + 1,
                         key=callback,
                     ).pack()
-                ))
-            elif callback == 'browse':
-                keyboard.add(InlineKeyboardButton(
+                )
+            )
+        elif callback == 'browse' and not blocked:
+            keyboard.add(
+                InlineKeyboardButton(
                     text=text,
                     callback_data=MenuCallBack(
                         lang=lang,
@@ -48,19 +50,23 @@ def get_menu_button(
                         level=3,
                         key='view',
                     ).pack()
-                ))
-            elif callback == 'create':
-                keyboard.add(InlineKeyboardButton(
+                )
+            )
+        elif callback == 'create' and not blocked:
+            keyboard.add(
+                InlineKeyboardButton(
                     text=text,
                     callback_data=MenuCallBack(
                         lang=lang,
                         method='create',
                         level=10,
-                        key='confirm',
+                        key='confirm_user',
                     ).pack()
-                ))
-            elif callback == 'favorite':
-                keyboard.add(InlineKeyboardButton(
+                )
+            )
+        elif callback == 'favorite' and not blocked:
+            keyboard.add(
+                InlineKeyboardButton(
                     text=text,
                     callback_data=MenuCallBack(
                         lang=lang,
@@ -69,9 +75,11 @@ def get_menu_button(
                         level=3,
                         key='view',
                     ).pack()
-                ))
-            elif callback == 'profile':
-                keyboard.add(InlineKeyboardButton(
+                )
+            )
+        elif callback == 'profile' and not blocked:
+            keyboard.add(
+                InlineKeyboardButton(
                     text=text,
                     callback_data=MenuCallBack(
                         lang=lang,
@@ -79,9 +87,11 @@ def get_menu_button(
                         level=20,
                         key=callback,
                     ).pack()
-                ))
-            elif callback == 'about':
-                keyboard.add(InlineKeyboardButton(
+                )
+            )
+        elif callback == 'about' and not blocked:
+            keyboard.add(
+                InlineKeyboardButton(
                     text=text,
                     callback_data=MenuCallBack(
                         lang=lang,
@@ -89,30 +99,29 @@ def get_menu_button(
                         level=30,
                         key=callback,
                     ).pack()
-                ))
-            elif callback == 'about':
-                keyboard.add(InlineKeyboardButton(
+                )
+            )
+        elif callback == 'support':
+            keyboard.add(
+                InlineKeyboardButton(
+                    text=text,
+                    url="https://t.me/rilistx",
+                )
+            )
+        elif callback == 'admin' and admin:
+            keyboard.add(
+                InlineKeyboardButton(
                     text=text,
                     callback_data=MenuCallBack(
                         lang=lang,
                         method=None,
-                        level=11,
+                        level=40,
                         key=callback,
                     ).pack()
-                ))
-        if callback == 'support':
-            keyboard.add(InlineKeyboardButton(
-                text=text,
-                url="https://t.me/rilistx",
-            ))
+                )
+            )
 
-    if admin:
-        keyboard.add(InlineKeyboardButton(
-            text='Админ панель',
-            url="https://t.me/rilistx",
-        ))
-
-    sizes = [1, 1, 1, 2, 2] if not blocked else [1]
+    sizes = ([1, 1, 1, 2, 2] + ([1] if admin else [])) if not blocked else [1]
 
     return keyboard.adjust(*sizes).as_markup()
 
@@ -128,46 +137,54 @@ def get_profession_button(
 
     for item in data_list:
         if data_name == 'catalog':
-            keyboard.add(InlineKeyboardButton(
-                text=connector[lang][data_name][item.title]['logo'] + ' ' + connector[lang][data_name][item.title]['name'],
-                callback_data=MenuCallBack(
-                    lang=lang,
-                    level=level + 1,
-                    key='subcatalog',
-                    catalog_id=item.id,
-                ).pack()
-            ))
+            keyboard.add(
+                InlineKeyboardButton(
+                    text=connector[lang][data_name][item.title]['logo'] + ' ' + connector[lang][data_name][item.title]['name'],
+                    callback_data=MenuCallBack(
+                        lang=lang,
+                        level=level + 1,
+                        key='subcatalog',
+                        catalog_id=item.id,
+                    ).pack()
+                )
+            )
         else:
-            keyboard.add(InlineKeyboardButton(
-                text=connector[lang]['catalog'][catalog_title][data_name][item.title],
-                callback_data=MenuCallBack(
-                    lang=lang,
-                    view='all',
-                    level=level + 1,
-                    key='view',
-                    catalog_id=item.catalog_id,
-                    subcatalog_id=item.id,
-                ).pack()
-            ))
+            keyboard.add(
+                InlineKeyboardButton(
+                    text=connector[lang]['catalog'][catalog_title][data_name][item.title],
+                    callback_data=MenuCallBack(
+                        lang=lang,
+                        view='all',
+                        level=level + 1,
+                        key='view',
+                        catalog_id=item.catalog_id,
+                        subcatalog_id=item.id,
+                    ).pack()
+                )
+            )
 
     if data_name == 'subcatalog':
-        keyboard.add(InlineKeyboardButton(
-            text=connector[lang]['button']['back'],
+        keyboard.add(
+            InlineKeyboardButton(
+                text=connector[lang]['button']['back'],
+                callback_data=MenuCallBack(
+                    lang=lang,
+                    level=level - 1,
+                    key='catalog',
+                ).pack()
+            )
+        )
+
+    keyboard.add(
+        InlineKeyboardButton(
+            text=connector[lang]['button']['exit'],
             callback_data=MenuCallBack(
                 lang=lang,
-                level=level - 1,
-                key='catalog',
+                level=0,
+                key='menu',
             ).pack()
-        ))
-
-    keyboard.add(InlineKeyboardButton(
-        text=connector[lang]['button']['exit'],
-        callback_data=MenuCallBack(
-            lang=lang,
-            level=0,
-            key='menu',
-        ).pack()
-    ))
+        )
+    )
 
     sizes = ([2 for _ in range(len(data_list) // 2)] + ([1] if len(data_list) % 2 else []) +
              ([2] if data_name == 'subcatalog' else [1]))
@@ -234,6 +251,15 @@ def get_vacancy_button(
             ).pack()
         ))
 
+    if view == 'complaint':
+        keyboard.add(InlineKeyboardButton(
+            text=connector[lang]['button']['back'],
+            callback_data=MenuCallBack(
+                lang=lang,
+                level=40,
+                key='admin',
+            ).pack()
+        ))
     if view == 'all':
         keyboard.add(InlineKeyboardButton(
             text=connector[lang]['button']['back'],
@@ -254,7 +280,7 @@ def get_vacancy_button(
         ).pack()
     ))
 
-    sizes = ([counter] if counter else []) + ([1] if vacancy_id else []) + ([2] if view == 'all' else [1])
+    sizes = ([counter] if counter else []) + ([1] if vacancy_id else []) + ([2] if view == 'all' or view == 'complaint' else [1])
 
     return keyboard.adjust(*sizes).as_markup()
 
@@ -276,7 +302,54 @@ def get_description_button(
 ):
     keyboard = InlineKeyboardBuilder()
 
-    if not your_vacancy and view == 'all' or not your_vacancy and view == 'liked':
+    if view == 'complaint':
+        keyboard.add(InlineKeyboardButton(
+            text='Заблокувати юзера',
+            callback_data=MenuCallBack(
+                lang=lang,
+                method='blocked',
+                view=view,
+                level=10,
+                key='confirm_admin',
+                page=page,
+                catalog_id=catalog_id,
+                subcatalog_id=subcatalog_id,
+                vacancy_id=vacancy_id,
+            ).pack()
+        ))
+
+        keyboard.add(InlineKeyboardButton(
+            text='Активировать',
+            callback_data=MenuCallBack(
+                lang=lang,
+                method='activate',
+                view=view,
+                level=10,
+                key='confirm_admin',
+                page=page,
+                catalog_id=catalog_id,
+                subcatalog_id=subcatalog_id,
+                vacancy_id=vacancy_id,
+            ).pack()
+        ))
+
+        keyboard.add(InlineKeyboardButton(
+            text='Деактивировать',
+            callback_data=MenuCallBack(
+                lang=lang,
+                method='deactivate',
+                view=view,
+                level=10,
+                key='confirm_admin',
+                page=page,
+                catalog_id=catalog_id,
+                subcatalog_id=subcatalog_id,
+                vacancy_id=vacancy_id,
+            ).pack()
+        ))
+
+        sizes = [1, 2]
+    elif not your_vacancy and view == 'all' or not your_vacancy and view == 'liked':
         keyboard.add(InlineKeyboardButton(
             text='Убрать из избранного' if liked_id else 'В избранное',
             callback_data=MenuCallBack(
@@ -316,7 +389,7 @@ def get_description_button(
                     method='deactivate' if deactivate else 'activate',
                     view=view,
                     level=10,
-                    key='confirm',
+                    key='confirm_user',
                     page=page,
                     catalog_id=catalog_id,
                     subcatalog_id=subcatalog_id,
@@ -331,7 +404,7 @@ def get_description_button(
                     method='update',
                     view=view,
                     level=10,
-                    key='confirm',
+                    key='confirm_user',
                     page=page,
                     catalog_id=catalog_id,
                     subcatalog_id=subcatalog_id,
@@ -346,7 +419,7 @@ def get_description_button(
                 method='delete',
                 view=view,
                 level=10,
-                key='confirm',
+                key='confirm_user',
                 page=page,
                 catalog_id=catalog_id,
                 subcatalog_id=subcatalog_id,
@@ -386,6 +459,7 @@ def get_confirm_button(
         lang: str,
         method: str,
         view: str,
+        key: str,
         page: int,
         catalog_id: int | None = None,
         subcatalog_id: int | None = None,
@@ -394,19 +468,36 @@ def get_confirm_button(
 ):
     keyboard = InlineKeyboardBuilder()
 
-    keyboard.add(InlineKeyboardButton(
-        text=connector[lang]['button']['confirm'][method],
-        callback_data=MenuCallBack(
-            lang=lang,
-            method=method,
-            view=view,
-            key='vacancy',
-            page=page,
-            catalog_id=catalog_id,
-            subcatalog_id=subcatalog_id,
-            vacancy_id=vacancy_id,
-        ).pack()
-    ))
+    if key == 'confirm_admin':
+        keyboard.add(InlineKeyboardButton(
+            text=connector[lang]['button'][key][method],
+            callback_data=MenuCallBack(
+                lang=lang,
+                method=method,
+                view=view,
+                level=3,
+                key='moderation',
+                page=page,
+                catalog_id=catalog_id,
+                subcatalog_id=subcatalog_id,
+                vacancy_id=vacancy_id,
+            ).pack()
+        ))
+    else:
+        keyboard.add(InlineKeyboardButton(
+            text=connector[lang]['button'][key][method],
+            callback_data=MenuCallBack(
+                lang=lang,
+                method=method,
+                view=view,
+                key='vacancy',
+                page=page,
+                catalog_id=catalog_id,
+                subcatalog_id=subcatalog_id,
+                vacancy_id=vacancy_id,
+            ).pack()
+        ))
+
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['exit'],
         callback_data=MenuCallBack(
@@ -469,7 +560,7 @@ def get_setting_button(
         ).pack()
     ))
     keyboard.add(InlineKeyboardButton(
-        text=connector[lang]['button']['exit'],
+        text=connector[lang]['button']['back'],
         callback_data=MenuCallBack(
             lang=lang,
             level=level - 1,
@@ -477,7 +568,16 @@ def get_setting_button(
         ).pack()
     ))
 
-    sizes = [1, 1]
+    keyboard.add(InlineKeyboardButton(
+        text=connector[lang]['button']['exit'],
+        callback_data=MenuCallBack(
+            lang=lang,
+            level=0,
+            key='menu',
+        ).pack()
+    ))
+
+    sizes = [1, 2]
 
     return keyboard.adjust(*sizes).as_markup()
 
@@ -487,6 +587,10 @@ def get_about_button(
 ):
     keyboard = InlineKeyboardBuilder()
 
+    keyboard.add(InlineKeyboardButton(
+        text='Задонатить',
+        url="https://t.me/wadsworkuk",
+    ))
     keyboard.add(InlineKeyboardButton(
         text='Наш канал',
         url="https://t.me/wadsworkuk",
@@ -500,6 +604,38 @@ def get_about_button(
         ).pack()
     ))
 
-    sizes = [2]
+    sizes = [1, 2]
+
+    return keyboard.adjust(*sizes).as_markup()
+
+
+def get_admin_button(
+        lang: str,
+):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(
+        InlineKeyboardButton(
+            text='text',
+            callback_data=MenuCallBack(
+                lang=lang,
+                view='complaint',
+                level=3,
+                key='view',
+            ).pack()
+        )
+    )
+    keyboard.add(
+        InlineKeyboardButton(
+            text=connector[lang]['button']['exit'],
+            callback_data=MenuCallBack(
+                lang=lang,
+                level=0,
+                key='menu',
+            ).pack()
+        )
+    )
+
+    sizes = [1, 1]
 
     return keyboard.adjust(*sizes).as_markup()

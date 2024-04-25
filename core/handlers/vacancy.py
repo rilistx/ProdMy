@@ -9,11 +9,12 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.filters.vacancy import CatalogFilter, SubcatalogFilter, NameFilter, ChoiceFilter, PriceFilter, RegionFilter, \
-    CityFilter, DescriptionFilter, ExitFilter, BackFilter
+from core.filters.vacancy import CatalogFilter, SubcatalogFilter, NameFilter, DescriptionFilter, RequirementFilter, \
+    EmploymentFilter, ChoiceFilter, PriceFilter, RegionFilter, CityFilter, CancelFilter, BackFilter
 from core.handlers.menu import menu, redirector
 from core.keyboards.menu import MenuCallBack
-from core.keyboards.vacancy import vacancy_profession_button, vacancy_keyboard_button, vacancy_location_button, vacancy_choice_button
+from core.keyboards.vacancy import vacancy_profession_button, vacancy_keyboard_button, vacancy_employment_button, \
+    vacancy_choice_button, vacancy_location_button
 from core.database.querys import get_catalog_all, get_subcatalog_all, get_catalog_one, get_subcatalog_one, \
     get_country_first, get_region_all, get_region_one, get_city_all, get_city_one, create_vacancy, get_vacancy_one, \
     update_vacancy, get_currency_first, deactivate_vacancy, delete_vacancy
@@ -96,8 +97,8 @@ async def catalog_vacancy_callback(
     await callback.message.delete()
 
     state_list = [
-        'lang', 'catalog_id', 'catalog_title', 'currency_id', 'subcatalog_id',
-        'name', 'description', 'language', 'foreigner', 'experience', 'disability',
+        'lang', 'catalog_id', 'catalog_title', 'currency_id', 'subcatalog_id', 'name', 'description',
+        'requirement', 'employment', 'experience', 'remote', 'language', 'foreigner', 'disability',
         'salary', 'country_id', 'country_name', 'region_id', 'region_name', 'city_id',
     ]
 
@@ -128,7 +129,8 @@ async def catalog_vacancy_callback(
     )
 
     await callback.message.answer(
-        text=connector[callback_data.lang]['message']['vacancy']['update' if StateVacancy.change else 'create']['catalog'],
+        text=connector[callback_data.lang]['message']['vacancy']['create']['catalog'] +
+             (connector[callback_data.lang]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
         reply_markup=reply_markup,
     )
 
@@ -136,7 +138,7 @@ async def catalog_vacancy_callback(
     await state.set_state(StateVacancy.CATALOG)
 
 
-@vacancy_router.message(StateFilter(StateVacancy), ExitFilter())
+@vacancy_router.message(StateFilter(StateVacancy), CancelFilter())
 async def exit_vacancy(
         message: Message,
         state: FSMContext,
@@ -222,7 +224,7 @@ async def back_vacancy(
             state=state,
             session=session,
         )
-    elif state_data == StateVacancy.EXPERIENCE:
+    elif state_data == StateVacancy.REQUIREMENT:
         await state.update_data({
             'description': None,
         })
@@ -233,7 +235,29 @@ async def back_vacancy(
             message=message,
             state=state,
         )
-    elif state_data == StateVacancy.LANGUAGE:
+    elif state_data == StateVacancy.EMPLOYMENT:
+        await state.update_data({
+            'requirement': None,
+        })
+
+        await state.set_state(StateVacancy.REQUIREMENT)
+
+        return await requirement_vacancy(
+            message=message,
+            state=state,
+        )
+    elif state_data == StateVacancy.EXPERIENCE:
+        await state.update_data({
+            'employment': None,
+        })
+
+        await state.set_state(StateVacancy.EMPLOYMENT)
+
+        return await employment_vacancy(
+            message=message,
+            state=state,
+        )
+    elif state_data == StateVacancy.REMOTE:
         await state.update_data({
             'experience': None,
         })
@@ -241,6 +265,17 @@ async def back_vacancy(
         await state.set_state(StateVacancy.EXPERIENCE)
 
         return await experience_vacancy(
+            message=message,
+            state=state,
+        )
+    elif state_data == StateVacancy.LANGUAGE:
+        await state.update_data({
+            'remote': None,
+        })
+
+        await state.set_state(StateVacancy.REMOTE)
+
+        return await remote_vacancy(
             message=message,
             state=state,
         )
@@ -314,7 +349,7 @@ async def subcatalog_vacancy(
     state_data = await state.get_data()
 
     if not state_data['catalog_id'] and not state_data['catalog_title'] and not state_data['currency_id']:
-        if message.text == 'Не менять!':
+        if message.text == connector[state_data['lang']]['button']['nochange']:
             catalog = await get_catalog_one(
                 session=session,
                 catalog_id=StateVacancy.change.catalog_id,
@@ -345,12 +380,12 @@ async def subcatalog_vacancy(
         lang=state_data['lang'],
         data_name='subcatalog',
         data_list=subcatalog,
-        change=StateVacancy.change if message.text == 'Не менять!' else None,
+        change=True if StateVacancy.change and StateVacancy.change.catalog_id == state_data['catalog_id'] else False,
         catalog_title=state_data['catalog_title'],
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['subcatalog'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['subcatalog'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if (StateVacancy.change and message.text == connector[state_data['lang']]['button']['nochange']) or (StateVacancy.change and StateVacancy.change.catalog_id == state_data['catalog_id']) else ''),
         reply_markup=reply_markup,
     )
 
@@ -366,7 +401,7 @@ async def name_vacancy(
     state_data = await state.get_data()
 
     if not state_data['subcatalog_id']:
-        if message.text == 'Не менять!':
+        if message.text == connector[state_data['lang']]['button']['nochange']:
             subcatalog = await get_subcatalog_one(
                 session=session,
                 subcatalog_id=StateVacancy.change.subcatalog_id,
@@ -392,11 +427,11 @@ async def name_vacancy(
 
     reply_markup = vacancy_keyboard_button(
         lang=state_data['lang'],
-        change=StateVacancy.change,
+        change=True if StateVacancy.change else False,
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['name'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['name'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
         reply_markup=reply_markup,
     )
 
@@ -412,16 +447,16 @@ async def description_vacancy(
 
     if not state_data['name']:
         await state.update_data({
-            'name': StateVacancy.change.name if message.text == 'Не менять!' else message.text,
+            'name': StateVacancy.change.name if message.text == connector[state_data['lang']]['button']['nochange'] else message.text,
         })
 
     reply_markup = vacancy_keyboard_button(
         lang=state_data['lang'],
-        change=StateVacancy.change,
+        change=True if StateVacancy.change else False,
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['description'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['description'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
         reply_markup=reply_markup,
     )
 
@@ -429,7 +464,7 @@ async def description_vacancy(
 
 
 @vacancy_router.message(StateVacancy.DESCRIPTION, DescriptionFilter())
-async def experience_vacancy(
+async def requirement_vacancy(
         message: Message,
         state: FSMContext,
 ) -> None:
@@ -437,16 +472,66 @@ async def experience_vacancy(
 
     if not state_data['description']:
         await state.update_data({
-            'description': StateVacancy.change.description if message.text == 'Не менять!' else message.text,
+            'description': StateVacancy.change.description if message.text == connector[state_data['lang']]['button']['nochange'] else message.text,
+        })
+
+    reply_markup = vacancy_keyboard_button(
+        lang=state_data['lang'],
+        change=True if StateVacancy.change else False,
+    )
+
+    await message.answer(
+        text=connector[state_data['lang']]['message']['vacancy']['create']['requirement'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
+        reply_markup=reply_markup,
+    )
+
+    await state.set_state(StateVacancy.REQUIREMENT)
+
+
+@vacancy_router.message(StateVacancy.REQUIREMENT, RequirementFilter())
+async def employment_vacancy(
+        message: Message,
+        state: FSMContext,
+) -> None:
+    state_data = await state.get_data()
+
+    if not state_data['requirement']:
+        await state.update_data({
+            'requirement': StateVacancy.change.description if message.text == connector[state_data['lang']]['button']['nochange'] else message.text,
+        })
+
+    reply_markup = vacancy_employment_button(
+        lang=state_data['lang'],
+        change=True if StateVacancy.change else False,
+    )
+
+    await message.answer(
+        text=connector[state_data['lang']]['message']['vacancy']['create']['employment'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
+        reply_markup=reply_markup,
+    )
+
+    await state.set_state(StateVacancy.EMPLOYMENT)
+
+
+@vacancy_router.message(StateVacancy.EMPLOYMENT, EmploymentFilter())
+async def experience_vacancy(
+        message: Message,
+        state: FSMContext,
+) -> None:
+    state_data = await state.get_data()
+
+    if not state_data['employment']:
+        await state.update_data({
+            'employment': StateVacancy.change.experience if message.text == connector[state_data['lang']]['button']['nochange'] else (True if message.text == connector[state_data['lang']]['button']['complete'] else False),
         })
 
     reply_markup = vacancy_choice_button(
         lang=state_data['lang'],
-        change=StateVacancy.change,
+        change=True if StateVacancy.change else False,
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['experience'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['experience'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
         reply_markup=reply_markup,
     )
 
@@ -454,7 +539,7 @@ async def experience_vacancy(
 
 
 @vacancy_router.message(StateVacancy.EXPERIENCE, ChoiceFilter())
-async def language_vacancy(
+async def remote_vacancy(
         message: Message,
         state: FSMContext,
 ) -> None:
@@ -462,16 +547,41 @@ async def language_vacancy(
 
     if not state_data['experience']:
         await state.update_data({
-            'experience': StateVacancy.change.experience if message.text == 'Не менять!' else (True if message.text.split(' ')[0] == '✅' else False),
+            'experience': StateVacancy.change.experience if message.text == connector[state_data['lang']]['button']['nochange'] else (True if message.text == connector[state_data['lang']]['button']['yes'] else False),
         })
 
     reply_markup = vacancy_choice_button(
         lang=state_data['lang'],
-        change=StateVacancy.change,
+        change=True if StateVacancy.change else False,
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['language'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['remote'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
+        reply_markup=reply_markup,
+    )
+
+    await state.set_state(StateVacancy.REMOTE)
+
+
+@vacancy_router.message(StateVacancy.REMOTE, ChoiceFilter())
+async def language_vacancy(
+        message: Message,
+        state: FSMContext,
+) -> None:
+    state_data = await state.get_data()
+
+    if not state_data['remote']:
+        await state.update_data({
+            'remote': StateVacancy.change.experience if message.text == connector[state_data['lang']]['button']['nochange'] else (True if message.text == connector[state_data['lang']]['button']['yes'] else False),
+        })
+
+    reply_markup = vacancy_choice_button(
+        lang=state_data['lang'],
+        change=True if StateVacancy.change else False,
+    )
+
+    await message.answer(
+        text=connector[state_data['lang']]['message']['vacancy']['create']['language'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
         reply_markup=reply_markup,
     )
 
@@ -487,16 +597,16 @@ async def foreigner_vacancy(
 
     if not state_data['language']:
         await state.update_data({
-            'language': StateVacancy.change.language if message.text == 'Не менять!' else (True if message.text.split(' ')[0] == '✅' else False),
+            'language': StateVacancy.change.language if message.text == connector[state_data['lang']]['button']['nochange'] else (True if message.text == connector[state_data['lang']]['button']['yes'] else False),
         })
 
     reply_markup = vacancy_choice_button(
         lang=state_data['lang'],
-        change=StateVacancy.change,
+        change=True if StateVacancy.change else False,
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['foreigner'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['foreigner'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
         reply_markup=reply_markup,
     )
 
@@ -512,16 +622,16 @@ async def disability_vacancy(
 
     if not state_data['foreigner']:
         await state.update_data({
-            'foreigner': StateVacancy.change.foreigner if message.text == 'Не менять!' else (True if message.text.split(' ')[0] == '✅' else False),
+            'foreigner': StateVacancy.change.foreigner if message.text == connector[state_data['lang']]['button']['nochange'] else (True if message.text == connector[state_data['lang']]['button']['yes'] else False),
         })
 
     reply_markup = vacancy_choice_button(
         lang=state_data['lang'],
-        change=StateVacancy.change,
+        change=True if StateVacancy.change else False,
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['disability'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['disability'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
         reply_markup=reply_markup,
     )
 
@@ -537,16 +647,16 @@ async def salary_vacancy(
 
     if not state_data['disability']:
         await state.update_data({
-            'disability': StateVacancy.change.disability if message.text == 'Не менять!' else (True if message.text.split(' ')[0] == '✅' else False),
+            'disability': StateVacancy.change.disability if message.text == connector[state_data['lang']]['button']['nochange'] else (True if message.text == connector[state_data['lang']]['button']['yes'] else False),
         })
 
     reply_markup = vacancy_keyboard_button(
         lang=state_data['lang'],
-        change=StateVacancy.change,
+        change=True if StateVacancy.change else False,
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['salary'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['salary'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
         reply_markup=reply_markup,
     )
 
@@ -563,7 +673,7 @@ async def region_vacancy(
 
     if not state_data['salary']:
         await state.update_data({
-            'salary': StateVacancy.change.salary if message.text == 'Не менять!' else int(message.text),
+            'salary': StateVacancy.change.salary if message.text == connector[state_data['lang']]['button']['nochange'] else int(message.text),
         })
 
     country = await get_country_first(
@@ -579,11 +689,11 @@ async def region_vacancy(
         country_name=country.name,
         data_name='region',
         data_list=region,
-        change=StateVacancy.change,
+        change=True if StateVacancy.change else False,
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['region'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['region'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
         reply_markup=reply_markup,
     )
 
@@ -603,7 +713,7 @@ async def city_vacancy(
             session=session,
         )
 
-        if message.text == 'Не менять!':
+        if message.text == connector[state_data['lang']]['button']['nochange']:
             region = await get_region_one(
                 session=session,
                 region_id=StateVacancy.change.region_id,
@@ -639,12 +749,12 @@ async def city_vacancy(
         country_name=state_data['country_name'],
         data_name='city',
         data_list=city,
-        change=StateVacancy.change if message.text == 'Не менять!' else None,
+        change=True if StateVacancy.change and StateVacancy.change.region_id == state_data['region_id'] else False,
         region_name=state_data['region_name'],
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['city'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['city'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if (StateVacancy.change and message.text == connector[state_data['lang']]['button']['nochange']) or (StateVacancy.change and StateVacancy.change.region_id == state_data['region_id']) else ''),
         reply_markup=reply_markup,
     )
 
@@ -662,7 +772,7 @@ async def finish_vacancy(
     state_data = await state.get_data()
 
     if message.text != connector[state_data['lang']]['button']['skip']:
-        if message.text == 'Не менять!':
+        if message.text == connector[state_data['lang']]['button']['nochange']:
             city = await get_city_one(
                 session=session,
                 city_id=StateVacancy.change.city_id,
@@ -780,11 +890,11 @@ async def catalog_vacancy_message(
         lang=state_data['lang'],
         data_name='catalog',
         data_list=catalog,
-        change=StateVacancy.change,
+        change=True if StateVacancy.change else False,
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['vacancy']['update' if StateVacancy.change else 'create']['catalog'],
+        text=connector[state_data['lang']]['message']['vacancy']['create']['catalog'] + (connector[state_data['lang']]['message']['vacancy']['update']['add'] if StateVacancy.change else ''),
         reply_markup=reply_markup,
     )
 

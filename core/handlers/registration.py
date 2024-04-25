@@ -75,7 +75,7 @@ async def contact(message: Message, state: FSMContext, session: AsyncSession) ->
     )
 
     await message.answer(
-        text=connector[state_data['lang']]['message']['start']['contact'],
+        text=connector[state_data['lang']]['message']['registration']['contact'],
         reply_markup=ReplyKeyboardRemove(),
     )
 

@@ -499,7 +499,7 @@ def get_confirm_button(
         ))
 
     keyboard.add(InlineKeyboardButton(
-        text=connector[lang]['button']['exit'],
+        text=connector[lang]['button']['cancel'],
         callback_data=MenuCallBack(
             lang=lang,
             view=None if method == 'create' else view,

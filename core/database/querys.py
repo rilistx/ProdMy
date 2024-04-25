@@ -68,7 +68,10 @@ async def create_vacancy(
     vacancy = Vacancy(
         name=data['name'],
         description=data['description'],
+        requirement=data['requirement'],
+        employment=data['employment'],
         experience=data['experience'],
+        remote=data['remote'],
         language=data['language'],
         foreigner=data['foreigner'],
         disability=data['disability'],
@@ -102,7 +105,10 @@ async def update_vacancy(
         ).values(
             name=data['name'],
             description=data['description'],
+            requirement=data['requirement'],
+            employment=data['employment'],
             experience=data['experience'],
+            remote=data['remote'],
             language=data['language'],
             foreigner=data['foreigner'],
             disability=data['disability'],

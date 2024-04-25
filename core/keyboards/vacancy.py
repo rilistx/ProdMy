@@ -14,7 +14,7 @@ def vacancy_profession_button(
 
     if change:
         keyboard.add(KeyboardButton(
-            text='Не менять!',
+            text=connector[lang]['button']['nochange'],
         ))
 
     for item in data_list:
@@ -33,7 +33,7 @@ def vacancy_profession_button(
         ))
 
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['exit'],
+        text=connector[lang]['button']['cancel'],
     ))
 
     sizes = (([1] if change else []) + [2 for _ in range(len(data_list) // 2)] +
@@ -50,17 +50,47 @@ def vacancy_keyboard_button(
 
     if change:
         keyboard.add(KeyboardButton(
-            text='Не менять!',
+            text=connector[lang]['button']['nochange'],
         ))
 
     keyboard.add(KeyboardButton(
         text=connector[lang]['button']['back'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['exit'],
+        text=connector[lang]['button']['cancel'],
     ))
 
     sizes = ([1] if change else []) + [2]
+
+    return keyboard.adjust(*sizes).as_markup(resize_keyboard=True, one_time_keyboard=True)
+
+
+def vacancy_employment_button(
+        lang: str,
+        change,
+):
+    keyboard = ReplyKeyboardBuilder()
+
+    if change:
+        keyboard.add(KeyboardButton(
+            text=connector[lang]['button']['nochange'],
+        ))
+
+    keyboard.add(KeyboardButton(
+        text=connector[lang]['button']['complete'],
+    ))
+    keyboard.add(KeyboardButton(
+        text=connector[lang]['button']['incomplete'],
+    ))
+
+    keyboard.add(KeyboardButton(
+        text=connector[lang]['button']['back'],
+    ))
+    keyboard.add(KeyboardButton(
+        text=connector[lang]['button']['cancel'],
+    ))
+
+    sizes = ([1] if change else []) + [2, 2]
 
     return keyboard.adjust(*sizes).as_markup(resize_keyboard=True, one_time_keyboard=True)
 
@@ -73,21 +103,21 @@ def vacancy_choice_button(
 
     if change:
         keyboard.add(KeyboardButton(
-            text='Не менять!',
+            text=connector[lang]['button']['nochange'],
         ))
 
     keyboard.add(KeyboardButton(
-        text='✅ ' + connector[lang]['button']['yes'],
+        text=connector[lang]['button']['yes'],
     ))
     keyboard.add(KeyboardButton(
-        text='❎ ' + connector[lang]['button']['not'],
+        text=connector[lang]['button']['not'],
     ))
 
     keyboard.add(KeyboardButton(
         text=connector[lang]['button']['back'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['exit'],
+        text=connector[lang]['button']['cancel'],
     ))
 
     sizes = ([1] if change else []) + [2, 2]
@@ -107,7 +137,7 @@ def vacancy_location_button(
 
     if change:
         keyboard.add(KeyboardButton(
-            text='Не менять!',
+            text=connector[lang]['button']['nochange'],
         ))
 
     for item in data_list:
@@ -131,7 +161,7 @@ def vacancy_location_button(
         text=connector[lang]['button']['back'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['exit'],
+        text=connector[lang]['button']['cancel'],
     ))
 
     sizes = (([1] if change else []) + [2 for _ in range(len(data_list) // 2)] +

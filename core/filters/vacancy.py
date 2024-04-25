@@ -6,9 +6,9 @@ from core.states.vacancy import StateVacancy
 from core.utils.connector import connector
 
 
-class ExitFilter(BaseFilter):
+class CancelFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
-        button_exit_list = [value['button']['exit'] for _, value in connector.items()]
+        button_exit_list = [value['button']['cancel'] for _, value in connector.items()]
 
         if message.text in button_exit_list:
             return True
@@ -29,10 +29,10 @@ class CatalogFilter(BaseFilter):
         state_data = await state.get_data()
 
         if StateVacancy.change:
-            if message.text == 'Не менять!':
+            if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == connector[state_data['lang']]['button']['exit']:
+        if message.text == connector[state_data['lang']]['button']['cancel']:
             return True
 
         for _, value in connector[state_data['lang']]['catalog'].items():
@@ -46,10 +46,11 @@ class SubcatalogFilter(BaseFilter):
         state_data = await state.get_data()
 
         if StateVacancy.change:
-            if message.text == 'Не менять!':
-                return True
+            if message.text == connector[state_data['lang']]['button']['nochange']:
+                if StateVacancy.change.catalog_id == state_data['catalog_id']:
+                    return True
 
-        if message.text == 'Назад' or message.text == 'Вихід':
+        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
             return True
 
         for _, value in connector[state_data['lang']]['catalog'].items():
@@ -61,28 +62,66 @@ class SubcatalogFilter(BaseFilter):
 
 class NameFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
+        state_data = await state.get_data()
+
         if StateVacancy.change:
-            if message.text == 'Не менять!':
+            if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == 'Назад' or message.text == 'Вихід':
+        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
             return True
 
-        if len(message.text) <= 60:
+        if 3 <= len(message.text) <= 60:
             return True
         return False
 
 
 class DescriptionFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
+        state_data = await state.get_data()
+
         if StateVacancy.change:
-            if message.text == 'Не менять!':
+            if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == 'Назад' or message.text == 'Вихід':
+        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
             return True
 
-        if 50 < len(message.text) < 1000:
+        if 50 <= len(message.text) <= 2000:
+            return True
+        return False
+
+
+class RequirementFilter(BaseFilter):
+    async def __call__(self, message: Message, state: FSMContext) -> bool:
+        state_data = await state.get_data()
+
+        if StateVacancy.change:
+            if message.text == connector[state_data['lang']]['button']['nochange']:
+                return True
+
+        if message.text == connector[state_data['lang']]['button']['back'] or message.text == \
+                connector[state_data['lang']]['button']['cancel']:
+            return True
+
+        if 10 <= len(message.text) <= 1000:
+            return True
+        return False
+
+
+class EmploymentFilter(BaseFilter):
+    async def __call__(self, message: Message, state: FSMContext) -> bool:
+        state_data = await state.get_data()
+
+        if StateVacancy.change:
+            if message.text == connector[state_data['lang']]['button']['nochange']:
+                return True
+
+        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
+            return True
+
+        if (message.text == connector[state_data['lang']]['button']['complete']
+                or message.text == connector[state_data['lang']]['button']['incomplete']):
             return True
         return False
 
@@ -92,25 +131,27 @@ class ChoiceFilter(BaseFilter):
         state_data = await state.get_data()
 
         if StateVacancy.change:
-            if message.text == 'Не менять!':
+            if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == 'Назад' or message.text == 'Вихід':
+        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
             return True
 
-        if (message.text == '✅ ' + connector[state_data['lang']]['button']['yes']
-                or message.text == '❎ ' + connector[state_data['lang']]['button']['not']):
+        if (message.text == connector[state_data['lang']]['button']['yes']
+                or message.text == connector[state_data['lang']]['button']['not']):
             return True
         return False
 
 
 class PriceFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
+        state_data = await state.get_data()
+
         if StateVacancy.change:
-            if message.text == 'Не менять!':
+            if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == 'Назад' or message.text == 'Вихід':
+        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
             return True
 
         if message.text.isdigit():
@@ -123,10 +164,10 @@ class RegionFilter(BaseFilter):
         state_data = await state.get_data()
 
         if StateVacancy.change:
-            if message.text == 'Не менять!':
+            if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == 'Назад' or message.text == 'Вихід':
+        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
             return True
 
         for _, country in connector[state_data['lang']]['country'].items():
@@ -141,10 +182,11 @@ class CityFilter(BaseFilter):
         state_data = await state.get_data()
 
         if StateVacancy.change:
-            if message.text == 'Не менять!':
-                return True
+            if message.text == connector[state_data['lang']]['button']['nochange']:
+                if StateVacancy.change.region_id == state_data['region_id']:
+                    return True
 
-        if message.text == 'Назад' or message.text == 'Вихід' or message.text == connector['uk']['button']['skip']:
+        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel'] or message.text == connector['uk']['button']['skip']:
             return True
 
         for _, country in connector[state_data['lang']]['country'].items():

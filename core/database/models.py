@@ -104,9 +104,12 @@ class Vacancy(Base):
     __tablename__ = 'vacancy'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
+    requirement: Mapped[str] = mapped_column(Text, nullable=False)
+    employment: Mapped[bool] = mapped_column(Boolean, nullable=False)
     experience: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    remote: Mapped[bool] = mapped_column(Boolean, nullable=False)
     language: Mapped[bool] = mapped_column(Boolean, nullable=False)
     foreigner: Mapped[bool] = mapped_column(Boolean, nullable=False)
     disability: Mapped[bool] = mapped_column(Boolean, nullable=False)

@@ -50,7 +50,8 @@ class SubcatalogFilter(BaseFilter):
                 if StateVacancy.change.catalog_id == state_data['catalog_id']:
                     return True
 
-        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
+        if (message.text == connector[state_data['lang']]['button']['back']
+                or message.text == connector[state_data['lang']]['button']['cancel']):
             return True
 
         for _, value in connector[state_data['lang']]['catalog'].items():
@@ -68,7 +69,8 @@ class NameFilter(BaseFilter):
             if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
+        if (message.text == connector[state_data['lang']]['button']['back']
+                or message.text == connector[state_data['lang']]['button']['cancel']):
             return True
 
         if 3 <= len(message.text) <= 60:
@@ -84,7 +86,8 @@ class DescriptionFilter(BaseFilter):
             if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
+        if (message.text == connector[state_data['lang']]['button']['back']
+                or message.text == connector[state_data['lang']]['button']['cancel']):
             return True
 
         if 50 <= len(message.text) <= 2000:
@@ -117,7 +120,8 @@ class EmploymentFilter(BaseFilter):
             if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
+        if (message.text == connector[state_data['lang']]['button']['back']
+                or message.text == connector[state_data['lang']]['button']['cancel']):
             return True
 
         if (message.text == connector[state_data['lang']]['button']['complete']
@@ -134,7 +138,8 @@ class ChoiceFilter(BaseFilter):
             if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
+        if (message.text == connector[state_data['lang']]['button']['back']
+                or message.text == connector[state_data['lang']]['button']['cancel']):
             return True
 
         if (message.text == connector[state_data['lang']]['button']['yes']
@@ -151,7 +156,8 @@ class PriceFilter(BaseFilter):
             if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
+        if (message.text == connector[state_data['lang']]['button']['back']
+                or message.text == connector[state_data['lang']]['button']['cancel']):
             return True
 
         if message.text.isdigit():
@@ -167,7 +173,8 @@ class RegionFilter(BaseFilter):
             if message.text == connector[state_data['lang']]['button']['nochange']:
                 return True
 
-        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel']:
+        if (message.text == connector[state_data['lang']]['button']['back']
+                or message.text == connector[state_data['lang']]['button']['cancel']):
             return True
 
         for _, country in connector[state_data['lang']]['country'].items():
@@ -186,7 +193,9 @@ class CityFilter(BaseFilter):
                 if StateVacancy.change.region_id == state_data['region_id']:
                     return True
 
-        if message.text == connector[state_data['lang']]['button']['back'] or message.text == connector[state_data['lang']]['button']['cancel'] or message.text == connector['uk']['button']['skip']:
+        if (message.text == connector[state_data['lang']]['button']['back']
+                or message.text == connector[state_data['lang']]['button']['cancel']
+                or message.text == connector['uk']['button']['skip']):
             return True
 
         for _, country in connector[state_data['lang']]['country'].items():

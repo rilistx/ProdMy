@@ -78,7 +78,6 @@ class User(Base):
     first_name: Mapped[str] = mapped_column(String(50), nullable=True)
     phone_number: Mapped[str] = mapped_column(String(50), unique=True)
     money: Mapped[int] = mapped_column(BigInteger, default=0)
-    count_vacancy: Mapped[int] = mapped_column(BigInteger, default=0)
     blocked: Mapped[bool] = mapped_column(Boolean, default=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     language_id: Mapped[int] = mapped_column(ForeignKey('language.id', ondelete='CASCADE'), nullable=False)

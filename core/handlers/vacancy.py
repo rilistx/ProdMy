@@ -5,25 +5,25 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from core.filters.vacancy import CatalogFilter, SubcatalogFilter, NameFilter, DescriptionFilter, RequirementFilter, \
     EmploymentFilter, ChoiceFilter, PriceFilter, RegionFilter, CityFilter, CancelFilter, BackFilter
-from core.handlers.menu import menu, redirector
+from core.handlers.menu import menu
 from core.keyboards.menu import MenuCallBack
 from core.keyboards.vacancy import vacancy_profession_button, vacancy_keyboard_button, vacancy_employment_button, \
     vacancy_choice_button, vacancy_location_button
 from core.database.querys import get_catalog_all, get_subcatalog_all, get_catalog_one, get_subcatalog_one, \
     get_country_first, get_region_all, get_region_one, get_city_all, get_city_one, create_vacancy, get_vacancy_one, \
-    update_vacancy, get_currency_first, deactivate_vacancy, delete_vacancy
+    update_vacancy, get_currency_first
 from core.schedulers.vacancy import scheduler_deactivate_vacancy
 from core.states.vacancy import StateVacancy
 from core.utils.channel import vacancy_channel
 from core.utils.connector import connector
-from core.utils.vacancy import check_update_vacancy, text_message_vacancy
-
+from core.utils.vacancy import check_update_vacancy, text_message_vacancy, method_preview_vacancy, \
+    method_complaint_vacancy, method_delete_vacancy, check_update_channel
 
 vacancy_router = Router()
 
@@ -37,62 +37,25 @@ async def catalog_vacancy_callback(
         apscheduler: AsyncIOScheduler,
 ) -> None:
     if callback_data.method == 'activate' or callback_data.method == 'deactivate':
-        await callback.answer("Вакансия деактивирована!." if callback_data.method == 'deactivate' else "Вакансия активирована!.")
-
-        await deactivate_vacancy(
-            session=session,
-            vacancy_id=callback_data.vacancy_id,
-            method='deactivate' if callback_data.method == 'deactivate' else 'activate',
-        )
-
-        if apscheduler.get_job(f'deactivate_vacancy_{str(callback_data.vacancy_id)}'):
-            apscheduler.remove_job(f'deactivate_vacancy_{str(callback_data.vacancy_id)}')
-
-        if callback_data.method == 'activate':
-            apscheduler.add_job(
-                scheduler_deactivate_vacancy,
-                trigger='date',
-                next_run_time=datetime.now() + timedelta(seconds=30),
-                kwargs={
-                    'chat_id': callback.message.chat.id,
-                    'vacancy_id': callback_data.vacancy_id,
-                },
-                id=f'deactivate_vacancy_{str(callback_data.vacancy_id)}',
-            )
-
-        return await redirector(
+         return await method_preview_vacancy(
             callback=callback,
             callback_data=callback_data,
             session=session,
-            view=callback_data.view,
-            level=4,
-            key='description',
-            page=callback_data.page,
-            catalog_id=callback_data.catalog_id,
-            subcatalog_id=callback_data.subcatalog_id,
-            vacancy_id=callback_data.vacancy_id,
+            apscheduler=apscheduler,
         )
 
+    if callback_data.method == 'complaint' or callback_data.method == 'pity':
+        return await method_complaint_vacancy(
+            callback=callback,
+            callback_data=callback_data,
+            session=session,
+        )
     if callback_data.method == 'delete':
-        if apscheduler.get_job(f'deactivate_vacancy_{str(callback_data.vacancy_id)}'):
-            apscheduler.remove_job(f'deactivate_vacancy_{str(callback_data.vacancy_id)}')
-
-        await delete_vacancy(
-            session=session,
-            vacancy_id=callback_data.vacancy_id,
-        )
-        await callback.answer("Вакансия удалена!.")
-
-        return await redirector(
+        return await method_delete_vacancy(
             callback=callback,
             callback_data=callback_data,
             session=session,
-            view=callback_data.view,
-            level=3,
-            key='view',
-            page=callback_data.page - 1 if callback_data.page - 1 != 0 else 1,
-            catalog_id=callback_data.catalog_id,
-            subcatalog_id=callback_data.subcatalog_id,
+            apscheduler=apscheduler,
         )
 
     await callback.message.delete()
@@ -353,8 +316,8 @@ async def subcatalog_vacancy(
         catalog = await get_catalog_one(
             session=session,
             catalog_id=StateVacancy.change.catalog_id
-            if StateVacancy.change and message.text == connector[state_data['lang']]['button']['nochange'] else None,
-            catalog_logo=message.text.split(' ')[0] if message.text != connector[state_data['lang']]['button']['nochange'] else None,
+            if StateVacancy.change and message.text == connector[state_data['lang']]['button']['vacancy']['nochange'] else None,
+            catalog_logo=message.text.split(' ')[0] if message.text != connector[state_data['lang']]['button']['vacancy']['nochange'] else None,
         )
 
         currency = await get_currency_first(session=session)
@@ -395,7 +358,7 @@ async def name_vacancy(
     state_data = await state.get_data()
 
     if not state_data['subcatalog_id']:
-        if message.text != connector[state_data['lang']]['button']['nochange']:
+        if message.text != connector[state_data['lang']]['button']['vacancy']['nochange']:
             for key, value in connector[state_data['lang']]['catalog'][state_data['catalog_title']]['subcatalog'].items():
                 if value == message.text:
                     subcatalog_title = key
@@ -405,7 +368,7 @@ async def name_vacancy(
             session=session,
             catalog_id=state_data['catalog_id'],
             subcatalog_id=StateVacancy.change.subcatalog_id
-            if StateVacancy.change and message.text == connector[state_data['lang']]['button']['nochange'] else None,
+            if StateVacancy.change and message.text == connector[state_data['lang']]['button']['vacancy']['nochange'] else None,
             subcatalog_title=subcatalog_title,
         )
 
@@ -438,7 +401,7 @@ async def description_vacancy(
     if not state_data['name']:
         await state.update_data({
             'name': StateVacancy.change.name
-            if message.text == connector[state_data['lang']]['button']['nochange']
+            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']
             else message.text,
         })
 
@@ -467,7 +430,7 @@ async def requirement_vacancy(
     if not state_data['description']:
         await state.update_data({
             'description': StateVacancy.change.description
-            if message.text == connector[state_data['lang']]['button']['nochange']
+            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']
             else message.text,
         })
 
@@ -496,7 +459,7 @@ async def employment_vacancy(
     if not state_data['requirement']:
         await state.update_data({
             'requirement': StateVacancy.change.description
-            if message.text == connector[state_data['lang']]['button']['nochange']
+            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']
             else message.text,
         })
 
@@ -525,8 +488,8 @@ async def experience_vacancy(
     if not state_data['employment']:
         await state.update_data({
             'employment': StateVacancy.change.experience
-            if message.text == connector[state_data['lang']]['button']['nochange']
-            else (True if message.text == connector[state_data['lang']]['button']['complete'] else False),
+            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']
+            else (True if message.text == connector[state_data['lang']]['button']['vacancy']['complete'] else False),
         })
 
     await message.answer(
@@ -554,8 +517,8 @@ async def remote_vacancy(
     if not state_data['experience']:
         await state.update_data({
             'experience': StateVacancy.change.experience
-            if message.text == connector[state_data['lang']]['button']['nochange']
-            else (True if message.text == connector[state_data['lang']]['button']['yes'] else False),
+            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']
+            else (True if message.text == connector[state_data['lang']]['button']['vacancy']['yes'] else False),
         })
 
     await message.answer(
@@ -583,8 +546,8 @@ async def language_vacancy(
     if not state_data['remote']:
         await state.update_data({
             'remote': StateVacancy.change.experience
-            if message.text == connector[state_data['lang']]['button']['nochange']
-            else (True if message.text == connector[state_data['lang']]['button']['yes'] else False),
+            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']
+            else (True if message.text == connector[state_data['lang']]['button']['vacancy']['yes'] else False),
         })
 
     await message.answer(
@@ -612,8 +575,8 @@ async def foreigner_vacancy(
     if not state_data['language']:
         await state.update_data({
             'language': StateVacancy.change.language
-            if message.text == connector[state_data['lang']]['button']['nochange']
-            else (True if message.text == connector[state_data['lang']]['button']['yes'] else False),
+            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']
+            else (True if message.text == connector[state_data['lang']]['button']['vacancy']['yes'] else False),
         })
 
     await message.answer(
@@ -641,8 +604,8 @@ async def disability_vacancy(
     if not state_data['foreigner']:
         await state.update_data({
             'foreigner': StateVacancy.change.foreigner
-            if message.text == connector[state_data['lang']]['button']['nochange']
-            else (True if message.text == connector[state_data['lang']]['button']['yes'] else False),
+            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']
+            else (True if message.text == connector[state_data['lang']]['button']['vacancy']['yes'] else False),
         })
 
     await message.answer(
@@ -670,8 +633,8 @@ async def salary_vacancy(
     if not state_data['disability']:
         await state.update_data({
             'disability': StateVacancy.change.disability
-            if message.text == connector[state_data['lang']]['button']['nochange']
-            else (True if message.text == connector[state_data['lang']]['button']['yes'] else False),
+            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']
+            else (True if message.text == connector[state_data['lang']]['button']['vacancy']['yes'] else False),
         })
 
     await message.answer(
@@ -705,7 +668,7 @@ async def region_vacancy(
             'country_name': country.name,
 
             'salary': StateVacancy.change.salary
-            if message.text == connector[state_data['lang']]['button']['nochange']
+            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']
             else int(message.text),
         })
 
@@ -739,7 +702,7 @@ async def city_vacancy(
     state_data = await state.get_data()
 
     if not state_data['region_id'] and not state_data['region_name']:
-        if message.text != connector[state_data['lang']]['button']['nochange']:
+        if message.text != connector[state_data['lang']]['button']['vacancy']['nochange']:
             for key, value in connector[state_data['lang']]['country'][state_data['country_name']]['region'].items():
                 if value['name'] == message.text:
                     region_name = key
@@ -748,7 +711,7 @@ async def city_vacancy(
         region = await get_region_one(
             session=session,
             region_id=StateVacancy.change.region_id
-            if StateVacancy.change and message.text == connector[state_data['lang']]['button']['nochange'] else None,
+            if StateVacancy.change and message.text == connector[state_data['lang']]['button']['vacancy']['nochange'] else None,
             region_name=region_name,
         )
 
@@ -789,8 +752,8 @@ async def finish_vacancy(
 ) -> None:
     state_data = await state.get_data()
 
-    if message.text != connector[state_data['lang']]['button']['skip']:
-        if message.text != connector[state_data['lang']]['button']['nochange']:
+    if message.text != connector[state_data['lang']]['button']['vacancy']['city']:
+        if message.text != connector[state_data['lang']]['button']['vacancy']['nochange']:
             for key, value in connector[state_data['lang']]['country'][state_data['country_name']]['region'][state_data['region_name']]['city'].items():
                 if value == message.text:
                     city_name = key
@@ -799,7 +762,7 @@ async def finish_vacancy(
         city = await get_city_one(
             session=session,
             city_id=StateVacancy.change.city_id
-            if StateVacancy.change and message.text == connector[state_data['lang']]['button']['nochange'] else None,
+            if StateVacancy.change and message.text == connector[state_data['lang']]['button']['vacancy']['nochange'] else None,
             city_name=city_name,
         )
 
@@ -810,23 +773,27 @@ async def finish_vacancy(
         state_data = await state.get_data()
 
     if StateVacancy.change:
-        check_result = check_update_vacancy(StateVacancy.change, state_data) if StateVacancy.change else None
+        check_vacancy = check_update_vacancy(StateVacancy.change, state_data)
 
-        if check_result:
+        if check_vacancy:
             await update_vacancy(session=session, data=state_data, vacancy_id=StateVacancy.change.id)
 
-            await vacancy_channel(
-                bot=bot,
-                session=session,
-                method='update',
-                user_id=message.chat.id,
-                vacancy_id=StateVacancy.change.id,
-            )
+            check_channel = check_update_channel(StateVacancy.change, state_data)
+
+            if check_channel:
+                await vacancy_channel(
+                    bot=bot,
+                    session=session,
+                    method='update',
+                    lang=state_data['lang'],
+                    user_id=message.chat.id,
+                    vacancy_id=StateVacancy.change.id,
+                )
 
         text = text_message_vacancy(
             lang=state_data['lang'],
             func_name='change',
-            change=True if check_result else False,
+            change=check_vacancy,
         )
     else:
         vacancy = await create_vacancy(session=session, data=state_data, user_id=message.from_user.id)
@@ -837,7 +804,7 @@ async def finish_vacancy(
         apscheduler.add_job(
             scheduler_deactivate_vacancy,
             trigger='date',
-            next_run_time=datetime.now() + timedelta(seconds=30),
+            next_run_time=datetime.now() + timedelta(days=30),
             kwargs={'chat_id': message.chat.id, 'vacancy_id': vacancy.id},
             id=f'deactivate_vacancy_{str(vacancy.id)}',
         )
@@ -846,6 +813,7 @@ async def finish_vacancy(
             bot=bot,
             session=session,
             method='create',
+            lang=state_data['lang'],
             user_id=message.chat.id,
             vacancy_id=vacancy.id,
         )

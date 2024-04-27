@@ -4,8 +4,10 @@ from core.keyboards.menu import get_menu_button, get_vacancy_button, get_descrip
     get_profile_button, get_confirm_button, get_setting_button, get_about_button, get_admin_button
 from core.database.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, \
     get_vacancy_one, get_vacancy_user, get_vacancy_favorite, get_liked_one, get_complaint_one, search_user, \
-    get_preview_one, create_preview, get_vacancy_admin, get_country_one, get_language_one
+    get_preview_one, create_preview, get_vacancy_admin, get_country_one, get_language_one, get_currency_one, \
+    get_region_one, get_city_one
 from core.utils.connector import connector
+from core.utils.message import get_message_vacancy, get_message_profile
 from core.utils.paginator import Paginator
 
 
@@ -14,10 +16,10 @@ def pages(
 ):
     button = dict()
     if paginator.has_previous():
-        button["◀ Пред."] = "previous"
+        button["◀️"] = "previous"
 
     if paginator.has_next():
-        button["След. ▶"] = "next"
+        button["▶️"] = "next"
 
     return button
 
@@ -34,7 +36,7 @@ async def shaping_menu(
         user_id=user_id,
     )
 
-    text = f"<b>{connector[lang]['message']['menu'][key]}</b>"
+    text = f"🧭 <b>{connector[lang]['message']['menu'][key]}</b>"
     button = get_menu_button(
         lang=lang,
         level=level,
@@ -53,7 +55,7 @@ async def shaping_catalog(
 ):
     catalog = await get_catalog_all(session=session)
 
-    text = f"<b>{connector[lang]['message']['menu'][key]}</b>"
+    text = f"⬇️ <b>{connector[lang]['message']['menu'][key]}</b>"
     button = get_profession_button(
         lang=lang,
         level=level,
@@ -80,7 +82,7 @@ async def shaping_subcatalog(
         catalog_id=catalog_id,
     )
 
-    text = f"<b>{connector[lang]['message']['menu'][key]}</b>"
+    text = f"⬇️ <b>{connector[lang]['message']['menu'][key]}</b>"
     button = get_profession_button(
         lang=lang,
         level=level,
@@ -132,9 +134,9 @@ async def shaping_vacancy(
         pagination_button = pages(paginator)
         vacancy_id = vacancy_page.id
 
-        text = f"{vacancy_page.name}"
+        text = await get_message_vacancy(session=session, lang=lang, vacancy_id=vacancy_id, preview='partial')
     else:
-        text = f"<b>{connector[lang]['message']['menu'][view]}</b>"
+        text = f"❎ <b>{connector[lang]['message']['menu'][view]}</b>"
 
     button = get_vacancy_button(
         lang=lang,
@@ -204,7 +206,7 @@ async def shaping_description(
             user_id=user_id,
         )
 
-    text = f"{vacancy.name}\n\n{vacancy.description}\n\n{vacancy.salary}"
+    text = await get_message_vacancy(session=session, lang=lang, vacancy_id=vacancy_id, preview='full')
     button = get_description_button(
         lang=lang,
         view=view,
@@ -257,42 +259,8 @@ async def shaping_profile(
         lang: str,
         user_id: int,
         level: int,
-        key: str,
 ):
-    user = await search_user(session=session, user_id=user_id)
-    country = await get_country_one(session=session, country_id=user.country_id)
-    language = await get_language_one(session=session, language_id=user.language_id)
-    vacancy = await get_vacancy_user(session=session, user_id=user_id)
-
-    text = f"🧑‍💻 <b>{connector[lang]['message'][key]['caption']}</b>\n\n<b># {user.username}</b>\n\n"
-
-    if user.first_name:
-        text += f"<i>{connector[lang]['message'][key]['name']}</i>  {user.first_name}\n"
-
-    text += (f"<i>{connector[lang]['message'][key]['phone']}</i>  +{user.phone_number}\n"
-             f"<i>{connector[lang]['message'][key]['country']}</i>  {country.flag} {connector[lang]['country'][country.name]['name']}\n\n"
-             f"<i>{connector[lang]['message'][key]['language']}</i>  {language.flag} {language.title}\n\n")
-
-    if vacancy:
-        activate = 0
-        deactivate = 0
-
-        for check in vacancy:
-            if check.active:
-                activate += 1
-            else:
-                deactivate += 1
-
-        text += (f"<i>{connector[lang]['message'][key]['vacancy']['has']['activate']}</i>  <b>{activate}</b>\n"
-                 f"<i>{connector[lang]['message'][key]['vacancy']['has']['deactivate']}</i>  <b>{deactivate}</b>\n\n")
-    else:
-        text += f"❎ <b>{connector[lang]['message'][key]['vacancy']['not']}</b>\n\n"
-
-    text += (f"<i>{connector[lang]['message'][key]['create']}</i>  "
-             f"{'0' + str(user.created.day) if len(str(user.created.day)) == 1 else user.created.day}."
-             f"{'0' + str(user.created.month) if len(str(user.created.month)) == 1 else user.created.month}."
-             f"{user.created.year}")
-
+    text = await get_message_profile(session=session, lang=lang, user_id=user_id)
     button = get_profile_button(
         lang=lang,
         level=level,
@@ -306,10 +274,11 @@ async def shaping_setting(
         lang: str,
         user_id: int,
         level: int,
+        key: str,
 ):
     user = await search_user(session=session, user_id=user_id)
 
-    text = 'Основные настройки профиля'
+    text = f"⚙️ <b>{connector[lang]['message']['profile'][key]}</b>\n\n"
     button = get_setting_button(
         lang=lang,
         level=level,
@@ -371,9 +340,9 @@ async def menu_processing(
         return await shaping_confirm(lang, method, view, key, page, catalog_id, subcatalog_id, vacancy_id)
 
     elif level == 20:
-        return await shaping_profile(session, lang, user_id, level, key)
+        return await shaping_profile(session, lang, user_id, level)
     elif level == 21:
-        return await shaping_setting(session, lang, user_id, level)
+        return await shaping_setting(session, lang, user_id, level, key)
 
     elif level == 30:
         return await shaping_about(lang, key)

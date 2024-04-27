@@ -17,6 +17,7 @@ def telegram_env(path: str):
 
     return (
         env.str("BOT_TOKEN"),
+        env.str("SUPPORT_NAME"),
         env.int("ID_CHANNEL_UA"),
         {
             'id': env.int("ADMIN_ID"),
@@ -60,7 +61,7 @@ def scheduler_env(path: str):
     }
 
 
-token, channel, admin = telegram_env('.env')
+token, support, channel, admin = telegram_env('.env')
 postgres = postgres_env('.env')
 redis = redis_env('.env')
 scheduler = scheduler_env('.env')

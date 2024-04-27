@@ -6,8 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.filters.menu import IsUserFilter
 from core.keyboards.menu import MenuCallBack
-from core.database.querys import create_liked, get_liked_one, get_complaint_one, create_complaint, delete_liked, \
-    delete_complaint, get_vacancy_one, get_language_user, get_complaint_count
+from core.database.querys import create_liked, get_liked_one, delete_liked, get_vacancy_one, get_language_user
 from core.processes.menu import menu_processing
 
 
@@ -90,47 +89,6 @@ async def favorite(
             )
 
 
-async def complaint(
-        callback: CallbackQuery,
-        callback_data: MenuCallBack,
-        session: AsyncSession,
-) -> None:
-    vacancy = await get_vacancy_one(
-        session=session,
-        vacancy_id=callback_data.vacancy_id,
-    )
-
-    if vacancy:
-        feedback = await get_complaint_one(
-            session=session,
-            user_id=callback.from_user.id,
-            vacancy_id=callback_data.vacancy_id,
-        )
-
-        if feedback:
-            await delete_complaint(
-                session=session,
-                user_id=callback.from_user.id,
-                vacancy_id=callback_data.vacancy_id,
-            )
-            await callback.answer(
-                text="Вы убрали жалобу!.",
-            )
-        else:
-            await create_complaint(
-                session=session,
-                user_id=callback.from_user.id,
-                vacancy_id=callback_data.vacancy_id,
-            )
-
-            if await get_complaint_count(session=session, vacancy_id=callback_data.vacancy_id) == 5:
-                pass
-
-            await callback.answer(
-                text="Вы пожаловались!.",
-            )
-
-
 @menu_router.callback_query(
     MenuCallBack.filter(F.key != 'vacancy'),
     MenuCallBack.filter(F.key != 'change'),
@@ -150,13 +108,6 @@ async def redirector(
 ) -> None:
     if callback_data.method == "favorite":
         await favorite(
-            callback=callback,
-            callback_data=callback_data,
-            session=session,
-        )
-
-    if callback_data.method == "feedback":
-        await complaint(
             callback=callback,
             callback_data=callback_data,
             session=session,

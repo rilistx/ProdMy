@@ -9,7 +9,7 @@ def account_name_button(
     keyboard = ReplyKeyboardBuilder()
 
     keyboard.add(KeyboardButton(
-        text='Вихід',
+        text=connector[lang]['button']['navigation']['cancel'],
     ))
 
     sizes = [1]

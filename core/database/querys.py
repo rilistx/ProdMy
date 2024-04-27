@@ -497,13 +497,15 @@ async def get_city_one(
 async def get_currency_one(
         *,
         session: AsyncSession,
-        currency_abbreviation: str,
+        currency_id: int | None = None,
+        currency_abbreviation: str | None = None,
 ):
     query = await session.execute(
         select(
             Currency,
         ).where(
-            Currency.abbreviation == currency_abbreviation,
+            or_(currency_id is None, Currency.id == currency_id),
+            or_(currency_abbreviation is None, Currency.abbreviation == currency_abbreviation),
         )
     )
 
@@ -543,7 +545,7 @@ async def get_vacancy_all_active(
         ).group_by(
             Vacancy.id,
         ).having(
-            func.count(Complaint.vacancy_id) != 5,
+            func.count(Complaint.vacancy_id) != 10,
         ))
 
     return query.scalars().all()
@@ -609,7 +611,7 @@ async def get_vacancy_favorite(
         ).group_by(
             Vacancy.id
         ).having(
-            func.count(Complaint.vacancy_id) != 5,
+            func.count(Complaint.vacancy_id) != 10,
         )
     )
 
@@ -635,7 +637,7 @@ async def get_vacancy_admin(
         ).group_by(
             Vacancy.id,
         ).having(
-            func.count(Complaint.vacancy_id) == 2,
+            func.count(Complaint.vacancy_id) == 10,
         )
     )
 

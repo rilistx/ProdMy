@@ -14,7 +14,7 @@ def vacancy_profession_button(
 
     if change:
         keyboard.add(KeyboardButton(
-            text=connector[lang]['button']['nochange'],
+            text=connector[lang]['button']['vacancy']['nochange'],
         ))
 
     for item in data_list:
@@ -29,11 +29,11 @@ def vacancy_profession_button(
 
     if data_name == 'subcatalog':
         keyboard.add(KeyboardButton(
-            text=connector[lang]['button']['back'],
+            text=connector[lang]['button']['navigation']['back'],
         ))
 
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['cancel'],
+        text=connector[lang]['button']['navigation']['cancel'],
     ))
 
     sizes = (([1] if change else []) + [2 for _ in range(len(data_list) // 2)] +
@@ -50,14 +50,14 @@ def vacancy_keyboard_button(
 
     if change:
         keyboard.add(KeyboardButton(
-            text=connector[lang]['button']['nochange'],
+            text=connector[lang]['button']['vacancy']['nochange'],
         ))
 
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['back'],
+        text=connector[lang]['button']['navigation']['back'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['cancel'],
+        text=connector[lang]['button']['navigation']['cancel'],
     ))
 
     sizes = ([1] if change else []) + [2]
@@ -73,21 +73,21 @@ def vacancy_employment_button(
 
     if change:
         keyboard.add(KeyboardButton(
-            text=connector[lang]['button']['nochange'],
+            text=connector[lang]['button']['vacancy']['nochange'],
         ))
 
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['complete'],
+        text=connector[lang]['button']['vacancy']['complete'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['incomplete'],
+        text=connector[lang]['button']['vacancy']['incomplete'],
     ))
 
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['back'],
+        text=connector[lang]['button']['navigation']['back'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['cancel'],
+        text=connector[lang]['button']['navigation']['cancel'],
     ))
 
     sizes = ([1] if change else []) + [2, 2]
@@ -103,21 +103,21 @@ def vacancy_choice_button(
 
     if change:
         keyboard.add(KeyboardButton(
-            text=connector[lang]['button']['nochange'],
+            text=connector[lang]['button']['vacancy']['nochange'],
         ))
 
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['yes'],
+        text=connector[lang]['button']['vacancy']['yes'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['not'],
+        text=connector[lang]['button']['vacancy']['not'],
     ))
 
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['back'],
+        text=connector[lang]['button']['navigation']['back'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['cancel'],
+        text=connector[lang]['button']['navigation']['cancel'],
     ))
 
     sizes = ([1] if change else []) + [2, 2]
@@ -137,7 +137,7 @@ def vacancy_location_button(
 
     if change:
         keyboard.add(KeyboardButton(
-            text=connector[lang]['button']['nochange'],
+            text=connector[lang]['button']['vacancy']['nochange'],
         ))
 
     for item in data_list:
@@ -154,14 +154,14 @@ def vacancy_location_button(
 
     if data_name == 'city':
         keyboard.add(KeyboardButton(
-            text=connector[lang]['button']['skip'],
+            text=connector[lang]['button']['vacancy']['city'],
         ))
 
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['back'],
+        text=connector[lang]['button']['navigation']['back'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['cancel'],
+        text=connector[lang]['button']['navigation']['cancel'],
     ))
 
     sizes = (([1] if change else []) + [2 for _ in range(len(data_list) // 2)] +

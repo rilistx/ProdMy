@@ -91,7 +91,7 @@ async def favorite(
 
 @menu_router.callback_query(
     MenuCallBack.filter(F.key != 'vacancy'),
-    MenuCallBack.filter(F.key != 'change'),
+    MenuCallBack.filter(F.key != 'account'),
     MenuCallBack.filter(F.key != 'moderation'),
 )
 async def redirector(

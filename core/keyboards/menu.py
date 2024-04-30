@@ -294,10 +294,11 @@ def get_description_button(
         catalog_id: int,
         subcatalog_id: int,
         vacancy_id: int,
-        liked_id: int,
-        complaint_id: int,
-        deactivate: bool,
+        liked: bool,
+        complaint: bool,
+        active: bool,
         your_vacancy: bool,
+        blocked_vacancy: bool,
 ):
     keyboard = InlineKeyboardBuilder()
 
@@ -348,9 +349,9 @@ def get_description_button(
         ))
 
         sizes = [1, 2]
-    elif not your_vacancy and view == 'all' or not your_vacancy and view == 'liked':
+    elif not your_vacancy and view == 'all' or view == 'liked':
         keyboard.add(InlineKeyboardButton(
-            text=connector[lang]['button']['vacancy']['favorite']['del'] if liked_id else connector[lang]['button']['vacancy']['favorite']['add'],
+            text=connector[lang]['button']['vacancy']['favorite']['del'] if liked else connector[lang]['button']['vacancy']['favorite']['add'],
             callback_data=MenuCallBack(
                 lang=lang,
                 method='favorite',
@@ -364,10 +365,10 @@ def get_description_button(
             ).pack()
         ))
         keyboard.add(InlineKeyboardButton(
-            text=connector[lang]['button']['vacancy']['complaint']['del'] if complaint_id else connector[lang]['button']['vacancy']['complaint']['add'],
+            text=connector[lang]['button']['vacancy']['complaint']['del'] if complaint else connector[lang]['button']['vacancy']['complaint']['add'],
             callback_data=MenuCallBack(
                 lang=lang,
-                method='pity' if complaint_id else 'complaint',
+                method='pity' if complaint else 'complaint',
                 view=view,
                 level=10,
                 key='confirm_user',
@@ -380,12 +381,12 @@ def get_description_button(
 
         sizes = [1, 1]
     else:
-        if 5:
+        if not blocked_vacancy:
             keyboard.add(InlineKeyboardButton(
-                text=connector[lang]['button']['vacancy']['deactivate'] if deactivate else connector[lang]['button']['vacancy']['activate'],
+                text=connector[lang]['button']['vacancy']['deactivate'] if active else connector[lang]['button']['vacancy']['activate'],
                 callback_data=MenuCallBack(
                     lang=lang,
-                    method='deactivate' if deactivate else 'activate',
+                    method='deactivate' if active else 'activate',
                     view=view,
                     level=10,
                     key='confirm_user',
@@ -411,23 +412,24 @@ def get_description_button(
                 ).pack()
             ))
 
-        keyboard.add(InlineKeyboardButton(
-            text=connector[lang]['button']['vacancy']['delete'],
-            callback_data=MenuCallBack(
-                lang=lang,
-                method='delete',
-                view=view,
-                level=10,
-                key='confirm_user',
-                page=page,
-                catalog_id=catalog_id,
-                subcatalog_id=subcatalog_id,
-                vacancy_id=vacancy_id,
-            ).pack()
-        ))
+            keyboard.add(InlineKeyboardButton(
+                text=connector[lang]['button']['vacancy']['delete'],
+                callback_data=MenuCallBack(
+                    lang=lang,
+                    method='delete',
+                    view=view,
+                    level=10,
+                    key='confirm_user',
+                    page=page,
+                    catalog_id=catalog_id,
+                    subcatalog_id=subcatalog_id,
+                    vacancy_id=vacancy_id,
+                ).pack()
+            ))
 
-        sizes = [1, 2]
-
+            sizes = [1, 2]
+        else:
+            sizes = []
     keyboard.add(InlineKeyboardButton(
         text=connector[lang]['button']['navigation']['back'],
         callback_data=MenuCallBack(
@@ -545,7 +547,7 @@ def get_profile_button(
 def get_setting_button(
         lang: str,
         level: int,
-        first_name: str | None = None,
+        first_name: bool,
 ):
     keyboard = InlineKeyboardBuilder()
 

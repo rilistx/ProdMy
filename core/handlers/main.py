@@ -16,5 +16,5 @@ async def run(bot: Bot) -> None:
 @main_router.shutdown()
 async def stop(bot: Bot, dispatcher: Dispatcher) -> None:
     await dispatcher.storage.close()
-    # await drop_db()
+    await drop_db()
     await bot.send_message(admin['id'], text='Stop bot 👎🏻')

@@ -124,8 +124,8 @@ class EmploymentFilter(BaseFilter):
                 or message.text == connector[lang]['button']['navigation']['cancel']):
             return True
 
-        if (message.text == connector[lang]['button']['vacancy']['complete']
-                or message.text == connector[lang]['button']['vacancy']['incomplete']):
+        if (message.text == connector[lang]['button']['vacancy']['employment']['complete']
+                or message.text == connector[lang]['button']['vacancy']['employment']['partial']):
             return True
         return False
 
@@ -142,8 +142,8 @@ class ChoiceFilter(BaseFilter):
                 or message.text == connector[lang]['button']['navigation']['cancel']):
             return True
 
-        if (message.text == connector[lang]['button']['vacancy']['yes']
-                or message.text == connector[lang]['button']['vacancy']['not']):
+        if (message.text == connector[lang]['button']['vacancy']['choice']['yes']
+                or message.text == connector[lang]['button']['vacancy']['choice']['not']):
             return True
         return False
 

@@ -17,8 +17,13 @@ from core.utils.connector import connector
 account_router = Router()
 
 
-@account_router.callback_query(MenuCallBack.filter(F.key == 'change'))
-async def name_account_callback(callback: CallbackQuery, callback_data: MenuCallBack, state: FSMContext, session: AsyncSession) -> None:
+@account_router.callback_query(MenuCallBack.filter(F.key == 'account'))
+async def name_account_callback(
+        callback: CallbackQuery,
+        callback_data: MenuCallBack,
+        state: FSMContext,
+        session: AsyncSession
+) -> None:
     await callback.message.delete()
 
     await state.update_data({
@@ -26,9 +31,7 @@ async def name_account_callback(callback: CallbackQuery, callback_data: MenuCall
         'account_level': callback_data.level,
     })
 
-    user = await search_user(session=session, user_id=callback.from_user.id)
-
-    StateAccount.change = user
+    StateAccount.change = await search_user(session=session, user_id=callback.from_user.id)
 
     reply_markup = account_name_button(
         lang=callback_data.lang,
@@ -47,8 +50,13 @@ async def name_account_callback(callback: CallbackQuery, callback_data: MenuCall
 async def cancel_account(message: Message, state: FSMContext, session: AsyncSession) -> None:
     state_data = await state.get_data()
 
+    if StateAccount.change.first_name:
+        text = connector[state_data['lang']]['message']['settings']['exit']['change']
+    else:
+        text = connector[state_data['lang']]['message']['settings']['exit']['create']
+
     await message.answer(
-        text=connector[state_data['lang']]['message']['settings']['exit']['change'] if StateAccount.change.first_name else connector[state_data['lang']]['message']['settings']['exit']['create'],
+        text=text,
         reply_markup=ReplyKeyboardRemove(),
     )
 
@@ -69,7 +77,10 @@ async def cancel_account(message: Message, state: FSMContext, session: AsyncSess
 async def finish_account(message: Message, state: FSMContext, session: AsyncSession) -> None:
     state_data = await state.get_data()
 
-    text = connector[state_data['lang']]['message']['settings']['finish']['nochange' if StateAccount.change.first_name == message.text else 'change']
+    if message.text == StateAccount.change.first_name:
+        text = connector[state_data['lang']]['message']['settings']['finish']['nochange']
+    else:
+        text = connector[state_data['lang']]['message']['settings']['finish']['change']
 
     if StateAccount.change.first_name != message.text:
         await update_name_user(session=session, user_id=message.from_user.id, first_name=message.text)

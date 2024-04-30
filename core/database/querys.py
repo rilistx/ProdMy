@@ -57,6 +57,24 @@ async def update_name_user(
     await session.commit()
 
 
+async def blocked_user(
+        *,
+        session: AsyncSession,
+        user_id: int,
+) -> None:
+    await session.execute(
+        update(
+            User,
+        ).where(
+            User.id == user_id,
+        ).values(
+            blocked=True,
+        )
+    )
+
+    await session.commit()
+
+
 # ########################################   VACANCY   ############################################### #
 
 async def create_vacancy(
@@ -173,6 +191,22 @@ async def delete_vacancy(
             Vacancy,
         ).where(
             Vacancy.id == vacancy_id,
+        )
+    )
+
+    await session.commit()
+
+
+async def delete_vacancy_user(
+        *,
+        session: AsyncSession,
+        user_id: int,
+) -> None:
+    await session.execute(
+        delete(
+            Vacancy,
+        ).where(
+            Vacancy.user_id == user_id,
         )
     )
 
@@ -545,7 +579,7 @@ async def get_vacancy_all_active(
         ).group_by(
             Vacancy.id,
         ).having(
-            func.count(Complaint.vacancy_id) != 10,
+            func.count(Complaint.vacancy_id) != 2,
         ))
 
     return query.scalars().all()
@@ -611,7 +645,7 @@ async def get_vacancy_favorite(
         ).group_by(
             Vacancy.id
         ).having(
-            func.count(Complaint.vacancy_id) != 10,
+            func.count(Complaint.vacancy_id) != 2,
         )
     )
 
@@ -637,7 +671,7 @@ async def get_vacancy_admin(
         ).group_by(
             Vacancy.id,
         ).having(
-            func.count(Complaint.vacancy_id) == 10,
+            func.count(Complaint.vacancy_id) == 2,
         )
     )
 

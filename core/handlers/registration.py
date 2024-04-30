@@ -11,6 +11,8 @@ from core.keyboards.registration import get_contact_button
 from core.database.querys import search_user, get_language_one, get_currency_one, get_country_one, create_user
 from core.states.registration import StateRegistration
 from core.utils.connector import connector
+from core.utils.message import get_message_registration_start, get_text_registration_contact
+from core.utils.settings import default_lang
 from core.utils.username import create_username
 
 
@@ -33,15 +35,18 @@ async def start(message: Message, state: FSMContext, session: AsyncSession) -> N
             session=session,
         )
 
-    lang = message.from_user.language_code if message.from_user.language_code in connector.keys() else 'uk'
+    lang = message.from_user.language_code if message.from_user.language_code in connector.keys() else default_lang
 
     await state.update_data({
         'lang': lang,
     })
 
+    text = await get_message_registration_start(lang=lang)
+    reply_markup = get_contact_button(lang=lang)
+
     await message.answer(
-        text=connector[lang]['start_message'],
-        reply_markup=get_contact_button(lang),
+        text=text,
+        reply_markup=reply_markup,
     )
     await state.set_state(StateRegistration.PHONE)
 
@@ -50,18 +55,9 @@ async def start(message: Message, state: FSMContext, session: AsyncSession) -> N
 async def contact(message: Message, state: FSMContext, session: AsyncSession) -> None:
     state_data = await state.get_data()
 
-    lang = await get_language_one(
-        session=session,
-        language_abbreviation=state_data['lang'],
-    )
-    currency = await get_currency_one(
-        session=session,
-        currency_abbreviation='UAH',
-    )
-    country = await get_country_one(
-        session=session,
-        country_name=state_data['lang'],
-    )
+    lang = await get_language_one(session=session, language_abbreviation=state_data['lang'])
+    currency = await get_currency_one(session=session, currency_abbreviation='UAH')
+    country = await get_country_one(session=session, country_name=state_data['lang'])
 
     await create_user(
         session=session,
@@ -74,9 +70,12 @@ async def contact(message: Message, state: FSMContext, session: AsyncSession) ->
         country_id=country.id,
     )
 
+    text = await get_text_registration_contact(lang=lang.abbreviation)
+    reply_markup = ReplyKeyboardRemove()
+
     await message.answer(
-        text=connector[state_data['lang']]['message']['registration']['contact'],
-        reply_markup=ReplyKeyboardRemove(),
+        text=text,
+        reply_markup=reply_markup,
     )
 
     await state.clear()

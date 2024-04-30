@@ -6,6 +6,7 @@ from core.database.querys import get_language_one, get_currency_one, get_catalog
 from core.utils.settings import async_engine, async_session_maker, admin
 from core.utils.username import create_username
 
+
 creator = {
     'language': {
         'uk': {
@@ -44,11 +45,83 @@ creator = {
         'uk': {
             'flag': '🇺🇦',
             'region': {
-                'kiev': ['kiev'],
-                'odessa': ['odessa', 'izmail', 'southern', 'chernomorsk', 'sarata'],
-                'nikolajev': ['nikolajev', 'ochakov'],
-                'lviv': ['lviv'],
-                'vinnytsia': ['vinnytsia'],
+                'vinnytsia': [
+                    'vinnytsia', 'zhmerynka', 'mogilev', 'khmelnyk',
+                ],
+                'volyn': [
+                    'vladimir', 'kovel', 'lutsk', 'novovolynsk',
+                ],
+                'dnipropetrovsk': [
+                    'dnieper', 'zhovti', 'kamenskoye', 'krivoy', 'manganets', 'nikopol', 'novomoskovsk',
+                    'pokrov', 'pavlograd', 'sinelnikovo',
+                ],
+                'donetsk': [
+                    'avdeevka', 'bakhmut', 'gorlovka', 'donetsk', 'druzhkovka', 'yenakievo', 'konstantinovka',
+                    'kramatorsk', 'makeevka', 'mariupol', 'slavyansk', 'snezhnoye', 'chistyakovo', 'toretsk',
+                    'khartsyzk', 'shakhtersk', 'yasinovataya',
+                ],
+                'zakarpattia': [
+                    'beregovo', 'vinogradov', 'irshava', 'mukachevo', 'uzhgorod', 'khust',
+                ],
+                'zaporizhia': [
+                    'berdyansk', 'zaporozhye', 'melitopol', 'tokmak', 'energodar',
+                ],
+                'zhytomyr': [
+                    'berdichev', 'zhytomyr', 'korosten', 'novograd',
+                ],
+                'frankivsk': [
+                    'frankivsk', 'kalush', 'kolomyia',
+                ],
+                'kiev': [
+                    'church', 'boryspil', 'boyarka', 'brovary', 'bucha', 'vasilkov', 'vishnevoye', 'vyshgorod',
+                    'irpen', 'kiev', 'obukhov', 'slavutich', 'fastov',
+                ],
+                'kirovohrad': [
+                    'alexandria', 'kropivnitsky', 'svetlovodsk',
+                ],
+                'lviv': [
+                    'boryslav', 'drohobych', 'lviv', 'novoyavorovsk', 'sambor', 'stryj', 'chervonograd',
+                ],
+                'luhansk': [
+                    'alchevsk', 'anthracite', 'bryanka', 'sorokino', 'khrustalny', 'lisichansk', 'lugansk', 'pervomaysk',
+                    'rovenky', 'rubizhne', 'sverdlovsk', 'severodonetsk', 'stakhanov',
+                ],
+                'mykolaiv': [
+                    'voznesensk', 'mykolaiv', 'pervomaysk', 'yuzhnoukrainsk',
+                ],
+                'odessa': [
+                    'belgorod', 'izmail', 'odessa', 'podolsk', 'chernomorsk', 'yuzhnoye',
+                ],
+                'poltava': [
+                    'plavni', 'kremenchug', 'lubny', 'mirgorod', 'poltava',
+                ],
+                'rivne': [
+                    'dubno', 'kostopol', 'varasch', 'rivne',
+                ],
+                'sumy': [
+                    'ochtirka', 'glukhov', 'konotop', 'romney', 'sumy', 'shostka',
+                ],
+                'ternopil': [
+                    'kremenets', 'ternopil', 'chortkiv',
+                ],
+                'kharkiv': [
+                    'izyum', 'lozovaya', 'pervomayskiy', 'kharkiv', 'chuguev',
+                ],
+                'kherson': [
+                    'alyoshki', 'kakhovka', 'novaya', 'kherson',
+                ],
+                'khmelnytskyi': [
+                    'podilskyi', 'neteszyn', 'slavuta', 'starokonstantinov', 'kmelnytskyi', 'shepetivka',
+                ],
+                'cherkasy': [
+                    'zolotonosha', 'smela', 'uman', 'cherkasy',
+                ],
+                'chernivtsi': [
+                    'novodnestrovsk', 'storozyniec', 'chernivtsi',
+                ],
+                'chernihiv': [
+                    'nizhyn', 'priluki', 'chernigov',
+                ],
             },
         },
     },

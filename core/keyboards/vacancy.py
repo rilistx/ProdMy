@@ -77,10 +77,10 @@ def vacancy_employment_button(
         ))
 
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['vacancy']['complete'],
+        text=connector[lang]['button']['vacancy']['employment']['complete'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['vacancy']['incomplete'],
+        text=connector[lang]['button']['vacancy']['employment']['partial'],
     ))
 
     keyboard.add(KeyboardButton(
@@ -107,10 +107,10 @@ def vacancy_choice_button(
         ))
 
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['vacancy']['yes'],
+        text=connector[lang]['button']['vacancy']['choice']['yes'],
     ))
     keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['vacancy']['not'],
+        text=connector[lang]['button']['vacancy']['choice']['not'],
     ))
 
     keyboard.add(KeyboardButton(

@@ -4,10 +4,9 @@ from core.keyboards.menu import get_menu_button, get_vacancy_button, get_descrip
     get_profile_button, get_confirm_button, get_setting_button, get_about_button, get_admin_button
 from core.database.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, \
     get_vacancy_one, get_vacancy_user, get_vacancy_favorite, get_liked_one, get_complaint_one, search_user, \
-    get_preview_one, create_preview, get_vacancy_admin, get_country_one, get_language_one, get_currency_one, \
-    get_region_one, get_city_one
+    get_preview_one, create_preview, get_vacancy_admin, get_complaint_count
 from core.utils.connector import connector
-from core.utils.message import get_message_vacancy, get_message_profile
+from core.utils.message import get_message_vacancy_preview, get_message_profile
 from core.utils.paginator import Paginator
 
 
@@ -31,10 +30,7 @@ async def shaping_menu(
         level: int,
         key: str,
 ):
-    user = await search_user(
-        session=session,
-        user_id=user_id,
-    )
+    user = await search_user(session=session, user_id=user_id)
 
     text = f"🧭 <b>{connector[lang]['message']['menu'][key]}</b>"
     button = get_menu_button(
@@ -73,14 +69,8 @@ async def shaping_subcatalog(
         key: str,
         catalog_id: int,
 ):
-    catalog = await get_catalog_one(
-        session=session,
-        catalog_id=catalog_id,
-    )
-    subcatalog = await get_subcatalog_all(
-        session=session,
-        catalog_id=catalog_id,
-    )
+    catalog = await get_catalog_one(session=session, catalog_id=catalog_id)
+    subcatalog = await get_subcatalog_all(session=session, catalog_id=catalog_id)
 
     text = f"⬇️ <b>{connector[lang]['message']['menu'][key]}</b>"
     button = get_profession_button(
@@ -107,34 +97,23 @@ async def shaping_vacancy(
         vacancy_id: int | None = None,
 ):
     if view == 'complaint':
-        vacancy = await get_vacancy_admin(
-            session=session,
-        )
+        all_vacancy = await get_vacancy_admin(session=session)
     elif view == 'all':
-        vacancy = await get_vacancy_all_active(
-            session=session,
-            subcatalog_id=subcatalog_id,
-        )
+        all_vacancy = await get_vacancy_all_active(session=session, subcatalog_id=subcatalog_id)
     elif view == 'your':
-        vacancy = await get_vacancy_user(
-            session=session,
-            user_id=user_id,
-        )
+        all_vacancy = await get_vacancy_user(session=session, user_id=user_id)
     else:
-        vacancy = await get_vacancy_favorite(
-            session=session,
-            user_id=user_id,
-        )
+        all_vacancy = await get_vacancy_favorite(session=session, user_id=user_id)
 
     pagination_button = {}
 
-    if vacancy:
-        paginator = Paginator(vacancy, page=page)
-        vacancy_page = paginator.get_page()[0]
+    if all_vacancy:
+        paginator = Paginator(all_vacancy, page=page)
+        vacancy = paginator.get_page()[0]
         pagination_button = pages(paginator)
-        vacancy_id = vacancy_page.id
+        vacancy_id = vacancy.id
 
-        text = await get_message_vacancy(session=session, lang=lang, vacancy_id=vacancy_id, preview='partial')
+        text = await get_message_vacancy_preview(session=session, lang=lang, vacancy_id=vacancy_id, preview='partial')
     else:
         text = f"❎ <b>{connector[lang]['message']['menu'][view]}</b>"
 
@@ -164,49 +143,26 @@ async def shaping_description(
         catalog_id: int,
         subcatalog_id: int,
         vacancy_id: int,
-        liked_id: int | None = None,
-        complaint_id: int | None = None,
-        your_vacancy: bool | None = None,
+        liked: bool = False,
+        complaint: bool = False,
 ):
     if view == 'all' or view == 'liked' or view == 'complaint':
-        vacancy = await get_vacancy_one(
-            session=session,
-            vacancy_id=vacancy_id,
-        )
+        vacancy = await get_vacancy_one(session=session, vacancy_id=vacancy_id)
 
         if view == 'all':
             preview = await get_preview_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
 
-            your_vacancy = await get_vacancy_one(
-                session=session,
-                vacancy_id=vacancy_id,
-                user_id=user_id,
-            )
-
-            if not preview and not your_vacancy:
+            if not preview and vacancy.user_id != user_id:
                 await create_preview(session=session, user_id=user_id, vacancy_id=vacancy_id)
 
-        liked = await get_liked_one(
-            session=session,
-            user_id=user_id,
-            vacancy_id=vacancy_id,
-        )
-        complaint = await get_complaint_one(
-            session=session,
-            user_id=user_id,
-            vacancy_id=vacancy_id,
-        )
-
-        liked_id = liked.id if liked else None
-        complaint_id = complaint.id if complaint else None
+        liked: bool = await get_liked_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
+        complaint: bool = await get_complaint_one(session=session, user_id=user_id, vacancy_id=vacancy_id)
     else:
-        vacancy = await get_vacancy_one(
-            session=session,
-            vacancy_id=vacancy_id,
-            user_id=user_id,
-        )
+        vacancy = await get_vacancy_one(session=session, vacancy_id=vacancy_id, user_id=user_id)
 
-    text = await get_message_vacancy(session=session, lang=lang, vacancy_id=vacancy_id, preview='full')
+    complaint_count = await get_complaint_count(session=session, vacancy_id=vacancy_id)
+
+    text = await get_message_vacancy_preview(session=session, lang=lang, vacancy_id=vacancy_id, preview='full')
     button = get_description_button(
         lang=lang,
         view=view,
@@ -216,10 +172,11 @@ async def shaping_description(
         catalog_id=catalog_id,
         subcatalog_id=subcatalog_id,
         vacancy_id=vacancy_id,
-        liked_id=liked_id,
-        complaint_id=complaint_id,
-        your_vacancy=True if your_vacancy else False,
-        deactivate=vacancy.active,
+        liked=liked,
+        complaint=complaint,
+        active=vacancy.active,
+        your_vacancy=True if vacancy.user_id == user_id else False,
+        blocked_vacancy=True if complaint_count.complaint_count == 2 else False,
     )
 
     return text, button
@@ -282,7 +239,7 @@ async def shaping_setting(
     button = get_setting_button(
         lang=lang,
         level=level,
-        first_name=user.first_name
+        first_name=True if user.first_name else False,
     )
 
     return text, button

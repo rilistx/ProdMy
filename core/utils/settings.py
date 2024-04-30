@@ -27,6 +27,13 @@ def telegram_env(path: str):
     )
 
 
+def language_env(path: str):
+    env = Env()
+    env.read_env(path)
+
+    return env.str("DEFAULT_LANG")
+
+
 def postgres_env(path: str):
     env = Env()
     env.read_env(path)
@@ -62,6 +69,7 @@ def scheduler_env(path: str):
 
 
 token, support, channel, admin = telegram_env('.env')
+default_lang = language_env('.env')
 postgres = postgres_env('.env')
 redis = redis_env('.env')
 scheduler = scheduler_env('.env')

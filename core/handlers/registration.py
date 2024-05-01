@@ -12,7 +12,7 @@ from core.database.querys import search_user, get_language_one, get_currency_one
 from core.states.registration import StateRegistration
 from core.utils.connector import connector
 from core.utils.message import get_message_registration_start, get_text_registration_contact
-from core.utils.settings import default_lang
+from core.utils.settings import default_language, default_currency, default_country
 from core.utils.username import create_username
 
 
@@ -35,7 +35,7 @@ async def start(message: Message, state: FSMContext, session: AsyncSession) -> N
             session=session,
         )
 
-    lang = message.from_user.language_code if message.from_user.language_code in connector.keys() else default_lang
+    lang = message.from_user.language_code if message.from_user.language_code in connector.keys() else default_language
 
     await state.update_data({
         'lang': lang,
@@ -56,8 +56,8 @@ async def contact(message: Message, state: FSMContext, session: AsyncSession) ->
     state_data = await state.get_data()
 
     lang = await get_language_one(session=session, language_abbreviation=state_data['lang'])
-    currency = await get_currency_one(session=session, currency_abbreviation='UAH')
-    country = await get_country_one(session=session, country_name=state_data['lang'])
+    currency = await get_currency_one(session=session, currency_abbreviation=default_currency)
+    country = await get_country_one(session=session, country_name=default_country)
 
     await create_user(
         session=session,

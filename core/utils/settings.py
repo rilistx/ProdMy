@@ -31,7 +31,21 @@ def language_env(path: str):
     env = Env()
     env.read_env(path)
 
-    return env.str("DEFAULT_LANG")
+    return env.str("DEFAULT_LANGUAGE")
+
+
+def currency_env(path: str):
+    env = Env()
+    env.read_env(path)
+
+    return env.str("DEFAULT_CURRENCY")
+
+
+def country_env(path: str):
+    env = Env()
+    env.read_env(path)
+
+    return env.str("DEFAULT_COUNTRY")
 
 
 def postgres_env(path: str):
@@ -69,7 +83,9 @@ def scheduler_env(path: str):
 
 
 token, support, channel, admin = telegram_env('.env')
-default_lang = language_env('.env')
+default_language = language_env('.env')
+default_currency = currency_env('.env')
+default_country = country_env('.env')
 postgres = postgres_env('.env')
 redis = redis_env('.env')
 scheduler = scheduler_env('.env')
@@ -78,6 +94,7 @@ scheduler = scheduler_env('.env')
 PostgresURL = f"postgresql+asyncpg://{postgres['db_user']}:{postgres['db_pass']}@{postgres['db_host']}/{postgres['db_name']}"
 async_engine = create_async_engine(PostgresURL, echo=True)
 async_session_maker = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
+
 
 bot = Bot(token=token, parse_mode=ParseMode.HTML)
 storage = RedisStorage.from_url(f"{redis['db_name']}://{redis['db_host']}:{redis['db_port']}/0")

@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton
 
-from core.utils.connector import connector  # noqa
+from core.utils.connector import connector
 
 
 def account_name_button(
@@ -8,9 +8,11 @@ def account_name_button(
 ):
     keyboard = ReplyKeyboardBuilder()
 
-    keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['navigation']['cancel'],
-    ))
+    keyboard.add(
+        KeyboardButton(
+            text=f"↪️ {connector[lang]['button']['navigation']['cancel']}",
+        )
+    )
 
     sizes = [1]
 

@@ -10,6 +10,4 @@ async def scheduler_channel_post(
     text = 'Пост каждый день '
     reply_markup = get_chat_button()
 
-    print(1)
-
     await bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)

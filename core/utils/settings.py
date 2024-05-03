@@ -92,7 +92,7 @@ scheduler = scheduler_env('.env')
 
 
 PostgresURL = f"postgresql+asyncpg://{postgres['db_user']}:{postgres['db_pass']}@{postgres['db_host']}/{postgres['db_name']}"
-async_engine = create_async_engine(PostgresURL, echo=True)
+async_engine = create_async_engine(PostgresURL, echo=False)
 async_session_maker = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
 

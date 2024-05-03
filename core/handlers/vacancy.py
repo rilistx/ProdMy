@@ -10,11 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from core.filters.vacancy import CatalogFilter, SubcatalogFilter, NameFilter, DescriptionFilter, RequirementFilter, \
-    EmploymentFilter, ChoiceFilter, PriceFilter, RegionFilter, CityFilter, CancelFilter, BackFilter
+    EmploymentFilter, ChoiceFilter, PriceFilter, RegionFilter, CityFilter, CancelFilter, BackFilter, ScheduleFilter
 from core.handlers.menu import menu
 from core.keyboards.menu import MenuCallBack
 from core.keyboards.vacancy import vacancy_profession_button, vacancy_keyboard_button, vacancy_employment_button, \
-    vacancy_choice_button, vacancy_location_button
+    vacancy_choice_button, vacancy_location_button, vacancy_schedule_button
 from core.database.querys import get_catalog_all, get_subcatalog_all, get_catalog_one, get_subcatalog_one, \
     get_country_first, get_region_all, get_region_one, get_city_all, get_city_one, create_vacancy, get_vacancy_one, \
     update_vacancy, get_currency_first
@@ -66,8 +66,8 @@ async def catalog_vacancy_callback(
 
     state_list = [
         'lang', 'catalog_id', 'catalog_title', 'currency_id', 'subcatalog_id', 'name', 'description',
-        'requirement', 'employment', 'experience', 'remote', 'language', 'foreigner', 'disability',
-        'salary', 'country_id', 'country_name', 'region_id', 'region_name', 'city_id',
+        'requirement', 'employment', 'experience', 'schedule', 'remote', 'language', 'foreigner',
+        'disability', 'salary', 'country_id', 'country_name', 'region_id', 'region_name', 'city_id',
     ]
 
     await state.update_data({key: callback_data.lang if key == 'lang' else None for key in state_list})
@@ -114,7 +114,7 @@ async def cancel_vacancy(
 
     text = get_text_vacancy_create(
         lang=state_data['lang'],
-        func_name='exit',
+        func_name='cancel',
         change=True if StateVacancy.change else False,
     )
     reply_markup = ReplyKeyboardRemove()
@@ -126,13 +126,13 @@ async def cancel_vacancy(
 
     return_data = {
         'method': None if StateVacancy.change else 'create',
-        'view': state_data['update_view'] if StateVacancy.change else None,
+        'view': state_data['vacancy_view'] if StateVacancy.change else None,
         'level': 4 if StateVacancy.change else 10,
         'key': 'description' if StateVacancy.change else 'confirm_user',
-        'page': state_data['update_page'] if StateVacancy.change else None,
-        'catalog_id': state_data['update_catalog_id'] if StateVacancy.change else None,
-        'subcatalog_id': state_data['update_subcatalog_id'] if StateVacancy.change else None,
-        'vacancy_id': state_data['update_vacancy_id'] if StateVacancy.change else None,
+        'page': state_data['vacancy_page'] if StateVacancy.change else None,
+        'catalog_id': state_data['vacancy_catalog_id'] if StateVacancy.change else None,
+        'subcatalog_id': state_data['vacancy_subcatalog_id'] if StateVacancy.change else None,
+        'vacancy_id': state_data['vacancy_vacancy_id'] if StateVacancy.change else None,
     }
 
     StateVacancy.change = None
@@ -231,7 +231,7 @@ async def back_vacancy(
             message=message,
             state=state,
         )
-    elif state_data == StateVacancy.REMOTE:
+    elif state_data == StateVacancy.SCHEDULE:
         await state.update_data({
             'experience': None,
         })
@@ -239,6 +239,17 @@ async def back_vacancy(
         await state.set_state(StateVacancy.EXPERIENCE)
 
         return await experience_vacancy(
+            message=message,
+            state=state,
+        )
+    elif state_data == StateVacancy.REMOTE:
+        await state.update_data({
+            'schedule': None,
+        })
+
+        await state.set_state(StateVacancy.SCHEDULE)
+
+        return await schedule_vacancy(
             message=message,
             state=state,
         )
@@ -556,7 +567,7 @@ async def experience_vacancy(
 
 
 @vacancy_router.message(StateVacancy.EXPERIENCE, ChoiceFilter())
-async def remote_vacancy(
+async def schedule_vacancy(
         message: Message,
         state: FSMContext,
 ) -> None:
@@ -573,6 +584,44 @@ async def remote_vacancy(
 
         await state.update_data({
             'experience': experience,
+        })
+
+    text = get_text_vacancy_create(
+        lang=state_data['lang'],
+        func_name='schedule',
+        change=True if StateVacancy.change else False,
+    )
+    reply_markup = vacancy_schedule_button(
+        lang=state_data['lang'],
+        change=True if StateVacancy.change else False,
+    )
+
+    await message.answer(
+        text=text,
+        reply_markup=reply_markup,
+    )
+
+    await state.set_state(StateVacancy.SCHEDULE)
+
+
+@vacancy_router.message(StateVacancy.SCHEDULE, ScheduleFilter())
+async def remote_vacancy(
+        message: Message,
+        state: FSMContext,
+) -> None:
+    state_data = await state.get_data()
+
+    if not state_data['schedule']:
+        if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']:
+            schedule = StateVacancy.change.schedule
+        else:
+            if message.text == connector[state_data['lang']]['button']['vacancy']['schedule']['stable']:
+                schedule = True
+            else:
+                schedule = False
+
+        await state.update_data({
+            'schedule': schedule,
         })
 
     text = get_text_vacancy_create(
@@ -901,8 +950,12 @@ async def finish_vacancy(
         apscheduler.add_job(
             scheduler_deactivate_vacancy,
             trigger='date',
-            next_run_time=datetime.now() + timedelta(days=30),
-            kwargs={'chat_id': message.chat.id, 'vacancy_id': vacancy.id},
+            next_run_time=datetime.now() + timedelta(days=60),
+            kwargs={
+                'lang': state_data['lang'],
+                'chat_id': message.chat.id,
+                'vacancy_id': vacancy.id,
+            },
             id=f'deactivate_vacancy_{str(vacancy.id)}',
         )
 
@@ -925,13 +978,13 @@ async def finish_vacancy(
     )
 
     return_data = {
-        'view': state_data['update_view'] if StateVacancy.change else None,
+        'view': state_data['vacancy_view'] if StateVacancy.change else None,
         'level': 4 if StateVacancy.change else None,
         'key': 'description' if StateVacancy.change else None,
-        'page': state_data['update_page'] if StateVacancy.change else None,
-        'catalog_id': state_data['update_catalog_id'] if StateVacancy.change else None,
-        'subcatalog_id': state_data['update_subcatalog_id'] if StateVacancy.change else None,
-        'vacancy_id': state_data['update_vacancy_id'] if StateVacancy.change else None,
+        'page': state_data['vacancy_page'] if StateVacancy.change else None,
+        'catalog_id': state_data['vacancy_catalog_id'] if StateVacancy.change else None,
+        'subcatalog_id': state_data['vacancy_subcatalog_id'] if StateVacancy.change else None,
+        'vacancy_id': state_data['vacancy_vacancy_id'] if StateVacancy.change else None,
     }
 
     StateVacancy.change = None

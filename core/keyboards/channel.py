@@ -6,9 +6,11 @@ def get_channel_button(
 ):
     keyboard = InlineKeyboardBuilder()
 
-    keyboard.add(InlineKeyboardButton(
-        text='@wadsworkbot',
-        url="https://t.me/wadsworkbot",
-    ))
+    keyboard.add(
+        InlineKeyboardButton(
+            text='@wadsworkbot',
+            url="https://t.me/wadsworkbot",
+        )
+    )
 
     return keyboard.adjust(*sizes).as_markup()

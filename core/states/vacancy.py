@@ -9,6 +9,7 @@ class StateVacancy(StatesGroup):
     REQUIREMENT = State()
     EMPLOYMENT = State()
     EXPERIENCE = State()
+    SCHEDULE = State()
     REMOTE = State()
     LANGUAGE = State()
     FOREIGNER = State()

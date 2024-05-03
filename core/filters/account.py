@@ -9,7 +9,7 @@ class CancelFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
         lang = (await state.get_data())['lang']
 
-        if message.text == connector[lang]['button']['navigation']['cancel']:
+        if message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}":
             return True
         return False
 

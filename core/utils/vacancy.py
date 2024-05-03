@@ -11,7 +11,9 @@ from core.database.querys import deactivate_vacancy, get_vacancy_one, get_compla
     create_complaint, get_complaint_count, delete_vacancy
 from core.handlers.menu import redirector
 from core.keyboards.menu import MenuCallBack
+from core.keyboards.admin import get_admin_vacancy_button
 from core.schedulers.vacancy import scheduler_deactivate_vacancy
+from core.utils.connector import connector
 
 
 async def method_preview_vacancy(
@@ -20,7 +22,11 @@ async def method_preview_vacancy(
         session: AsyncSession,
         apscheduler: AsyncIOScheduler,
 ):
-    await callback.answer("Вакансия деактивирована!." if callback_data.method == 'deactivate' else "Вакансия активирована!.")
+    await callback.answer(
+        connector[callback_data.lang]['message']['callback']['preview']['deactivate']
+        if callback_data.method == 'deactivate'
+        else connector[callback_data.lang]['message']['callback']['preview']['activate']
+    )
 
     await deactivate_vacancy(
         session=session,
@@ -37,6 +43,7 @@ async def method_preview_vacancy(
             trigger='date',
             next_run_time=datetime.now() + timedelta(days=30),
             kwargs={
+                'lang': callback_data.lang,
                 'chat_id': callback.message.chat.id,
                 'vacancy_id': callback_data.vacancy_id,
             },
@@ -79,7 +86,7 @@ async def method_complaint_vacancy(
                 vacancy_id=callback_data.vacancy_id,
             )
             await callback.answer(
-                text="Вы убрали жалобу!.",
+                text=connector[callback_data.lang]['message']['callback']['complaint']['del'],
             )
         else:
             await create_complaint(
@@ -89,7 +96,7 @@ async def method_complaint_vacancy(
             )
 
             await callback.answer(
-                text="Вы пожаловались!.",
+                text=connector[callback_data.lang]['message']['callback']['complaint']['add'],
             )
 
     complaint_count = await get_complaint_count(session=session, vacancy_id=callback_data.vacancy_id)
@@ -98,7 +105,10 @@ async def method_complaint_vacancy(
         if callback_data.page - 1 != 0:
             callback_data.page = callback_data.page - 1
 
-        await bot.send_message(chat_id=vacancy.user_id, text='Ваша вакансия временно заблокирована!')
+        text = f"⚠️ {connector[callback_data.lang]['message']['vacancy']['blocked']}"
+        reply_markup = get_admin_vacancy_button(lang=callback_data.lang, vacancy_id=callback_data.vacancy_id)
+
+        await bot.send_message(chat_id=vacancy.user_id, text=text, reply_markup=reply_markup)
 
     return await redirector(
         callback=callback,
@@ -126,7 +136,7 @@ async def method_delete_vacancy(
         session=session,
         vacancy_id=callback_data.vacancy_id,
     )
-    await callback.answer("Вакансия удалена!.")
+    await callback.answer(connector[callback_data.lang]['message']['callback']['delete'])
 
     return await redirector(
         callback=callback,
@@ -152,6 +162,7 @@ def check_update_vacancy(
             or old_data.requirement != new_data['requirement']
             or old_data.employment != new_data['employment']
             or old_data.experience != new_data['experience']
+            or old_data.schedule != new_data['schedule']
             or old_data.remote != new_data['remote']
             or old_data.language != new_data['language']
             or old_data.foreigner != new_data['foreigner']

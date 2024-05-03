@@ -6,9 +6,11 @@ def get_chat_button(
 ):
     keyboard = InlineKeyboardBuilder()
 
-    keyboard.add(InlineKeyboardButton(
-        text='@wadsworkchat',
-        url="https://t.me/wadsworkchat",
-    ))
+    keyboard.add(
+        InlineKeyboardButton(
+            text='@wadsworkchat',
+            url="https://t.me/wadsworkchat",
+        )
+    )
 
     return keyboard.adjust(*sizes).as_markup()

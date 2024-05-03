@@ -4,8 +4,7 @@ from core.database.models import Base, Language, Currency, Country, Region, City
 from core.database.querys import get_language_one, get_currency_one, get_catalog_one, get_subcatalog_one, \
     get_country_one, get_region_one, get_city_one, search_user, create_user
 from core.utils.connector import connector
-from core.utils.settings import async_engine, async_session_maker, admin, default_language, default_currency, \
-    default_country
+from core.utils.settings import async_engine, async_session_maker, admin, default_language, default_currency, default_country
 from core.utils.username import create_username
 
 

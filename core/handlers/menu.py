@@ -8,6 +8,7 @@ from core.filters.menu import IsUserFilter
 from core.keyboards.menu import MenuCallBack
 from core.database.querys import create_liked, get_liked_one, delete_liked, get_vacancy_one, get_language_user
 from core.processes.menu import menu_processing
+from core.utils.connector import connector
 
 
 menu_router = Router()
@@ -76,7 +77,7 @@ async def favorite(
                 vacancy_id=callback_data.vacancy_id,
             )
             await callback.answer(
-                text="Вакансия убрана из избранного!.",
+                text=f"{connector[callback_data.lang]['message']['callback'][callback_data.method]['del']}",
             )
         else:
             await create_liked(
@@ -85,7 +86,7 @@ async def favorite(
                 vacancy_id=callback_data.vacancy_id,
             )
             await callback.answer(
-                text="Вакансия добавлена в избранное!.",
+                text=f"{connector[callback_data.lang]['message']['callback'][callback_data.method]['add']}",
             )
 
 
@@ -98,6 +99,7 @@ async def redirector(
         callback: CallbackQuery,
         callback_data: MenuCallBack,
         session: AsyncSession,
+        method: str | None = None,
         view: str | None = None,
         level: int | None = None,
         key: str | None = None,
@@ -122,7 +124,7 @@ async def redirector(
         session=session,
         lang=lang.language.abbreviation,
         user_id=callback.from_user.id,
-        method=callback_data.method,
+        method=method if method else callback_data.method,
         view=view if view else callback_data.view,
         level=level if level else callback_data.level,
         key=key if key else callback_data.key,

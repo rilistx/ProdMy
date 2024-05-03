@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.keyboards.menu import get_menu_button, get_vacancy_button, get_description_button, get_profession_button, \
-    get_profile_button, get_confirm_button, get_setting_button, get_about_button, get_admin_button
+    get_profile_button, get_confirm_button, get_setting_button, get_about_button, get_admin_button, get_donate_button
 from core.database.querys import get_catalog_all, get_catalog_one, get_subcatalog_all, get_vacancy_all_active, \
     get_vacancy_one, get_vacancy_user, get_vacancy_favorite, get_liked_one, get_complaint_one, search_user, \
     get_preview_one, create_preview, get_vacancy_admin, get_complaint_count
 from core.utils.connector import connector
-from core.utils.message import get_message_vacancy_preview, get_message_profile
+from core.utils.message import get_message_vacancy_preview, get_message_profile, get_message_about, get_message_donate
 from core.utils.paginator import Paginator
 
 
@@ -32,7 +32,11 @@ async def shaping_menu(
 ):
     user = await search_user(session=session, user_id=user_id)
 
-    text = f"🧭 <b>{connector[lang]['message']['menu'][key]}</b>"
+    if user.blocked:
+        text = f"⚠️ <b>{connector[lang]['message'][key]['caption']['blocked']}</b>"
+    else:
+        text = f"🧭 <b>{connector[lang]['message'][key]['caption']['actived']}</b>"
+
     button = get_menu_button(
         lang=lang,
         level=level,
@@ -113,7 +117,15 @@ async def shaping_vacancy(
         pagination_button = pages(paginator)
         vacancy_id = vacancy.id
 
-        text = await get_message_vacancy_preview(session=session, lang=lang, vacancy_id=vacancy_id, preview='partial')
+        complaint_count = await get_complaint_count(session=session, vacancy_id=vacancy_id)
+
+        text = await get_message_vacancy_preview(
+            session=session,
+            lang=lang,
+            vacancy_id=vacancy_id,
+            preview='partial',
+            complaint=True if complaint_count.complaint_count == 2 else False,
+        )
     else:
         text = f"❎ <b>{connector[lang]['message']['menu'][view]}</b>"
 
@@ -162,7 +174,13 @@ async def shaping_description(
 
     complaint_count = await get_complaint_count(session=session, vacancy_id=vacancy_id)
 
-    text = await get_message_vacancy_preview(session=session, lang=lang, vacancy_id=vacancy_id, preview='full')
+    text = await get_message_vacancy_preview(
+        session=session,
+        lang=lang,
+        vacancy_id=vacancy_id,
+        preview='full',
+        complaint=True if complaint_count.complaint_count == 2 else False,
+    )
     button = get_description_button(
         lang=lang,
         view=view,
@@ -183,26 +201,38 @@ async def shaping_description(
 
 
 async def shaping_confirm(
+        session: AsyncSession,
         lang: str,
+        user_id: int,
         method: str,
         view: str,
+        level: int,
         key: str,
         page: int,
         catalog_id: int,
         subcatalog_id: int,
         vacancy_id: int,
+        first_name: bool = True,
 ):
     if key == 'confirm_user':
-        text = connector[lang]['message']['confirm'][key][method]
+        user = await search_user(session=session, user_id=user_id)
+
+        if method == 'create' and not user.first_name:
+            first_name = False
+            text = f"⚠️ <b>{connector[lang]['message']['confirm'][key]['error']['first_name']}</b>"
+        else:
+            text = f"{connector[lang]['message']['confirm'][key][method]}"
     else:
-        text = connector[lang]['message']['confirm'][key][method]
+        text = f"{connector[lang]['message']['confirm'][key][method]}"
 
     button = get_confirm_button(
         lang=lang,
         method=method,
         view=view,
+        level=level,
         key=key,
         page=page,
+        first_name=first_name,
         catalog_id=catalog_id,
         subcatalog_id=subcatalog_id,
         vacancy_id=vacancy_id,
@@ -247,11 +277,23 @@ async def shaping_setting(
 
 async def shaping_about(
         lang: str,
-        key: str,
 ):
-    text = connector[lang]['message'][key]
+    text = await get_message_about(lang=lang)
     button = get_about_button(
         lang=lang,
+    )
+
+    return text, button
+
+
+async def shaping_donate(
+        lang: str,
+        level: int,
+):
+    text = await get_message_donate(lang=lang)
+    button = get_donate_button(
+        lang=lang,
+        level=level,
     )
 
     return text, button
@@ -261,7 +303,7 @@ async def shaping_admin(
         lang: str,
         key: str,
 ):
-    text = f"<b>{connector[lang]['message']['menu'][key]}</b>"
+    text = f"🔐 <b>{connector[lang]['message']['menu'][key]}</b>"
     button = get_admin_button(
         lang=lang,
     )
@@ -294,7 +336,7 @@ async def menu_processing(
         return await shaping_description(session, lang, user_id, view, level, key, page, catalog_id, subcatalog_id, vacancy_id)
 
     elif level == 10:
-        return await shaping_confirm(lang, method, view, key, page, catalog_id, subcatalog_id, vacancy_id)
+        return await shaping_confirm(session, lang, user_id, method, view, level, key, page, catalog_id, subcatalog_id, vacancy_id)
 
     elif level == 20:
         return await shaping_profile(session, lang, user_id, level)
@@ -302,7 +344,9 @@ async def menu_processing(
         return await shaping_setting(session, lang, user_id, level, key)
 
     elif level == 30:
-        return await shaping_about(lang, key)
+        return await shaping_about(lang)
+    elif level == 31:
+        return await shaping_donate(lang, level)
 
     elif level == 40:
         return await shaping_admin(lang, key)

@@ -11,7 +11,7 @@ from core.keyboards.account import account_name_button
 from core.keyboards.menu import MenuCallBack
 from core.database.querys import search_user, update_name_user
 from core.states.account import StateAccount
-from core.utils.connector import connector
+from core.utils.message import get_text_settings_name
 
 
 account_router = Router()
@@ -28,17 +28,25 @@ async def name_account_callback(
 
     await state.update_data({
         'lang': callback_data.lang,
+        'account_method': callback_data.method,
+        'account_view': callback_data.view,
         'account_level': callback_data.level,
     })
 
     StateAccount.change = await search_user(session=session, user_id=callback.from_user.id)
 
+    text = get_text_settings_name(
+        lang=callback_data.lang,
+        func_name='name',
+        change=True if StateAccount.change else False,
+        data=callback_data.data,
+    )
     reply_markup = account_name_button(
         lang=callback_data.lang,
     )
 
     await callback.message.answer(
-        text=connector[callback_data.lang]['message']['settings'][callback_data.data],
+        text=text,
         reply_markup=reply_markup,
     )
 
@@ -50,17 +58,23 @@ async def name_account_callback(
 async def cancel_account(message: Message, state: FSMContext, session: AsyncSession) -> None:
     state_data = await state.get_data()
 
-    if StateAccount.change.first_name:
-        text = connector[state_data['lang']]['message']['settings']['exit']['change']
-    else:
-        text = connector[state_data['lang']]['message']['settings']['exit']['create']
+    text = get_text_settings_name(
+        lang=state_data['lang'],
+        func_name='cancel',
+        change=True if StateAccount.change else False,
+    )
+    reply_markup = ReplyKeyboardRemove()
 
     await message.answer(
         text=text,
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=reply_markup,
     )
 
-    return_level = state_data['account_level']
+    return_data = {
+        'method': state_data['account_method'],
+        'view': state_data['account_view'],
+        'level': state_data['account_level'],
+    }
 
     StateAccount.change = None
     await state.clear()
@@ -68,8 +82,10 @@ async def cancel_account(message: Message, state: FSMContext, session: AsyncSess
     return await menu(
         message=message,
         session=session,
-        level=return_level,
-        key='settings',
+        method=return_data['method'],
+        view=return_data['view'],
+        level=return_data['level'],
+        key='confirm_user' if return_data['method'] else 'settings',
     )
 
 
@@ -77,20 +93,26 @@ async def cancel_account(message: Message, state: FSMContext, session: AsyncSess
 async def finish_account(message: Message, state: FSMContext, session: AsyncSession) -> None:
     state_data = await state.get_data()
 
-    if message.text == StateAccount.change.first_name:
-        text = connector[state_data['lang']]['message']['settings']['finish']['nochange']
-    else:
-        text = connector[state_data['lang']]['message']['settings']['finish']['change']
-
     if StateAccount.change.first_name != message.text:
         await update_name_user(session=session, user_id=message.from_user.id, first_name=message.text)
 
+    text = get_text_settings_name(
+        lang=state_data['lang'],
+        func_name='finish',
+        change=True if StateAccount.change.first_name != message.text else False,
+    )
+    reply_markup = ReplyKeyboardRemove()
+
     await message.answer(
         text=text,
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=reply_markup,
     )
 
-    return_level = state_data['account_level']
+    return_data = {
+        'method': state_data['account_method'],
+        'view': state_data['account_view'],
+        'level': state_data['account_level'],
+    }
 
     StateAccount.change = None
     await state.clear()
@@ -98,8 +120,10 @@ async def finish_account(message: Message, state: FSMContext, session: AsyncSess
     return await menu(
         message=message,
         session=session,
-        level=return_level,
-        key='settings',
+        method=return_data['method'],
+        view=return_data['view'],
+        level=return_data['level'],
+        key='confirm_user' if return_data['method'] else 'settings',
     )
 
 

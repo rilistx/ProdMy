@@ -10,7 +10,7 @@ class CancelFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
         lang = (await state.get_data())['lang']
 
-        if message.text == connector[lang]['button']['navigation']['cancel']:
+        if message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}":
             return True
         return False
 
@@ -19,7 +19,7 @@ class BackFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
         lang = (await state.get_data())['lang']
 
-        if message.text == connector[lang]['button']['navigation']['back']:
+        if message.text == f"⬅️ {connector[lang]['button']['navigation']['back']}":
             return True
         return False
 
@@ -29,10 +29,10 @@ class CatalogFilter(BaseFilter):
         lang = (await state.get_data())['lang']
 
         if StateVacancy.change:
-            if message.text == connector[lang]['button']['vacancy']['nochange']:
+            if message.text == f"{connector[lang]['button']['vacancy']['nochange']}":
                 return True
 
-        if message.text == connector[lang]['button']['navigation']['cancel']:
+        if message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}":
             return True
 
         for _, value in connector[lang]['catalog'].items():
@@ -46,12 +46,12 @@ class SubcatalogFilter(BaseFilter):
         state_data = await state.get_data()
 
         if StateVacancy.change:
-            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']:
+            if message.text == f"{connector[state_data['lang']]['button']['vacancy']['nochange']}":
                 if StateVacancy.change.catalog_id == state_data['catalog_id']:
                     return True
 
-        if (message.text == connector[state_data['lang']]['button']['navigation']['back']
-                or message.text == connector[state_data['lang']]['button']['navigation']['cancel']):
+        if (message.text == f"⬅️ {connector[state_data['lang']]['button']['navigation']['back']}"
+                or message.text == f"↪️ {connector[state_data['lang']]['button']['navigation']['cancel']}"):
             return True
 
         for _, value in connector[state_data['lang']]['catalog'].items():
@@ -66,11 +66,11 @@ class NameFilter(BaseFilter):
         lang = (await state.get_data())['lang']
 
         if StateVacancy.change:
-            if message.text == connector[lang]['button']['vacancy']['nochange']:
+            if message.text == f"{connector[lang]['button']['vacancy']['nochange']}":
                 return True
 
-        if (message.text == connector[lang]['button']['navigation']['back']
-                or message.text == connector[lang]['button']['navigation']['cancel']):
+        if (message.text == f"⬅️ {connector[lang]['button']['navigation']['back']}"
+                or message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}"):
             return True
 
         if 3 <= len(message.text) <= 60:
@@ -83,11 +83,11 @@ class DescriptionFilter(BaseFilter):
         lang = (await state.get_data())['lang']
 
         if StateVacancy.change:
-            if message.text == connector[lang]['button']['vacancy']['nochange']:
+            if message.text == f"{connector[lang]['button']['vacancy']['nochange']}":
                 return True
 
-        if (message.text == connector[lang]['button']['navigation']['back']
-                or message.text == connector[lang]['button']['navigation']['cancel']):
+        if (message.text == f"⬅️ {connector[lang]['button']['navigation']['back']}"
+                or message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}"):
             return True
 
         if 50 <= len(message.text) <= 2000:
@@ -100,11 +100,11 @@ class RequirementFilter(BaseFilter):
         lang = (await state.get_data())['lang']
 
         if StateVacancy.change:
-            if message.text == connector[lang]['button']['vacancy']['nochange']:
+            if message.text == f"{connector[lang]['button']['vacancy']['nochange']}":
                 return True
 
-        if (message.text == connector[lang]['button']['navigation']['back']
-                or message.text == connector[lang]['button']['navigation']['cancel']):
+        if (message.text == f"⬅️ {connector[lang]['button']['navigation']['back']}"
+                or message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}"):
             return True
 
         if 10 <= len(message.text) <= 1000:
@@ -117,11 +117,11 @@ class EmploymentFilter(BaseFilter):
         lang = (await state.get_data())['lang']
 
         if StateVacancy.change:
-            if message.text == connector[lang]['button']['vacancy']['nochange']:
+            if message.text == f"{connector[lang]['button']['vacancy']['nochange']}":
                 return True
 
-        if (message.text == connector[lang]['button']['navigation']['back']
-                or message.text == connector[lang]['button']['navigation']['cancel']):
+        if (message.text == f"⬅️ {connector[lang]['button']['navigation']['back']}"
+                or message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}"):
             return True
 
         if (message.text == connector[lang]['button']['vacancy']['employment']['complete']
@@ -135,15 +135,33 @@ class ChoiceFilter(BaseFilter):
         lang = (await state.get_data())['lang']
 
         if StateVacancy.change:
-            if message.text == connector[lang]['button']['vacancy']['nochange']:
+            if message.text == f"{connector[lang]['button']['vacancy']['nochange']}":
                 return True
 
-        if (message.text == connector[lang]['button']['navigation']['back']
-                or message.text == connector[lang]['button']['navigation']['cancel']):
+        if (message.text == f"⬅️ {connector[lang]['button']['navigation']['back']}"
+                or message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}"):
             return True
 
         if (message.text == connector[lang]['button']['vacancy']['choice']['yes']
                 or message.text == connector[lang]['button']['vacancy']['choice']['not']):
+            return True
+        return False
+
+
+class ScheduleFilter(BaseFilter):
+    async def __call__(self, message: Message, state: FSMContext) -> bool:
+        lang = (await state.get_data())['lang']
+
+        if StateVacancy.change:
+            if message.text == f"{connector[lang]['button']['vacancy']['nochange']}":
+                return True
+
+        if (message.text == f"⬅️ {connector[lang]['button']['navigation']['back']}"
+                or message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}"):
+            return True
+
+        if (message.text == connector[lang]['button']['vacancy']['schedule']['stable']
+                or message.text == connector[lang]['button']['vacancy']['schedule']['flexible']):
             return True
         return False
 
@@ -153,11 +171,11 @@ class PriceFilter(BaseFilter):
         lang = (await state.get_data())['lang']
 
         if StateVacancy.change:
-            if message.text == connector[lang]['button']['vacancy']['nochange']:
+            if message.text == f"{connector[lang]['button']['vacancy']['nochange']}":
                 return True
 
-        if (message.text == connector[lang]['button']['navigation']['back']
-                or message.text == connector[lang]['button']['navigation']['cancel']):
+        if (message.text == f"⬅️ {connector[lang]['button']['navigation']['back']}"
+                or message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}"):
             return True
 
         if message.text.isdigit():
@@ -170,11 +188,11 @@ class RegionFilter(BaseFilter):
         lang = (await state.get_data())['lang']
 
         if StateVacancy.change:
-            if message.text == connector[lang]['button']['vacancy']['nochange']:
+            if message.text == f"{connector[lang]['button']['vacancy']['nochange']}":
                 return True
 
-        if (message.text == connector[lang]['button']['navigation']['back']
-                or message.text == connector[lang]['button']['navigation']['cancel']):
+        if (message.text == f"⬅️ {connector[lang]['button']['navigation']['back']}"
+                or message.text == f"↪️ {connector[lang]['button']['navigation']['cancel']}"):
             return True
 
         for _, country in connector[lang]['country'].items():
@@ -189,12 +207,12 @@ class CityFilter(BaseFilter):
         state_data = await state.get_data()
 
         if StateVacancy.change:
-            if message.text == connector[state_data['lang']]['button']['vacancy']['nochange']:
+            if message.text == f"{connector[state_data['lang']]['button']['vacancy']['nochange']}":
                 if StateVacancy.change.region_id == state_data['region_id']:
                     return True
 
-        if (message.text == connector[state_data['lang']]['button']['navigation']['back']
-                or message.text == connector[state_data['lang']]['button']['navigation']['cancel']
+        if (message.text == f"⬅️ {connector[state_data['lang']]['button']['navigation']['back']}"
+                or message.text == f"↪️ {connector[state_data['lang']]['button']['navigation']['cancel']}"
                 or message.text == connector[state_data['lang']]['button']['vacancy']['city']):
             return True
 

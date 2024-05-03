@@ -48,7 +48,6 @@ class Country(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     flag: Mapped[str] = mapped_column(String(10), nullable=False)
-    have: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
 class Region(Base):
@@ -56,7 +55,6 @@ class Region(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    have: Mapped[bool] = mapped_column(Boolean, default=True)
     country_id: Mapped[int] = mapped_column(ForeignKey('country.id', ondelete='CASCADE'), nullable=False)
 
     country: Mapped['Country'] = relationship(backref='region')
@@ -67,7 +65,6 @@ class City(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
-    have: Mapped[bool] = mapped_column(Boolean, default=True)
     region_id: Mapped[int] = mapped_column(ForeignKey('region.id', ondelete='CASCADE'), nullable=False)
 
     region: Mapped['Region'] = relationship(backref='city')
@@ -111,6 +108,7 @@ class Vacancy(Base):
     requirement: Mapped[str] = mapped_column(Text, nullable=False)
     employment: Mapped[bool] = mapped_column(Boolean, nullable=False)
     experience: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    schedule: Mapped[bool] = mapped_column(Boolean, nullable=False)
     remote: Mapped[bool] = mapped_column(Boolean, nullable=False)
     language: Mapped[bool] = mapped_column(Boolean, nullable=False)
     foreigner: Mapped[bool] = mapped_column(Boolean, nullable=False)

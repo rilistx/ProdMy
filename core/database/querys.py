@@ -1,6 +1,6 @@
 from sqlalchemy import select, update, delete, or_
 from sqlalchemy.sql import func
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database.models import Language, Currency, Catalog, Subcatalog, Country, Region, City, User, Vacancy, \
@@ -89,6 +89,7 @@ async def create_vacancy(
         requirement=data['requirement'],
         employment=data['employment'],
         experience=data['experience'],
+        schedule=data['schedule'],
         remote=data['remote'],
         language=data['language'],
         foreigner=data['foreigner'],
@@ -126,6 +127,7 @@ async def update_vacancy(
             requirement=data['requirement'],
             employment=data['employment'],
             experience=data['experience'],
+            schedule=data['schedule'],
             remote=data['remote'],
             language=data['language'],
             foreigner=data['foreigner'],
@@ -317,6 +319,40 @@ async def search_user(
         ).where(
             or_(user_id is None, User.id == user_id),
             or_(username is None, User.username == username),
+        )
+    )
+
+    return query.scalar()
+
+
+async def user_profile(
+        *,
+        session: AsyncSession,
+        user_id: int,
+):
+    query = await session.execute(
+        select(
+            User,
+        ).where(
+            User.id == user_id,
+        ).filter(
+            User.language_id == Language.id,
+        ).options(
+            selectinload(
+                User.language,
+            )
+        ).filter(
+            User.currency_id == Currency.id,
+        ).options(
+            selectinload(
+                User.currency,
+            )
+        ).filter(
+            User.country_id == Country.id,
+        ).options(
+            selectinload(
+                User.country,
+            )
         )
     )
 
@@ -650,6 +686,52 @@ async def get_vacancy_favorite(
     )
 
     return query.scalars().all()
+
+
+async def get_vacancy_preview(
+        *,
+        session: AsyncSession,
+        vacancy_id: int,
+):
+    query = await session.execute(
+        select(
+            Vacancy,
+        ).where(
+            Vacancy.id == vacancy_id,
+        ).filter(
+            Vacancy.user_id == User.id,
+        ).options(
+            selectinload(
+                Vacancy.user,
+            )
+        ).filter(
+            Vacancy.currency_id == Currency.id,
+        ).options(
+            selectinload(
+                Vacancy.currency,
+            )
+        ).filter(
+            Vacancy.catalog_id == Catalog.id,
+        ).options(
+            selectinload(
+                Vacancy.catalog,
+            )
+        ).filter(
+            Vacancy.country_id == Country.id,
+        ).options(
+            selectinload(
+                Vacancy.country,
+            )
+        ).filter(
+            Vacancy.region_id == Region.id,
+        ).options(
+            selectinload(
+                Vacancy.region,
+            )
+        )
+    )
+
+    return query.scalar()
 
 
 async def get_vacancy_admin(

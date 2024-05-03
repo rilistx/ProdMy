@@ -19,7 +19,7 @@ async def scheduler_deactivate_vacancy(
             method='deactivate',
         )
 
-    text = f"🥺 {connector[lang]['message']['vacancy']['deactivate']}"
+    text = f"🥺 {connector[lang]['message']['vacancy']['deactivate']}!"
     reply_markup = get_activate_vacancy_button(lang=lang, vacancy_id=vacancy_id)
 
     await bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)

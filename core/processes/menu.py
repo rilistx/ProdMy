@@ -124,7 +124,7 @@ async def shaping_vacancy(
             lang=lang,
             vacancy_id=vacancy_id,
             preview='partial',
-            complaint=True if complaint_count.complaint_count == 2 else False,
+            complaint=True if complaint_count.complaint_count == 10 else False,
         )
     else:
         text = f"❎ <b>{connector[lang]['message']['menu'][view]}</b>"
@@ -179,7 +179,7 @@ async def shaping_description(
         lang=lang,
         vacancy_id=vacancy_id,
         preview='full',
-        complaint=True if complaint_count.complaint_count == 2 else False,
+        complaint=True if complaint_count.complaint_count == 10 else False,
     )
     button = get_description_button(
         lang=lang,
@@ -194,7 +194,7 @@ async def shaping_description(
         complaint=complaint,
         active=vacancy.active,
         your_vacancy=True if vacancy.user_id == user_id else False,
-        blocked_vacancy=True if complaint_count.complaint_count == 2 else False,
+        blocked_vacancy=True if complaint_count.complaint_count == 10 else False,
     )
 
     return text, button
@@ -219,11 +219,11 @@ async def shaping_confirm(
 
         if method == 'create' and not user.first_name:
             first_name = False
-            text = f"⚠️ <b>{connector[lang]['message']['confirm'][key]['error']['first_name']}</b>"
+            text = f"⚠️ <b>{connector[lang]['message']['confirm'][key]['error']['first_name']}!</b>"
         else:
-            text = f"{connector[lang]['message']['confirm'][key][method]}"
+            text = f"{connector[lang]['message']['confirm'][key][method]}?"
     else:
-        text = f"{connector[lang]['message']['confirm'][key][method]}"
+        text = f"{connector[lang]['message']['confirm'][key][method]}?"
 
     button = get_confirm_button(
         lang=lang,

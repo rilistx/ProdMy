@@ -22,7 +22,7 @@ async def start_polling() -> None:
         id='channel_post',
         replace_existing=True,
         trigger='cron',
-        minute='0',
+        minute='*',
         hour='18',
         kwargs={'chat_id': channel},
     )

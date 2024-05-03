@@ -950,7 +950,7 @@ async def finish_vacancy(
         apscheduler.add_job(
             scheduler_deactivate_vacancy,
             trigger='date',
-            next_run_time=datetime.now() + timedelta(days=60),
+            next_run_time=datetime.now() + timedelta(days=30),
             kwargs={
                 'lang': state_data['lang'],
                 'chat_id': message.chat.id,

@@ -101,11 +101,11 @@ async def method_complaint_vacancy(
 
     complaint_count = await get_complaint_count(session=session, vacancy_id=callback_data.vacancy_id)
 
-    if complaint_count.complaint_count == 2:
+    if complaint_count.complaint_count == 10:
         if callback_data.page - 1 != 0:
             callback_data.page = callback_data.page - 1
 
-        text = f"⚠️ {connector[callback_data.lang]['message']['vacancy']['blocked']}"
+        text = f"⚠️ {connector[callback_data.lang]['message']['vacancy']['blocked']}!"
         reply_markup = get_admin_vacancy_button(lang=callback_data.lang, vacancy_id=callback_data.vacancy_id)
 
         await bot.send_message(chat_id=vacancy.user_id, text=text, reply_markup=reply_markup)
@@ -115,8 +115,8 @@ async def method_complaint_vacancy(
         callback_data=callback_data,
         session=session,
         view=callback_data.view,
-        level=3 if complaint_count.complaint_count == 2 else 4,
-        key='view' if complaint_count.complaint_count == 2 else 'description',
+        level=3 if complaint_count.complaint_count == 10 else 4,
+        key='view' if complaint_count.complaint_count == 10 else 'description',
         page=callback_data.page,
         catalog_id=callback_data.catalog_id,
         subcatalog_id=callback_data.subcatalog_id,

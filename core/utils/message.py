@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database.models import City
 from core.database.querys import get_city_one, get_vacancy_user, get_vacancy_preview, user_profile
 from core.utils.connector import connector
+from core.utils.settings import dredit_cart
 
 
 async def get_message_registration_start(
@@ -11,7 +12,7 @@ async def get_message_registration_start(
 ) -> str:
     text = (
         f"<b>{connector[lang]['start_message']['hello']}</b> 👋🏻\n\n"
-        f"🤖 <b>{connector[lang]['start_message']['caption']}</b>\n"
+        f"🤖 <b>{connector[lang]['start_message']['caption']}?</b>\n"
         f"{connector[lang]['start_message']['about']}\n\n"
         f"🚀 <i>{connector[lang]['start_message']['expression']}</i>\n\n"
         f"💡 {connector[lang]['start_message']['stipulation']} "
@@ -27,7 +28,7 @@ async def get_text_registration_contact(
 ) -> str:
     text = (
         f"<b>{connector[lang]['message']['registration']['contact']['greeting']}</b> 🎉\n\n"
-        f"<i>{connector[lang]['message']['registration']['contact']['success']}</i>\n\n"
+        f"<i>{connector[lang]['message']['registration']['contact']['success']}!</i>\n\n"
     )
 
     return text
@@ -74,8 +75,8 @@ def get_text_vacancy_create(
             text = f"❎ <b>{connector[lang]['message']['vacancy']['finish']['nochange']}</b>"
     elif func_name == 'create':
         text = (
-            f"✅ {connector[lang]['message']['vacancy']['finish'][func_name]['caption']}\n\n"
-            f"<blockquote>❕ {connector[lang]['message']['vacancy']['finish'][func_name]['note']}</blockquote>"
+            f"✅ {connector[lang]['message']['vacancy']['finish'][func_name]['caption']}!\n\n"
+            f"<blockquote>❕ {connector[lang]['message']['vacancy']['finish'][func_name]['note']}!</blockquote>"
         )
     else:
         func_list = [
@@ -91,7 +92,10 @@ def get_text_vacancy_create(
                 )
 
         if change:
-            text += f"\n\n📌 {connector[lang]['message']['vacancy']['add']} \"<b>{connector[lang]['button']['vacancy']['nochange']}</b>\"!"
+            text += (
+                f"\n\n📌 {connector[lang]['message']['vacancy']['add']} "
+                f"\"<b>{connector[lang]['button']['vacancy']['nochange']}</b>\"!"
+            )
 
     return text
 
@@ -140,8 +144,8 @@ async def get_message_vacancy_preview(
 
     if preview == 'full':
         text += (
-            f"📝 <b>{connector[lang]['message']['preview']['description']}</b>\n{vacancy.description}\n\n"
-            f"🎯 <b>{connector[lang]['message']['preview']['requirement']}</b>\n{vacancy.requirement}\n\n"
+            f"📝 <b>{connector[lang]['message']['preview']['description']}:</b>\n{vacancy.description}\n\n"
+            f"🎯 <b>{connector[lang]['message']['preview']['requirement']}:</b>\n{vacancy.requirement}\n\n"
         )
 
     if vacancy.employment:
@@ -160,9 +164,9 @@ async def get_message_vacancy_preview(
         schedule = connector[lang]['message']['preview']['schedule']['flexible']
 
     text += (
-        f"🧩 <b>{connector[lang]['message']['preview']['employment']['caption']}</b>  {employment}\n"
-        f"🕐 <b>{connector[lang]['message']['preview']['schedule']['caption']}</b>  {schedule}\n"
-        f"💼 <b>{connector[lang]['message']['preview']['experience']['caption']}</b>  {experience}\n"
+        f"🧩 <b>{connector[lang]['message']['preview']['employment']['caption']}:</b>  {employment}\n"
+        f"🕐 <b>{connector[lang]['message']['preview']['schedule']['caption']}:</b>  {schedule}\n"
+        f"💼 <b>{connector[lang]['message']['preview']['experience']['caption']}:</b>  {experience}\n"
     )
 
     if vacancy.remote or vacancy.language or vacancy.foreigner or vacancy.disability:
@@ -180,11 +184,14 @@ async def get_message_vacancy_preview(
         if vacancy.disability:
             text += f"✅ {connector[lang]['message']['preview']['disability']}\n"
 
-    text += f"\n<b>💰 {connector[lang]['message']['preview']['salary']}  {vacancy.salary} {vacancy.currency.abbreviation}</b>\n\n"
+    text += (
+        f"\n<b>💰 {connector[lang]['message']['preview']['salary']}:  "
+        f"{vacancy.salary} {vacancy.currency.abbreviation}</b>\n\n"
+    )
 
     if preview == 'full':
         text += (
-            f"☎️ <b>{connector[lang]['message']['preview']['user']['caption']}</b>\n"
+            f"☎️ <b>{connector[lang]['message']['preview']['user']['caption']}:</b>\n"
             f"{vacancy.user.first_name}  /  +{vacancy.user.phone_number}\n\n"
         )
 
@@ -211,12 +218,13 @@ async def get_message_profile(
     text = f"🧑‍💻 <b>{connector[lang]['message']['profile']['caption']}</b>\n\n<b># {user.username}</b>\n\n"
 
     if user.first_name:
-        text += f"<i>{connector[lang]['message']['profile']['name']}</i>  {user.first_name}\n"
+        text += f"<i>{connector[lang]['message']['profile']['name']}:</i>  {user.first_name}\n"
 
     text += (
-        f"<i>{connector[lang]['message']['profile']['phone']}</i>  +{user.phone_number}\n"
-        f"<i>{connector[lang]['message']['profile']['country']}</i>  {user.country.flag} {connector[lang]['country'][user.country.name]['name']}\n\n"
-        f"<i>{connector[lang]['message']['profile']['language']}</i>  {user.language.flag} {user.language.title}\n\n"
+        f"<i>{connector[lang]['message']['profile']['phone']}:</i>  +{user.phone_number}\n"
+        f"<i>{connector[lang]['message']['profile']['country']}:</i>  "
+        f"{user.country.flag} {connector[lang]['country'][user.country.name]['name']}\n\n"
+        f"<i>{connector[lang]['message']['profile']['language']}:</i>  {user.language.flag} {user.language.title}\n\n"
     )
 
     if vacancy:
@@ -230,14 +238,14 @@ async def get_message_profile(
                 deactivate += 1
 
         text += (
-            f"<i>{connector[lang]['message']['profile']['vacancy']['has']['activate']}</i>  <b>{activate}</b>\n"
-            f"<i>{connector[lang]['message']['profile']['vacancy']['has']['deactivate']}</i>  <b>{deactivate}</b>\n\n"
+            f"<i>{connector[lang]['message']['profile']['vacancy']['has']['activate']}:</i>  <b>{activate}</b>\n"
+            f"<i>{connector[lang]['message']['profile']['vacancy']['has']['deactivate']}:</i>  <b>{deactivate}</b>\n\n"
         )
     else:
         text += f"❎ <b>{connector[lang]['message']['profile']['vacancy']['not']}</b>\n\n"
 
     text += (
-        f"<i>{connector[lang]['message']['profile']['create']}</i>  "
+        f"<i>{connector[lang]['message']['profile']['create']}:</i>  "
         f"{'0' + str(user.created.day) if len(str(user.created.day)) == 1 else user.created.day}."
         f"{'0' + str(user.created.month) if len(str(user.created.month)) == 1 else user.created.month}."
         f"{user.created.year}"
@@ -250,7 +258,18 @@ async def get_message_about(
         *,
         lang: str,
 ):
-    text = connector[lang]['message']['about']['info']['caption']
+    text = (
+        f"🧑‍💻 <b>{connector[lang]['message']['about']['info']['intro']['caption']}?</b>\n"
+        f"{connector[lang]['message']['about']['info']['intro']['note']}\n\n"
+        f"<blockquote><b>{connector[lang]['message']['about']['info']['social']['instagram']['caption']}: "
+        f"{connector[lang]['message']['about']['info']['social']['instagram']['address']}</b></blockquote>\n\n"
+        f"💡 <b>{connector[lang]['message']['about']['info']['problem']['caption']}?</b>\n"
+        f"{connector[lang]['message']['about']['info']['problem']['note']}\n\n"
+        f"💭 <b>{connector[lang]['message']['about']['info']['sense']['caption']}?</b>\n"
+        f"{connector[lang]['message']['about']['info']['sense']['note']}\n\n"
+        f"🤔 <b>{connector[lang]['message']['about']['info']['plan']['caption']}?</b>\n"
+        f"{connector[lang]['message']['about']['info']['plan']['note']}\n\n"
+    )
 
     return text
 
@@ -259,7 +278,11 @@ async def get_message_donate(
         *,
         lang: str,
 ):
-    text = connector[lang]['message']['about']['donate']['caption']
+    text = (
+        f"💰 <b>{connector[lang]['message']['about']['donate']['caption']}</b>\n\n"
+        f"<i>{connector[lang]['message']['about']['donate']['note']}</i>\n\n"
+        f"💳 <code><b>{dredit_cart}</b></code>"
+    )
 
     return text
 
@@ -279,6 +302,21 @@ async def get_message_vacancy_moderation(
     text = (
         f"{emoji} <b>{connector[lang]['message']['moderation'][method]['caption']}</b>\n\n"
         f"<i>{connector[lang]['message']['moderation'][method]['info']}</i>"
+    )
+
+    return text
+
+
+async def get_message_post_channel(
+        *,
+        lang: str,
+):
+    text = (
+        f"💬 <b>{connector[lang]['message']['post']['chat']['caption']}</b>\n"
+        f"{connector[lang]['message']['post']['chat']['note']}\n\n"
+        f"<blockquote>💰 <b>{connector[lang]['message']['about']['donate']['caption']}</b>\n"
+        f"<i>{connector[lang]['message']['about']['donate']['note']}</i>\n\n"
+        f"💳 <code><b>{dredit_cart}</b></code></blockquote>"
     )
 
     return text

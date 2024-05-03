@@ -1,5 +1,6 @@
 from aiogram import Router, F, Bot
 from aiogram.types import CallbackQuery
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database.querys import blocked_user, get_vacancy_one, delete_vacancy_user, create_complaint, delete_vacancy
@@ -7,6 +8,7 @@ from core.handlers.menu import redirector
 from core.keyboards.admin import get_admin_vacancy_button
 from core.keyboards.menu import MenuCallBack
 from core.utils.message import get_message_vacancy_moderation
+
 
 admin_router = Router()
 

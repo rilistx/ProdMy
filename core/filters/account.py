@@ -16,6 +16,6 @@ class CancelFilter(BaseFilter):
 
 class NameFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
-        if len(message.text) <= 30:
+        if 2 <= len(message.text) <= 30:
             return True
         return False

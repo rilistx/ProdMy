@@ -48,6 +48,13 @@ def country_env(path: str):
     return env.str("DEFAULT_COUNTRY")
 
 
+def dredit_env(path: str):
+    env = Env()
+    env.read_env(path)
+
+    return env.str("CREDIT_CART")
+
+
 def postgres_env(path: str):
     env = Env()
     env.read_env(path)
@@ -86,6 +93,7 @@ token, support, channel, admin = telegram_env('.env')
 default_language = language_env('.env')
 default_currency = currency_env('.env')
 default_country = country_env('.env')
+dredit_cart = dredit_env('.env')
 postgres = postgres_env('.env')
 redis = redis_env('.env')
 scheduler = scheduler_env('.env')

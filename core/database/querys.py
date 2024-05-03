@@ -615,7 +615,7 @@ async def get_vacancy_all_active(
         ).group_by(
             Vacancy.id,
         ).having(
-            func.count(Complaint.vacancy_id) != 2,
+            func.count(Complaint.vacancy_id) != 10,
         ))
 
     return query.scalars().all()
@@ -681,7 +681,7 @@ async def get_vacancy_favorite(
         ).group_by(
             Vacancy.id
         ).having(
-            func.count(Complaint.vacancy_id) != 2,
+            func.count(Complaint.vacancy_id) != 10,
         )
     )
 
@@ -753,7 +753,7 @@ async def get_vacancy_admin(
         ).group_by(
             Vacancy.id,
         ).having(
-            func.count(Complaint.vacancy_id) == 2,
+            func.count(Complaint.vacancy_id) == 10,
         )
     )
 

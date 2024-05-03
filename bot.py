@@ -5,8 +5,13 @@ from core import start_polling
 
 
 async def main() -> None:
-    # Logging DEBUG on console
-    logging.basicConfig(level=logging.DEBUG)
+    # Logging code
+    logging.basicConfig(
+        level=logging.INFO,
+        filename="loger.log",
+        filemode="w",
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
 
     # Start Polling Bot
     await start_polling()

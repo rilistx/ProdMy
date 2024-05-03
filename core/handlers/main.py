@@ -8,13 +8,24 @@ main_router = Router()
 
 
 @main_router.startup()
-async def run(bot: Bot) -> None:
+async def run(
+        bot: Bot,
+) -> None:
     await create_db()
-    await bot.send_message(admin['id'], text='Run bot 👍🏻')
+    await bot.send_message(
+        chat_id=admin['id'],
+        text='Run bot 👍🏻',
+    )
 
 
 @main_router.shutdown()
-async def stop(bot: Bot, dispatcher: Dispatcher) -> None:
+async def stop(
+        bot: Bot,
+        dispatcher: Dispatcher,
+) -> None:
     await dispatcher.storage.close()
-    await drop_db()
-    await bot.send_message(admin['id'], text='Stop bot 👎🏻')
+    # await drop_db()
+    await bot.send_message(
+        chat_id=admin['id'],
+        text='Stop bot 👎🏻',
+    )

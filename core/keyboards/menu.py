@@ -2,7 +2,6 @@ from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 
 from core.utils.connector import connector
-from core.utils.settings import support
 
 
 class MenuCallBack(CallbackData, prefix="main"):
@@ -106,7 +105,7 @@ def get_menu_button(
             keyboard.add(
                 InlineKeyboardButton(
                     text=f"⚙️ {text}",
-                    url=f"https://t.me/{support}",
+                    url="https://t.me/wawsupport",
                 )
             )
         elif callback == 'admin' and admin:
@@ -187,7 +186,9 @@ def get_profession_button(
         )
     )
 
-    sizes = ([2 for _ in range(len(data_list) // 2)] + ([1] if len(data_list) % 2 else []) + ([2] if data_name == 'subcatalog' else [1]))
+    sizes = ([2 for _ in range(len(data_list) // 2)] +
+             ([1] if len(data_list) % 2 else []) +
+             ([2] if data_name == 'subcatalog' else [1]))
 
     return keyboard.adjust(*sizes).as_markup()
 
@@ -243,7 +244,7 @@ def get_vacancy_button(
     if vacancy_id:
         keyboard.add(
             InlineKeyboardButton(
-                text=f"👀 {connector[lang]['button']['vacancy']['preview']}",
+                text=f"👀 {connector[lang]['button']['vacancy']['show']}",
                 callback_data=MenuCallBack(
                     lang=lang,
                     view=view,
@@ -292,7 +293,9 @@ def get_vacancy_button(
         )
     )
 
-    sizes = ([counter] if counter else []) + ([1] if vacancy_id else []) + ([2] if view == 'all' or view == 'complaint' else [1])
+    sizes = (([counter] if counter else []) +
+             ([1] if vacancy_id else []) +
+             ([2] if view == 'all' or view == 'complaint' else [1]))
 
     return keyboard.adjust(*sizes).as_markup()
 
@@ -368,9 +371,10 @@ def get_description_button(
 
         sizes = [1, 2]
     elif not your_vacancy and view == 'all' or view == 'liked':
+        favorite_text = connector[lang]['button']['vacancy']['favorite']
         keyboard.add(
             InlineKeyboardButton(
-                text=f"{connector[lang]['button']['vacancy']['favorite']['del'] if liked else connector[lang]['button']['vacancy']['favorite']['add']}",
+                text=f"{favorite_text['delete'] if liked else favorite_text['create']}",
                 callback_data=MenuCallBack(
                     lang=lang,
                     method='favorite',
@@ -384,29 +388,32 @@ def get_description_button(
                 ).pack()
             )
         )
-        keyboard.add(
-            InlineKeyboardButton(
-                text=f"{connector[lang]['button']['vacancy']['complaint']['del'] if complaint else connector[lang]['button']['vacancy']['complaint']['add']}",
-                callback_data=MenuCallBack(
-                    lang=lang,
-                    method='pity' if complaint else 'complaint',
-                    view=view,
-                    level=10,
-                    key='confirm_user',
-                    page=page,
-                    catalog_id=catalog_id,
-                    subcatalog_id=subcatalog_id,
-                    vacancy_id=vacancy_id,
-                ).pack()
-            )
-        )
 
-        sizes = [1, 1]
-    else:
-        if not blocked_vacancy:
+        if not complaint:
             keyboard.add(
                 InlineKeyboardButton(
-                    text=f"{connector[lang]['button']['vacancy']['deactivate'] if active else connector[lang]['button']['vacancy']['activate']}",
+                    text=f"{connector[lang]['button']['vacancy']['complaint']['create']}",
+                    callback_data=MenuCallBack(
+                        lang=lang,
+                        method='complaint',
+                        view=view,
+                        level=10,
+                        key='confirm_user',
+                        page=page,
+                        catalog_id=catalog_id,
+                        subcatalog_id=subcatalog_id,
+                        vacancy_id=vacancy_id,
+                    ).pack()
+                )
+            )
+
+        sizes = [1, 1] if not complaint else [1]
+    else:
+        if not blocked_vacancy:
+            vacancy_text = connector[lang]['button']['vacancy']
+            keyboard.add(
+                InlineKeyboardButton(
+                    text=f"{vacancy_text['deactivate'] if active else vacancy_text['activate']}",
                     callback_data=MenuCallBack(
                         lang=lang,
                         method='deactivate' if active else 'activate',
@@ -603,16 +610,17 @@ def get_profile_button(
     return keyboard.adjust(*sizes).as_markup()
 
 
-def get_setting_button(
+def get_settings_button(
         lang: str,
         level: int,
         first_name: bool,
 ):
     keyboard = InlineKeyboardBuilder()
 
+    settings_name_text = connector[lang]['button']['profile']['name']
     keyboard.add(
         InlineKeyboardButton(
-            text=f"{connector[lang]['button']['profile']['name']['change'] if first_name else connector[lang]['button']['profile']['name']['add']}",
+            text=f"{settings_name_text['change'] if first_name else settings_name_text['create']}",
             callback_data=MenuCallBack(
                 lang=lang,
                 method=None,

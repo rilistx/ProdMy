@@ -1,5 +1,4 @@
-from aiogram.types import InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 
 from core.keyboards.menu import MenuCallBack
 from core.utils.connector import connector
@@ -14,7 +13,7 @@ def get_admin_vacancy_button(
 
     keyboard.add(
         InlineKeyboardButton(
-            text=f"👀 {connector[lang]['button']['vacancy']['preview']}",
+            text=f"👀 {connector[lang]['button']['vacancy']['show']}",
             callback_data=MenuCallBack(
                 lang=lang,
                 view='your',

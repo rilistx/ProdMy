@@ -451,7 +451,7 @@ async def get_subcatalog_all(
 async def get_subcatalog_one(
         *,
         session: AsyncSession,
-        catalog_id,
+        catalog_id: int,
         subcatalog_id: int | None = None,
         subcatalog_title: str | None = None,
 ):
@@ -486,7 +486,10 @@ async def get_country_one(
     return query.scalar()
 
 
-async def get_country_first(*, session: AsyncSession):
+async def get_country_first(
+        *,
+        session: AsyncSession,
+):
     query = await session.execute(
         select(
             Country,
@@ -599,6 +602,7 @@ async def get_vacancy_all_active(
         *,
         session: AsyncSession,
         subcatalog_id: int,
+        complaint_limit: int,
 ):
     query = await session.execute(
         select(
@@ -615,7 +619,7 @@ async def get_vacancy_all_active(
         ).group_by(
             Vacancy.id,
         ).having(
-            func.count(Complaint.vacancy_id) != 10,
+            func.count(Complaint.vacancy_id) != complaint_limit,
         ))
 
     return query.scalars().all()
@@ -659,6 +663,7 @@ async def get_vacancy_favorite(
         *,
         session: AsyncSession,
         user_id: int,
+        complaint_limit: int,
 ):
     query = await session.execute(
         select(
@@ -681,7 +686,7 @@ async def get_vacancy_favorite(
         ).group_by(
             Vacancy.id
         ).having(
-            func.count(Complaint.vacancy_id) != 10,
+            func.count(Complaint.vacancy_id) != complaint_limit,
         )
     )
 
@@ -737,6 +742,7 @@ async def get_vacancy_preview(
 async def get_vacancy_admin(
         *,
         session: AsyncSession,
+        complaint_limit: int,
 ):
     query = await session.execute(
         select(
@@ -753,7 +759,7 @@ async def get_vacancy_admin(
         ).group_by(
             Vacancy.id,
         ).having(
-            func.count(Complaint.vacancy_id) == 10,
+            func.count(Complaint.vacancy_id) == complaint_limit,
         )
     )
 

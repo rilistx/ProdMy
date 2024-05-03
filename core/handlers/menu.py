@@ -8,14 +8,16 @@ from core.filters.menu import IsUserFilter
 from core.keyboards.menu import MenuCallBack
 from core.database.querys import create_liked, get_liked_one, delete_liked, get_vacancy_one, get_language_user
 from core.processes.menu import menu_processing
-from core.utils.connector import connector
+from core.utils.message import get_text_vacancy_favorite
 
 
 menu_router = Router()
 menu_router.message.filter(IsUserFilter())
 
 
-@menu_router.message(Command(commands='menu'))
+@menu_router.message(
+    Command(commands='menu'),
+)
 async def menu(
         message: Message,
         session: AsyncSession,
@@ -76,18 +78,22 @@ async def favorite(
                 user_id=callback.from_user.id,
                 vacancy_id=callback_data.vacancy_id,
             )
-            await callback.answer(
-                text=f"{connector[callback_data.lang]['message']['callback'][callback_data.method]['del']}",
-            )
         else:
             await create_liked(
                 session=session,
                 user_id=callback.from_user.id,
                 vacancy_id=callback_data.vacancy_id,
             )
-            await callback.answer(
-                text=f"{connector[callback_data.lang]['message']['callback'][callback_data.method]['add']}",
-            )
+
+        text = await get_text_vacancy_favorite(
+            lang=callback_data.lang,
+            func_name=callback_data.method,
+            method='delete' if liked else 'create',
+        )
+
+        await callback.answer(
+            text=text,
+        )
 
 
 @menu_router.callback_query(

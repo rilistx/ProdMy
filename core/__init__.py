@@ -22,15 +22,18 @@ async def start_polling() -> None:
         id='channel_post',
         replace_existing=True,
         trigger='cron',
-        minute='*',
+        minute='0',
         hour='18',
-        kwargs={'chat_id': channel},
+        kwargs={
+            'chat_id': channel
+        },
     )
 
     scheduler.start()
 
     dispatcher.update.middleware(SessionMiddleware(session_pool=async_session_maker))
     dispatcher.update.middleware(SchedulerMiddleware(scheduler=scheduler))
+
     dispatcher.include_router(main.main_router)
     dispatcher.include_router(registration.registration_router)
     dispatcher.include_router(menu.menu_router)
@@ -41,7 +44,7 @@ async def start_polling() -> None:
 
     try:
         await bot.delete_webhook(drop_pending_updates=True)
-        await bot.delete_my_commands(scope=BotCommandScopeDefault())
+        # await bot.delete_my_commands(scope=BotCommandScopeDefault())
         await bot.set_my_commands(commands=commands, scope=BotCommandScopeDefault())
         await dispatcher.start_polling(bot, allowed_updates=dispatcher.resolve_used_update_types())
     finally:

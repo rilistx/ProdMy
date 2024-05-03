@@ -5,52 +5,76 @@ from aiogram.fsm.context import FSMContext
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.filters.account import ExitFilter, NameFilter
+from core.filters.account import CancelFilter, NameFilter
 from core.handlers.menu import menu
 from core.keyboards.account import account_name_button
 from core.keyboards.menu import MenuCallBack
 from core.database.querys import search_user, update_name_user
 from core.states.account import StateAccount
-from core.utils.connector import connector  # noqa
+from core.utils.message import get_text_settings_name
 
 
 account_router = Router()
 
 
-@account_router.callback_query(MenuCallBack.filter(F.key == 'change'))
-async def name_account_callback(callback: CallbackQuery, callback_data: MenuCallBack, state: FSMContext, session: AsyncSession) -> None:
+@account_router.callback_query(MenuCallBack.filter(F.key == 'account'))
+async def name_account_callback(
+        callback: CallbackQuery,
+        callback_data: MenuCallBack,
+        state: FSMContext,
+        session: AsyncSession
+) -> None:
     await callback.message.delete()
 
     await state.update_data({
-        'account_lang': callback_data.lang,
+        'lang': callback_data.lang,
+        'account_method': callback_data.method,
+        'account_view': callback_data.view,
         'account_level': callback_data.level,
-        'account_key': callback_data.key,
     })
 
-    user = await search_user(session=session, user_id=callback.message.from_user.id)
+    StateAccount.change = await search_user(session=session, user_id=callback.from_user.id)
 
-    StateAccount.change = user
-
+    text = get_text_settings_name(
+        lang=callback_data.lang,
+        func_name='name',
+        change=True if StateAccount.change else False,
+        data=callback_data.data,
+    )
     reply_markup = account_name_button(
         lang=callback_data.lang,
     )
 
     await callback.message.answer(
-        text='Придумай новое себе имя!',
+        text=text,
         reply_markup=reply_markup,
     )
+
     await callback.answer()
     await state.set_state(StateAccount.NAME)
 
 
-@account_router.message(StateFilter(StateAccount), ExitFilter())
-async def exit_account(message: Message, state: FSMContext, session: AsyncSession) -> None:
+@account_router.message(StateFilter(StateAccount), CancelFilter())
+async def cancel_account(message: Message, state: FSMContext, session: AsyncSession) -> None:
     state_data = await state.get_data()
 
-    await message.answer(
-        text='Вы отменили действие!',
-        reply_markup=ReplyKeyboardRemove(),
+    text = get_text_settings_name(
+        lang=state_data['lang'],
+        func_name='cancel',
+        change=True if StateAccount.change else False,
     )
+    reply_markup = ReplyKeyboardRemove()
+
+    await message.answer(
+        text=text,
+        reply_markup=reply_markup,
+    )
+
+    return_data = {
+        'method': state_data['account_method'],
+        'view': state_data['account_view'],
+        'level': state_data['account_level'],
+    }
 
     StateAccount.change = None
     await state.clear()
@@ -58,8 +82,10 @@ async def exit_account(message: Message, state: FSMContext, session: AsyncSessio
     return await menu(
         message=message,
         session=session,
-        level=state_data['account_level'],
-        key=state_data['account_key'],
+        method=return_data['method'],
+        view=return_data['view'],
+        level=return_data['level'],
+        key='confirm_user' if return_data['method'] else 'settings',
     )
 
 
@@ -67,12 +93,26 @@ async def exit_account(message: Message, state: FSMContext, session: AsyncSessio
 async def finish_account(message: Message, state: FSMContext, session: AsyncSession) -> None:
     state_data = await state.get_data()
 
-    await update_name_user(session=session, user_id=message.from_user.id, first_name=message.text)
+    if StateAccount.change.first_name != message.text:
+        await update_name_user(session=session, user_id=message.from_user.id, first_name=message.text)
+
+    text = get_text_settings_name(
+        lang=state_data['lang'],
+        func_name='finish',
+        change=True if StateAccount.change.first_name != message.text else False,
+    )
+    reply_markup = ReplyKeyboardRemove()
 
     await message.answer(
-        text='Вы изменили имя!',
-        reply_markup=ReplyKeyboardRemove(),
+        text=text,
+        reply_markup=reply_markup,
     )
+
+    return_data = {
+        'method': state_data['account_method'],
+        'view': state_data['account_view'],
+        'level': state_data['account_level'],
+    }
 
     StateAccount.change = None
     await state.clear()
@@ -80,8 +120,10 @@ async def finish_account(message: Message, state: FSMContext, session: AsyncSess
     return await menu(
         message=message,
         session=session,
-        level=state_data['account_level'],
-        key=state_data['account_key'],
+        method=return_data['method'],
+        view=return_data['view'],
+        level=return_data['level'],
+        key='confirm_user' if return_data['method'] else 'settings',
     )
 
 

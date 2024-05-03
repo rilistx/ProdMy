@@ -1,5 +1,7 @@
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton
+from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton, InlineKeyboardBuilder
 
+from core.keyboards.menu import MenuCallBack
 from core.utils.connector import connector
 
 
@@ -13,28 +15,38 @@ def vacancy_profession_button(
     keyboard = ReplyKeyboardBuilder()
 
     if change:
-        keyboard.add(KeyboardButton(
-            text='Не менять!',
-        ))
+        keyboard.add(
+            KeyboardButton(
+                text=f"{connector[lang]['button']['vacancy']['nochange']}",
+            )
+        )
 
     for item in data_list:
         if data_name == 'catalog':
-            keyboard.add(KeyboardButton(
-                text=connector[lang][data_name][item.title]['logo'] + ' ' + connector[lang][data_name][item.title]['name'],
-            ))
+            keyboard.add(
+                KeyboardButton(
+                    text=f"{connector[lang][data_name][item.title]['logo'] + ' ' + connector[lang][data_name][item.title]['name']}",
+                )
+            )
         else:
-            keyboard.add(KeyboardButton(
-                text=connector[lang]['catalog'][catalog_title][data_name][item.title],
-            ))
+            keyboard.add(
+                KeyboardButton(
+                    text=f"{connector[lang]['catalog'][catalog_title][data_name][item.title]}",
+                )
+            )
 
     if data_name == 'subcatalog':
-        keyboard.add(KeyboardButton(
-            text=connector[lang]['button']['back'],
-        ))
+        keyboard.add(
+            KeyboardButton(
+                text=f"⬅️ {connector[lang]['button']['navigation']['back']}",
+            )
+        )
 
-    keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['exit'],
-    ))
+    keyboard.add(
+        KeyboardButton(
+            text=f"↪️ {connector[lang]['button']['navigation']['cancel']}",
+        )
+    )
 
     sizes = (([1] if change else []) + [2 for _ in range(len(data_list) // 2)] +
              ([1] if len(data_list) % 2 else []) + ([2] if data_name == 'subcatalog' else [1]))
@@ -49,18 +61,64 @@ def vacancy_keyboard_button(
     keyboard = ReplyKeyboardBuilder()
 
     if change:
-        keyboard.add(KeyboardButton(
-            text='Не менять!',
-        ))
+        keyboard.add(
+            KeyboardButton(
+                text=f"{connector[lang]['button']['vacancy']['nochange']}",
+            )
+        )
 
-    keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['back'],
-    ))
-    keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['exit'],
-    ))
+    keyboard.add(
+        KeyboardButton(
+            text=f"⬅️ {connector[lang]['button']['navigation']['back']}",
+        )
+    )
+    keyboard.add(
+        KeyboardButton(
+            text=f"↪️ {connector[lang]['button']['navigation']['cancel']}",
+        )
+    )
 
     sizes = ([1] if change else []) + [2]
+
+    return keyboard.adjust(*sizes).as_markup(resize_keyboard=True, one_time_keyboard=True)
+
+
+def vacancy_employment_button(
+        lang: str,
+        change,
+):
+    keyboard = ReplyKeyboardBuilder()
+
+    if change:
+        keyboard.add(
+            KeyboardButton(
+                text=f"{connector[lang]['button']['vacancy']['nochange']}",
+            )
+        )
+
+    keyboard.add(
+        KeyboardButton(
+            text=f"{connector[lang]['button']['vacancy']['employment']['complete']}",
+        )
+    )
+    keyboard.add(
+        KeyboardButton(
+            text=f"{connector[lang]['button']['vacancy']['employment']['partial']}",
+        )
+    )
+
+    keyboard.add(
+        KeyboardButton(
+            text=f"⬅️ {connector[lang]['button']['navigation']['back']}",
+        )
+    )
+    keyboard.add(
+        KeyboardButton(
+            text=f"↪️ {connector[lang]['button']['navigation']['cancel']}",
+        )
+    )
+
+    sizes = ([1] if change else []) + [2, 2]
 
     return keyboard.adjust(*sizes).as_markup(resize_keyboard=True, one_time_keyboard=True)
 
@@ -72,23 +130,73 @@ def vacancy_choice_button(
     keyboard = ReplyKeyboardBuilder()
 
     if change:
-        keyboard.add(KeyboardButton(
-            text='Не менять!',
-        ))
+        keyboard.add(
+            KeyboardButton(
+                text=f"{connector[lang]['button']['vacancy']['nochange']}",
+            )
+        )
 
-    keyboard.add(KeyboardButton(
-        text='✅ ' + connector[lang]['button']['yes'],
-    ))
-    keyboard.add(KeyboardButton(
-        text='❎ ' + connector[lang]['button']['not'],
-    ))
+    keyboard.add(
+        KeyboardButton(
+            text=f"{connector[lang]['button']['vacancy']['choice']['yes']}",
+        )
+    )
+    keyboard.add(
+        KeyboardButton(
+            text=f"{connector[lang]['button']['vacancy']['choice']['not']}",
+        )
+    )
 
-    keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['back'],
-    ))
-    keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['exit'],
-    ))
+    keyboard.add(
+        KeyboardButton(
+            text=f"⬅️ {connector[lang]['button']['navigation']['back']}",
+        )
+    )
+    keyboard.add(
+        KeyboardButton(
+            text=f"↪️ {connector[lang]['button']['navigation']['cancel']}",
+        )
+    )
+
+    sizes = ([1] if change else []) + [2, 2]
+
+    return keyboard.adjust(*sizes).as_markup(resize_keyboard=True, one_time_keyboard=True)
+
+
+def vacancy_schedule_button(
+        lang: str,
+        change,
+):
+    keyboard = ReplyKeyboardBuilder()
+
+    if change:
+        keyboard.add(
+            KeyboardButton(
+                text=f"{connector[lang]['button']['vacancy']['nochange']}",
+            )
+        )
+
+    keyboard.add(
+        KeyboardButton(
+            text=f"{connector[lang]['button']['vacancy']['schedule']['stable']}",
+        )
+    )
+    keyboard.add(
+        KeyboardButton(
+            text=f"{connector[lang]['button']['vacancy']['schedule']['flexible']}",
+        )
+    )
+
+    keyboard.add(
+        KeyboardButton(
+            text=f"⬅️ {connector[lang]['button']['navigation']['back']}",
+        )
+    )
+    keyboard.add(
+        KeyboardButton(
+            text=f"↪️ {connector[lang]['button']['navigation']['cancel']}",
+        )
+    )
 
     sizes = ([1] if change else []) + [2, 2]
 
@@ -106,35 +214,68 @@ def vacancy_location_button(
     keyboard = ReplyKeyboardBuilder()
 
     if change:
-        keyboard.add(KeyboardButton(
-            text='Не менять!',
-        ))
+        keyboard.add(
+            KeyboardButton(
+                text=f"{connector[lang]['button']['vacancy']['nochange']}",
+            )
+        )
 
     for item in data_list:
         if data_name == 'region':
-            keyboard.add(KeyboardButton(
-                text=connector[lang]['country'][country_name][data_name][item.name]['name'],
-            ))
+            keyboard.add(
+                KeyboardButton(
+                    text=f"{connector[lang]['country'][country_name][data_name][item.name]['name']}",
+                )
+            )
         else:
             keyboard.add(
                 KeyboardButton(
-                    text=connector[lang]['country'][country_name]['region'][region_name][data_name][item.name],
+                    text=f"{connector[lang]['country'][country_name]['region'][region_name][data_name][item.name]}",
                 )
             )
 
     if data_name == 'city':
-        keyboard.add(KeyboardButton(
-            text=connector[lang]['button']['skip'],
-        ))
+        keyboard.add(
+            KeyboardButton(
+                text=f"{connector[lang]['button']['vacancy']['city']}",
+            )
+        )
 
-    keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['back'],
-    ))
-    keyboard.add(KeyboardButton(
-        text=connector[lang]['button']['exit'],
-    ))
+    keyboard.add(
+        KeyboardButton(
+            text=f"⬅️ {connector[lang]['button']['navigation']['back']}",
+        )
+    )
+    keyboard.add(
+        KeyboardButton(
+            text=f"↪️ {connector[lang]['button']['navigation']['cancel']}",
+        )
+    )
 
     sizes = (([1] if change else []) + [2 for _ in range(len(data_list) // 2)] +
              ([1] if len(data_list) % 2 else []) + ([1] if data_name == 'city' else []) + [2])
+
+    return keyboard.adjust(*sizes).as_markup(resize_keyboard=True, one_time_keyboard=True)
+
+
+def get_activate_vacancy_button(
+        lang: str,
+        vacancy_id: int,
+        sizes: tuple[int] = (2,),
+):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(
+        InlineKeyboardButton(
+            text=f"{connector[lang]['button']['vacancy']['activate']}",
+            callback_data=MenuCallBack(
+                lang=lang,
+                view='your',
+                level=4,
+                key='description',
+                vacancy_id=vacancy_id,
+            ).pack()
+        )
+    )
 
     return keyboard.adjust(*sizes).as_markup(resize_keyboard=True, one_time_keyboard=True)

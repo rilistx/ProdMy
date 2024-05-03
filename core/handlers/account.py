@@ -17,7 +17,9 @@ from core.utils.message import get_text_settings_name
 account_router = Router()
 
 
-@account_router.callback_query(MenuCallBack.filter(F.key == 'account'))
+@account_router.callback_query(
+    MenuCallBack.filter(F.key == 'account'),
+)
 async def name_account_callback(
         callback: CallbackQuery,
         callback_data: MenuCallBack,
@@ -33,9 +35,12 @@ async def name_account_callback(
         'account_level': callback_data.level,
     })
 
-    StateAccount.change = await search_user(session=session, user_id=callback.from_user.id)
+    StateAccount.change = await search_user(
+        session=session,
+        user_id=callback.from_user.id,
+    )
 
-    text = get_text_settings_name(
+    text = await get_text_settings_name(
         lang=callback_data.lang,
         func_name='name',
         change=True if StateAccount.change else False,
@@ -54,11 +59,18 @@ async def name_account_callback(
     await state.set_state(StateAccount.NAME)
 
 
-@account_router.message(StateFilter(StateAccount), CancelFilter())
-async def cancel_account(message: Message, state: FSMContext, session: AsyncSession) -> None:
+@account_router.message(
+    StateFilter(StateAccount),
+    CancelFilter(),
+)
+async def cancel_account(
+        message: Message,
+        state: FSMContext,
+        session: AsyncSession,
+) -> None:
     state_data = await state.get_data()
 
-    text = get_text_settings_name(
+    text = await get_text_settings_name(
         lang=state_data['lang'],
         func_name='cancel',
         change=True if StateAccount.change else False,
@@ -89,14 +101,25 @@ async def cancel_account(message: Message, state: FSMContext, session: AsyncSess
     )
 
 
-@account_router.message(StateAccount.NAME, NameFilter())
-async def finish_account(message: Message, state: FSMContext, session: AsyncSession) -> None:
+@account_router.message(
+    StateAccount.NAME,
+    NameFilter(),
+)
+async def finish_account(
+        message: Message,
+        state: FSMContext,
+        session: AsyncSession,
+) -> None:
     state_data = await state.get_data()
 
     if StateAccount.change.first_name != message.text:
-        await update_name_user(session=session, user_id=message.from_user.id, first_name=message.text)
+        await update_name_user(
+            session=session,
+            user_id=message.from_user.id,
+            first_name=message.text,
+        )
 
-    text = get_text_settings_name(
+    text = await get_text_settings_name(
         lang=state_data['lang'],
         func_name='finish',
         change=True if StateAccount.change.first_name != message.text else False,
@@ -127,6 +150,10 @@ async def finish_account(message: Message, state: FSMContext, session: AsyncSess
     )
 
 
-@account_router.message(StateFilter(StateAccount))
-async def error_account(message: Message) -> None:
+@account_router.message(
+    StateFilter(StateAccount),
+)
+async def error_account(
+        message: Message,
+) -> None:
     await message.delete()

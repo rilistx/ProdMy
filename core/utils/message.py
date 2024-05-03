@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database.models import City
-from core.database.querys import get_city_one, get_vacancy_user, get_vacancy_preview, user_profile
+from core.database.querys import user_profile, get_city_one, get_vacancy_user, get_vacancy_preview
 from core.utils.connector import connector
-from core.utils.settings import dredit_cart
+from core.utils.settings import credit_cart
 
 
-async def get_message_registration_start(
+async def get_text_registration_start(
         *,
         lang: str,
 ) -> str:
@@ -49,14 +49,43 @@ async def get_text_registration_channel(
         *,
         lang: str,
 ) -> str:
+    text = f"📺 {connector[lang]['message']['registration']['contact']['channel']}"
+
+    return text
+
+
+async def get_text_menu_main(
+        *,
+        lang: str,
+        blocked: bool,
+):
     text = (
-        f"📺 {connector[lang]['message']['registration']['contact']['channel']}"
+        f"{'⚠️' if blocked else '🧭'} "
+        f"<b>{connector[lang]['message']['menu']['caption']['blocked' if blocked else 'actived']}</b>"
     )
 
     return text
 
 
-def get_text_vacancy_create(
+async def get_text_menu_catalog(
+        *,
+        lang: str,
+):
+    text = f"⬇️ <b>{connector[lang]['message']['menu']['catalog']}</b>"
+
+    return text
+
+
+async def get_text_menu_subcatalog(
+        *,
+        lang: str,
+):
+    text = f"⬇️ <b>{connector[lang]['message']['menu']['subcatalog']}</b>"
+
+    return text
+
+
+async def get_text_vacancy_create(
         *,
         lang: str,
         func_name: str,
@@ -93,40 +122,14 @@ def get_text_vacancy_create(
 
         if change:
             text += (
-                f"\n\n📌 {connector[lang]['message']['vacancy']['add']} "
+                f"\n\n📌 {connector[lang]['message']['vacancy']['skip']} "
                 f"\"<b>{connector[lang]['button']['vacancy']['nochange']}</b>\"!"
             )
 
     return text
 
 
-def get_text_settings_name(
-        *,
-        lang: str,
-        func_name: str,
-        change: bool | None = None,
-        data: str | None = None,
-) -> str:
-    if func_name == 'cancel':
-        if change:
-            text = f"❌ <b>{connector[lang]['message']['settings']['cancel']['change']}</b>"
-        else:
-            text = f"❌ <b>{connector[lang]['message']['settings']['cancel']['create']}</b>"
-    elif func_name == 'finish':
-        if change:
-            text = f"✅ <b>{connector[lang]['message']['settings']['finish']['change']}</b>"
-        else:
-            text = f"❎ <b>{connector[lang]['message']['settings']['finish']['nochange']}</b>"
-    else:
-        text = (
-            f"➡️ <b>{connector[lang]['message']['settings'][data]['caption']}</b>\n\n"
-            f"<i>{connector[lang]['message']['settings'][data]['note']}</i>"
-        )
-
-    return text
-
-
-async def get_message_vacancy_preview(
+async def get_text_vacancy_show(
         *,
         session: AsyncSession,
         lang: str,
@@ -144,60 +147,60 @@ async def get_message_vacancy_preview(
 
     if preview == 'full':
         text += (
-            f"📝 <b>{connector[lang]['message']['preview']['description']}:</b>\n{vacancy.description}\n\n"
-            f"🎯 <b>{connector[lang]['message']['preview']['requirement']}:</b>\n{vacancy.requirement}\n\n"
+            f"📝 <b>{connector[lang]['message']['show']['description']}:</b>\n{vacancy.description}\n\n"
+            f"🎯 <b>{connector[lang]['message']['show']['requirement']}:</b>\n{vacancy.requirement}\n\n"
         )
 
     if vacancy.employment:
-        employment = connector[lang]['message']['preview']['employment']['complete']
+        employment = connector[lang]['message']['show']['employment']['complete']
     else:
-        employment = connector[lang]['message']['preview']['employment']['incomplete']
+        employment = connector[lang]['message']['show']['employment']['incomplete']
 
     if vacancy.experience:
-        experience = connector[lang]['message']['preview']['experience']['yes']
+        experience = connector[lang]['message']['show']['experience']['yes']
     else:
-        experience = connector[lang]['message']['preview']['experience']['not']
+        experience = connector[lang]['message']['show']['experience']['not']
 
     if vacancy.schedule:
-        schedule = connector[lang]['message']['preview']['schedule']['stable']
+        schedule = connector[lang]['message']['show']['schedule']['stable']
     else:
-        schedule = connector[lang]['message']['preview']['schedule']['flexible']
+        schedule = connector[lang]['message']['show']['schedule']['flexible']
 
     text += (
-        f"🧩 <b>{connector[lang]['message']['preview']['employment']['caption']}:</b>  {employment}\n"
-        f"🕐 <b>{connector[lang]['message']['preview']['schedule']['caption']}:</b>  {schedule}\n"
-        f"💼 <b>{connector[lang]['message']['preview']['experience']['caption']}:</b>  {experience}\n"
+        f"🧩 <b>{connector[lang]['message']['show']['employment']['caption']}:</b>  {employment}\n"
+        f"🕐 <b>{connector[lang]['message']['show']['schedule']['caption']}:</b>  {schedule}\n"
+        f"💼 <b>{connector[lang]['message']['show']['experience']['caption']}:</b>  {experience}\n"
     )
 
     if vacancy.remote or vacancy.language or vacancy.foreigner or vacancy.disability:
         text += "\n"
 
         if vacancy.remote:
-            text += f"✅ {connector[lang]['message']['preview']['remote']}\n"
+            text += f"✅ {connector[lang]['message']['show']['remote']}\n"
 
         if vacancy.language:
-            text += f"✅ {connector[lang]['message']['preview']['language']}\n"
+            text += f"✅ {connector[lang]['message']['show']['language']}\n"
 
         if vacancy.foreigner:
-            text += f"✅ {connector[lang]['message']['preview']['foreigner']}\n"
+            text += f"✅ {connector[lang]['message']['show']['foreigner']}\n"
 
         if vacancy.disability:
-            text += f"✅ {connector[lang]['message']['preview']['disability']}\n"
+            text += f"✅ {connector[lang]['message']['show']['disability']}\n"
 
     text += (
-        f"\n<b>💰 {connector[lang]['message']['preview']['salary']}:  "
+        f"\n<b>💰 {connector[lang]['message']['show']['salary']}:  "
         f"{vacancy.salary} {vacancy.currency.abbreviation}</b>\n\n"
     )
 
     if preview == 'full':
         text += (
-            f"☎️ <b>{connector[lang]['message']['preview']['user']['caption']}:</b>\n"
+            f"☎️ <b>{connector[lang]['message']['show']['user']['caption']}:</b>\n"
             f"{vacancy.user.first_name}  /  +{vacancy.user.phone_number}\n\n"
         )
 
     text += (
         f"🗺 <b>{connector[lang]['country'][vacancy.country.name]['region'][vacancy.region.name]['name']} "
-        f"{connector[lang]['message']['preview']['location']['region']}</b>"
+        f"{connector[lang]['message']['show']['location']['region']}</b>"
     )
 
     if city:
@@ -206,7 +209,17 @@ async def get_message_vacancy_preview(
     return text
 
 
-async def get_message_profile(
+async def get_text_vacancy_none(
+        *,
+        lang: str,
+        view: str,
+):
+    text = f"❎ <b>{connector[lang]['message']['menu'][view]}</b>"
+
+    return text
+
+
+async def get_text_profile_info(
         *,
         session: AsyncSession,
         lang: str,
@@ -245,7 +258,7 @@ async def get_message_profile(
         text += f"❎ <b>{connector[lang]['message']['profile']['vacancy']['not']}</b>\n\n"
 
     text += (
-        f"<i>{connector[lang]['message']['profile']['create']}:</i>  "
+        f"<i>{connector[lang]['message']['profile']['date']}:</i>  "
         f"{'0' + str(user.created.day) if len(str(user.created.day)) == 1 else user.created.day}."
         f"{'0' + str(user.created.month) if len(str(user.created.month)) == 1 else user.created.month}."
         f"{user.created.year}"
@@ -254,7 +267,42 @@ async def get_message_profile(
     return text
 
 
-async def get_message_about(
+async def get_text_profile_settings(
+        *,
+        lang: str,
+):
+    text = f"⚙️ <b>{connector[lang]['message']['profile']['settings']}</b>\n\n"
+
+    return text
+
+
+async def get_text_settings_name(
+        *,
+        lang: str,
+        func_name: str,
+        change: bool | None = None,
+        data: str | None = None,
+) -> str:
+    if func_name == 'cancel':
+        if change:
+            text = f"❌ <b>{connector[lang]['message']['settings']['cancel']['change']}</b>"
+        else:
+            text = f"❌ <b>{connector[lang]['message']['settings']['cancel']['create']}</b>"
+    elif func_name == 'finish':
+        if change:
+            text = f"✅ <b>{connector[lang]['message']['settings']['finish']['change']}</b>"
+        else:
+            text = f"❎ <b>{connector[lang]['message']['settings']['finish']['nochange']}</b>"
+    else:
+        text = (
+            f"➡️ <b>{connector[lang]['message']['settings'][data]['caption']}</b>\n\n"
+            f"<i>{connector[lang]['message']['settings'][data]['note']}</i>"
+        )
+
+    return text
+
+
+async def get_text_about_info(
         *,
         lang: str,
 ):
@@ -274,49 +322,117 @@ async def get_message_about(
     return text
 
 
-async def get_message_donate(
+async def get_text_about_donate(
         *,
         lang: str,
 ):
     text = (
         f"💰 <b>{connector[lang]['message']['about']['donate']['caption']}</b>\n\n"
         f"<i>{connector[lang]['message']['about']['donate']['note']}</i>\n\n"
-        f"💳 <code><b>{dredit_cart}</b></code>"
+        f"💳 <code><b>{credit_cart}</b></code>"
     )
 
     return text
 
 
-async def get_message_vacancy_moderation(
+async def get_text_menu_confirm(
+        *,
+        lang: str,
+        func_name: str,
+        method: str,
+        first_name: bool | None = None,
+):
+    if func_name == 'confirm_user':
+        if method == 'create' and not first_name:
+            text = f"⚠️ <b>{connector[lang]['message']['confirm'][func_name][method]['first_name']}!</b>"
+        else:
+            text = f"{connector[lang]['message']['confirm'][func_name][method]}?"
+    else:
+        text = f"{connector[lang]['message']['confirm'][func_name][method]}?"
+
+    return text
+
+
+async def get_text_menu_admin(
+        *,
+        lang: str,
+):
+    text = f"🔐 <b>{connector[lang]['message']['menu']['admin']}</b>"
+
+    return text
+
+
+async def get_text_vacancy_method(
+        *,
+        lang: str,
+        func_name: str,
+        method: str | None = None,
+):
+    if func_name == 'show':
+        text = connector[lang]['message']['callback'][func_name][method]
+    elif func_name == 'complaint':
+        text = connector[lang]['message']['callback'][func_name]['create']
+    else:
+        text = connector[lang]['message']['callback'][func_name]
+
+    return text
+
+
+async def get_text_vacancy_favorite(
+        *,
+        lang: str,
+        func_name: str,
+        method: str,
+):
+    text = connector[lang]['message']['callback'][func_name][method]
+
+    return text
+
+
+async def get_text_vacancy_complaint(
+        *,
+        lang: str,
+):
+    text = f"⚠️ {connector[lang]['message']['vacancy']['blocked']}"
+
+    return text
+
+
+async def get_text_vacancy_moderation(
         *,
         lang: str,
         method: str,
 ):
-    if method == 'blocked':
-        emoji = '⚠️'
-    elif method == 'activate':
-        emoji = '✅'
-    else:
-        emoji = '❌'
-
     text = (
-        f"{emoji} <b>{connector[lang]['message']['moderation'][method]['caption']}</b>\n\n"
+        f"{'✅' if method == 'activate' else '⚠️'} "
+        f"<b>{connector[lang]['message']['moderation'][method]['caption']}</b>\n\n"
         f"<i>{connector[lang]['message']['moderation'][method]['info']}</i>"
     )
 
     return text
 
 
-async def get_message_post_channel(
+async def get_text_scheduler_vacancy(
+        *,
+        lang: str,
+):
+    text = f"🥺 {connector[lang]['message']['vacancy']['deactivate']}"
+
+    return text
+
+
+async def get_text_scheduler_post(
         *,
         lang: str,
 ):
     text = (
+        f"🤖 <b>{connector[lang]['message']['post']['bot']['caption']}</b>\n"
+        f"{connector[lang]['message']['post']['bot']['note']}\n\n"
         f"💬 <b>{connector[lang]['message']['post']['chat']['caption']}</b>\n"
         f"{connector[lang]['message']['post']['chat']['note']}\n\n"
         f"<blockquote>💰 <b>{connector[lang]['message']['about']['donate']['caption']}</b>\n"
         f"<i>{connector[lang]['message']['about']['donate']['note']}</i>\n\n"
-        f"💳 <code><b>{dredit_cart}</b></code></blockquote>"
+        f"💳 <code><b>{credit_cart}</b></code></blockquote>"
     )
 
     return text

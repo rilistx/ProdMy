@@ -8,7 +8,14 @@ def get_chat_button(
 
     keyboard.add(
         InlineKeyboardButton(
-            text='@wadsworkchat',
+            text='🤖 bot',
+            url="https://t.me/wadsworkbot",
+        )
+    )
+
+    keyboard.add(
+        InlineKeyboardButton(
+            text='💬 chat',
             url="https://t.me/wadsworkchat",
         )
     )

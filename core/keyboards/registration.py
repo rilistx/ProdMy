@@ -1,8 +1,6 @@
-from aiogram.types import InlineKeyboardButton
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton, InlineKeyboardBuilder
+from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton, InlineKeyboardBuilder, InlineKeyboardButton
 
 from core.utils.connector import connector
-from core.utils.settings import support
 
 
 def get_contact_button(
@@ -29,7 +27,7 @@ def get_support_button(
     keyboard.add(
         InlineKeyboardButton(
             text=f"⚙️ {connector[lang]['button']['menu']['support']}",
-            url=f"https://t.me/{support}",
+            url="https://t.me/wawsupport",
         )
     )
 

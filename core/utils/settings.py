@@ -17,7 +17,6 @@ def telegram_env(path: str):
 
     return (
         env.str("BOT_TOKEN"),
-        env.str("SUPPORT_NAME"),
         env.int("ID_CHANNEL_UA"),
         {
             'id': env.int("ADMIN_ID"),
@@ -48,11 +47,18 @@ def country_env(path: str):
     return env.str("DEFAULT_COUNTRY")
 
 
-def dredit_env(path: str):
+def credit_env(path: str):
     env = Env()
     env.read_env(path)
 
     return env.str("CREDIT_CART")
+
+
+def complaint_env(path: str):
+    env = Env()
+    env.read_env(path)
+
+    return env.int("COMPLAINT_COUNT")
 
 
 def postgres_env(path: str):
@@ -89,14 +95,19 @@ def scheduler_env(path: str):
     }
 
 
-token, support, channel, admin = telegram_env('.env')
-default_language = language_env('.env')
-default_currency = currency_env('.env')
-default_country = country_env('.env')
-dredit_cart = dredit_env('.env')
+token, channel, admin = telegram_env('.env')
+
 postgres = postgres_env('.env')
 redis = redis_env('.env')
 scheduler = scheduler_env('.env')
+
+default_language = language_env('.env')
+default_currency = currency_env('.env')
+default_country = country_env('.env')
+
+credit_cart = credit_env('.env')
+
+complaint_limit = complaint_env('.env')
 
 
 PostgresURL = f"postgresql+asyncpg://{postgres['db_user']}:{postgres['db_pass']}@{postgres['db_host']}/{postgres['db_name']}"

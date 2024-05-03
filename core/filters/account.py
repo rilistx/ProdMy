@@ -1,6 +1,6 @@
-from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.filters import BaseFilter
+from aiogram.fsm.context import FSMContext
 
 from core.utils.connector import connector
 

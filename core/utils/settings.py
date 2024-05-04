@@ -17,7 +17,7 @@ def telegram_env(path: str):
 
     return (
         env.str("BOT_TOKEN"),
-        env.int("ID_CHANNEL_UA"),
+        env.int("UA_CHANNEL_ID"),
         {
             'id': env.int("ADMIN_ID"),
             'name': env.str("ADMIN_NAME"),

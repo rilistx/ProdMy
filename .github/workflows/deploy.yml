@@ -13,7 +13,7 @@ env:
   ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
   ADMIN_PHONE: ${{ secrets.ADMIN_PHONE }}
 
-  ID_CHANNEL_UA: -1002138401529
+  UA_CHANNEL_ID: ${{ secrets.UA_CHANNEL_ID }}
 
   POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
   POSTGRES_USER: ${{ secrets.POSTGRES_USER }}

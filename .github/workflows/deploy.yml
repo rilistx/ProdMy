@@ -1,34 +1,9 @@
 name: Deploy
 
-on: push
-
-env:
-  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-  DEFAULT_LANGUAGE: ${{ secrets.DEFAULT_LANGUAGE }}
-  DEFAULT_COUNTRY: ${{ secrets.DEFAULT_COUNTRY }}
-  DEFAULT_CURRENCY: ${{ secrets.DEFAULT_CURRENCY }}
-
-  ADMIN_ID: ${{ secrets.ADMIN_ID }}
-  ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
-  ADMIN_PHONE: ${{ secrets.ADMIN_PHONE }}
-
-  UA_CHANNEL_ID: ${{ secrets.UA_CHANNEL_ID }}
-
-  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-  POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-
-  REDIS_NAME: ${{ secrets.REDIS_NAME }}
-  REDIS_DATABASES: ${{ secrets.REDIS_DATABASES }}
-  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-  REDIS_HOST: ${{ secrets.REDIS_HOST }}
-  REDIS_PORT: ${{ secrets.REDIS_PORT }}
-
-  CREDIT_CART: ${{ secrets.CREDIT_CART }}
-
-  COMPLAINT_COUNT: ${{ secrets.COMPLAINT_COUNT }}
+on:
+  pull_request:
+    branches:
+      - master
 
 jobs:
   test:
@@ -38,6 +13,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install -r requirements.txt
+      - run: pip install flake8==7.0.0
       - run: flake8
-      - run: python bot.py

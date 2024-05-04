@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  aiogram:
+    build: ./
+    container_name: wasdwork_aiogram
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:16.2
+    container_name: wasdwork_postgres
+    restart: always
+    env_file:
+      - .env
+
+  redis:
+    image: redis:7.2.4
+    restart: always
+    env_file:
+      - .env
+
+  adminer:
+    image: adminer:4.8.1
+    container_name: wasdwork_adminer
+    restart: always
+    ports:
+      - 8080:8080

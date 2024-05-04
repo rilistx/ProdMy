@@ -17,7 +17,7 @@ def telegram_env(path: str):
 
     return (
         env.str("BOT_TOKEN"),
-        env.int("ID_CHANNEL_UA"),
+        env.int("UA_CHANNEL_ID"),
         {
             'id': env.int("ADMIN_ID"),
             'name': env.str("ADMIN_NAME"),
@@ -66,9 +66,9 @@ def postgres_env(path: str):
     env.read_env(path)
 
     return {
-        'db_name': env.str("POSTGRES_NAME"),
+        'db_name': env.str("POSTGRES_DB"),
         'db_user': env.str("POSTGRES_USER"),
-        'db_pass': env.str("POSTGRES_PASS"),
+        'db_pass': env.str("POSTGRES_PASSWORD"),
         'db_host': env.str("POSTGRES_HOST"),
     }
 
@@ -79,19 +79,10 @@ def redis_env(path: str):
 
     return {
         'db_name': env.str("REDIS_NAME"),
+        'db_data': env.str("REDIS_DATABASES"),
+        'db_pass': env.str("REDIS_PASSWORD"),
         'db_host': env.str("REDIS_HOST"),
         'db_port': env.str("REDIS_PORT"),
-    }
-
-
-def scheduler_env(path: str):
-    env = Env()
-    env.read_env(path)
-
-    return {
-        'db_name': env.str("SCHEDULER_NAME"),
-        'db_host': env.str("SCHEDULER_HOST"),
-        'db_port': env.str("SCHEDULER_PORT"),
     }
 
 
@@ -99,7 +90,6 @@ token, channel, admin = telegram_env('.env')
 
 postgres = postgres_env('.env')
 redis = redis_env('.env')
-scheduler = scheduler_env('.env')
 
 default_language = language_env('.env')
 default_currency = currency_env('.env')
@@ -126,9 +116,9 @@ def async_scheduler():
             'default': RedisJobStore(
                 jobs_key='dispatched_trips_jobs',
                 run_times_key='dispatched_trips_running',
-                db=scheduler['db_name'],
-                host=scheduler['db_host'],
-                port=scheduler['db_port']
+                db=4,
+                host=redis['db_host'],
+                port=redis['db_port'],
             )
         }
     ))

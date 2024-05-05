@@ -632,6 +632,7 @@ connector = {
                     'animator': 'Аніматор',
                     'videographer': 'Відеоограф',
                     'carer': 'Доглядальниця',
+                    'cynologist': 'Кінолог',
                     'repairman': 'Майстер із ремонту',
                     'nanny': 'Няня',
                     'psychologist': 'Психолог',

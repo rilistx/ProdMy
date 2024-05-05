@@ -13,14 +13,14 @@ from core.utils.settings import admin
 async def create_user(
         *,
         session: AsyncSession,
-        user_id,
-        username,
-        first_name,
-        phone_number,
-        language_id,
-        currency_id,
-        country_id,
-        is_admin=False,
+        user_id: int,
+        username: str,
+        first_name: str | None = None,
+        phone_number: str,
+        language_id: int,
+        currency_id: int,
+        country_id: int,
+        is_admin: bool = False,
 ) -> None:
     session.add(
         User(
@@ -620,7 +620,10 @@ async def get_vacancy_all_active(
             Vacancy.id,
         ).having(
             func.count(Complaint.vacancy_id) != complaint_limit,
-        ))
+        ).order_by(
+            Vacancy.id.desc(),
+        )
+    )
 
     return query.scalars().all()
 
@@ -653,6 +656,8 @@ async def get_vacancy_user(
             Vacancy,
         ).where(
             Vacancy.user_id == user_id,
+        ).order_by(
+            Vacancy.id.desc(),
         )
     )
 
@@ -687,6 +692,8 @@ async def get_vacancy_favorite(
             Vacancy.id
         ).having(
             func.count(Complaint.vacancy_id) != complaint_limit,
+        ).order_by(
+            Vacancy.id.desc(),
         )
     )
 
@@ -760,6 +767,8 @@ async def get_vacancy_admin(
             Vacancy.id,
         ).having(
             func.count(Complaint.vacancy_id) == complaint_limit,
+        ).order_by(
+            Vacancy.id.desc(),
         )
     )
 

@@ -1,10 +1,10 @@
-from sqlalchemy import func, ForeignKey, Numeric, DateTime
+from sqlalchemy import func, ForeignKey, BigInteger, Numeric, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
-    created: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
-    updated: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+    created: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
+    updated: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 
 
 class Language(Base):
@@ -73,7 +73,7 @@ class City(Base):
 class User(Base):
     __tablename__ = 'user'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     username: Mapped[str] = mapped_column(unique=True)
     first_name: Mapped[str | None]
     phone_number: Mapped[str] = mapped_column(unique=True)

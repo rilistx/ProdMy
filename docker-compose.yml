@@ -1,9 +1,10 @@
 version: '3.9'
 
+
 services:
   aiogram:
     build: ./
-    container_name: wasdwork_aiogram
+    container_name: waw_telebot
     restart: always
     env_file:
       - .env
@@ -13,20 +14,21 @@ services:
 
   postgres:
     image: postgres:16.2
-    container_name: wasdwork_postgres
+    container_name: waw_postgres
     restart: always
     env_file:
       - .env
 
   redis:
     image: redis:7.2.4
+    container_name: waw_redis
     restart: always
     env_file:
       - .env
 
   adminer:
     image: adminer:4.8.1
-    container_name: wasdwork_adminer
+    container_name: waw_adminer
     restart: always
     ports:
-      - 8080:8080
+      - 2551:2551

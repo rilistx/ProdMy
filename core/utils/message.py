@@ -104,8 +104,8 @@ async def get_text_vacancy_create(
             text = f"❎ <b>{connector[lang]['message']['vacancy']['finish']['nochange']}</b>"
     elif func_name == 'create':
         text = (
-            f"✅ {connector[lang]['message']['vacancy']['finish'][func_name]['caption']}!\n\n"
-            f"<blockquote>❕ {connector[lang]['message']['vacancy']['finish'][func_name]['note']}!</blockquote>"
+            f"✅ {connector[lang]['message']['vacancy']['finish'][func_name]['caption']}\n\n"
+            f"<blockquote>❕ {connector[lang]['message']['vacancy']['finish'][func_name]['note']}</blockquote>"
         )
     else:
         func_list = [
@@ -123,7 +123,7 @@ async def get_text_vacancy_create(
         if change:
             text += (
                 f"\n\n📌 {connector[lang]['message']['vacancy']['skip']} "
-                f"\"<b>{connector[lang]['button']['vacancy']['nochange']}</b>\"!"
+                f"\"<b>{connector[lang]['button']['vacancy']['nochange']}</b>\"."
             )
 
     return text

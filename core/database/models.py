@@ -78,6 +78,7 @@ class User(Base):
     first_name: Mapped[str | None]
     phone_number: Mapped[str] = mapped_column(unique=True)
     money: Mapped[int] = mapped_column(default=0)
+    quantity: Mapped[int] = mapped_column(default=0)
     blocked: Mapped[bool] = mapped_column(default=False)
     is_admin: Mapped[bool] = mapped_column(default=False)
     language_id: Mapped[int] = mapped_column(ForeignKey('language.id', ondelete='CASCADE'))

@@ -83,10 +83,20 @@ def redis_env(path: str):
     }
 
 
+def scheduler_env(path: str):
+    env = Env()
+    env.read_env(path)
+
+    return {
+        'db_name': env.int("SCHEDULER_NAME"),
+    }
+
+
 token, channel, admin = telegram_env('.env')
 
 postgres = postgres_env('.env')
 redis = redis_env('.env')
+scheduler = scheduler_env('.env')
 
 default_language = language_env('.env')
 default_currency = currency_env('.env')
@@ -113,7 +123,7 @@ def async_scheduler():
             'default': RedisJobStore(
                 jobs_key='dispatched_trips_jobs',
                 run_times_key='dispatched_trips_running',
-                db=4,
+                db=scheduler['db_name'],
                 host=redis['db_host'],
                 port=redis['db_port'],
             )

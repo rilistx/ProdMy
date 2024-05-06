@@ -13,22 +13,22 @@ services:
       - redis
 
   postgres:
-    image: postgres:16.2
+    image: postgres:16.2-alpine
     container_name: waw_postgres
     restart: always
     env_file:
       - .env
 
   redis:
-    image: redis:7.2.4
+    image: redis:7.2.4-alpine
     container_name: waw_redis
     restart: always
     env_file:
       - .env
 
   adminer:
-    image: adminer:4.8.1
+    image: adminer:latest
     container_name: waw_adminer
     restart: always
     ports:
-      - 2551:2551
+      - ${ADMINER_PORT}:${ADMINER_PORT}

@@ -78,9 +78,6 @@ def redis_env(path: str):
     env.read_env(path)
 
     return {
-        'db_name': env.str("REDIS_NAME"),
-        'db_data': env.str("REDIS_DATABASES"),
-        'db_pass': env.str("REDIS_PASSWORD"),
         'db_host': env.str("REDIS_HOST"),
         'db_port': env.str("REDIS_PORT"),
     }
@@ -106,7 +103,7 @@ async_session_maker = async_sessionmaker(bind=async_engine, class_=AsyncSession,
 
 
 bot = Bot(token=token, parse_mode=ParseMode.HTML)
-storage = RedisStorage.from_url(f"{redis['db_name']}://{redis['db_host']}:{redis['db_port']}/0")
+storage = RedisStorage.from_url(f"redis://{redis['db_host']}:{redis['db_port']}/0")
 
 
 def async_scheduler():
